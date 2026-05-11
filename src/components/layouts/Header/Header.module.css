@@ -1,0 +1,52 @@
+.header {
+  height: 60px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: var(--mantine-color-body);
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+.breadcrumbs {
+  font-size: 14px;
+}
+
+.breadcrumbCurrent {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--mantine-color-text);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.userButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: var(--mantine-color-text);
+}
+
+.userButton:hover {
+  background: var(--mantine-color-default-hover);
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .userName {
+    display: none;
+  }
+
+  .breadcrumbs {
+    display: none;
+  }
+}
