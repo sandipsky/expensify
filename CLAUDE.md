@@ -34,7 +34,7 @@ Full spec: [PROJECT.md](PROJECT.md).
 | Validation        | Zod                | Schema validation                |
 | UI Library        | @mantine/core      | Component library                |
 | Charts            | ApexCharts         | Data visualization               |
-| Router            | Tanstack Router    | Client-side routing              |
+| Router            | React Router DOM   | Client-side routing              |
 | Runtime           | Node.js 22+        | JavaScript runtime               |
 
 Do **not** introduce Husky or Biome to this project.
@@ -45,7 +45,7 @@ Do **not** introduce Husky or Biome to this project.
 src/
 ├── main.tsx                    # App bootstrap
 ├── App.tsx                     # Root component
-├── routes/                     # Tanstack Router route definitions
+├── routes/                     # React Router DOM route definitions
 │   ├── __root.tsx
 │   ├── Auth.tsx
 │   └── Dashboard.tsx
@@ -172,14 +172,14 @@ export interface IPaginatedResponse<T> {
 - Generics: single uppercase letter or descriptive PascalCase (e.g. `T`, `TData`).
 - Enums: PascalCase name, SCREAMING_SNAKE_CASE values.
 
-## Routing (Tanstack Router)
+## Routing (React Router DOM)
 
-- Group related routes under common layouts.
-- Use nested routes for hierarchical navigation.
-- Apply route-based code splitting with lazy loading.
-- Define routes in a centralized configuration.
-- Implement route guards for authentication.
-- Type route parameters; validate with Zod; handle invalid/missing params gracefully.
+- Use `createBrowserRouter` with a centralized route config (one `RouteObject` per file under `src/routes/`).
+- Group related routes under common layouts via nested `children` and an `Outlet`.
+- Apply route-based code splitting with `React.lazy` + `Suspense` (or RR's `lazy` route option).
+- Use `loader`s for auth guards — `throw redirect('/login')` when unauthorized.
+- Use `NavLink` (not `Link`) for sidebar/menu items so active state is automatic; pass `end` for index routes.
+- Type route parameters with `useParams<{ id: string }>()`; validate with Zod; handle invalid/missing params gracefully.
 
 ## Environment Variables (Vite)
 
