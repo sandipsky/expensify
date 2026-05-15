@@ -3,7 +3,7 @@ import { Drawer } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { Header, type IHeaderUser } from './Header';
 import { Sidebar } from './Sidebar';
-import classes from './AppLayout.module.css';
+import './AppLayout.css';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -26,7 +26,7 @@ export function AppLayout({ children, breadcrumbs, user, onLogout }: AppLayoutPr
   };
 
   return (
-    <div className={classes.layout}>
+    <div className="app-layout">
       {!isMobile && <Sidebar collapsed={collapsed} />}
 
       {isMobile && (
@@ -42,14 +42,14 @@ export function AppLayout({ children, breadcrumbs, user, onLogout }: AppLayoutPr
         </Drawer>
       )}
 
-      <div className={classes.main}>
+      <div className="app-layout-main">
         <Header
           onToggleSidebar={handleToggle}
           breadcrumbs={breadcrumbs}
           user={user}
           onLogout={onLogout}
         />
-        <main className={classes.content}>{children}</main>
+        <main className="app-layout-content">{children}</main>
       </div>
     </div>
   );

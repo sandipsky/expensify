@@ -19,7 +19,7 @@ Expensify lets a user:
 
 ### Frontend
 - **React 19** + **TypeScript** + **Vite**
-- **React Router DOM** — routing
+- **TanStack Router** — type-safe routing (file-based, via `@tanstack/router-plugin`)
 - **Tanstack Query** — server state
 - **Zustand** — global client state
 - **Axios** — HTTP client

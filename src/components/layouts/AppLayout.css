@@ -1,18 +1,18 @@
-.layout {
+.app-layout {
   display: flex;
   height: 100vh;
   width: 100%;
   overflow: hidden;
 }
 
-.main {
+.app-layout-main {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
-.content {
+.app-layout-content {
   flex: 1;
   overflow: auto;
   padding: 16px;

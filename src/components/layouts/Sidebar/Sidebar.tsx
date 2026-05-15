@@ -8,7 +8,7 @@ import {
   IconWallet,
   type Icon,
 } from '@tabler/icons-react';
-import classes from './Sidebar.module.css';
+import './Sidebar.css';
 
 interface INavItem {
   label: string;
@@ -32,12 +32,12 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onNavigate }: SidebarProps) {
   return (
-    <aside className={classes.sidebar} data-collapsed={collapsed}>
-      <div className={classes.logo}>
-        <span className={classes.logoText}>{collapsed ? 'E' : 'Expensify'}</span>
+    <aside className="app-sidebar" data-collapsed={collapsed}>
+      <div className="app-sidebar-logo">
+        <span className="app-sidebar-logo-text">{collapsed ? 'E' : 'Expensify'}</span>
       </div>
 
-      <Stack gap={4} className={classes.nav}>
+      <Stack gap={4} className="app-sidebar-nav">
         {NAV_ITEMS.map((item) => (
           <NavItem
             key={item.href}
@@ -61,9 +61,9 @@ function NavItem({ item, collapsed, onClick }: NavItemProps) {
   const Icon = item.icon;
 
   const button = (
-    <UnstyledButton className={classes.navItem} onClick={onClick}>
-      <Icon size={20} className={classes.navIcon} />
-      {!collapsed && <span className={classes.navLabel}>{item.label}</span>}
+    <UnstyledButton className="app-sidebar-nav-item" onClick={onClick}>
+      <Icon size={20} className="app-sidebar-nav-icon" />
+      {!collapsed && <span className="app-sidebar-nav-label">{item.label}</span>}
     </UnstyledButton>
   );
 

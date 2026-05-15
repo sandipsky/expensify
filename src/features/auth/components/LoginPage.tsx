@@ -8,7 +8,7 @@ import {
   Title,
 } from '@mantine/core';
 import { useAuth } from '../context/AuthContext';
-import classes from './LoginPage.module.css';
+import './LoginPage.css';
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -21,8 +21,8 @@ export function LoginPage() {
   };
 
   return (
-    <div className={classes.wrapper}>
-      <Paper className={classes.card} shadow="md" radius="md" p="xl" withBorder>
+    <div className="login-page">
+      <Paper className="login-page-card" shadow="md" radius="md" p="xl" withBorder>
         <Title order={2} ta="center" mb="lg">
           Welcome to Expensify
         </Title>
@@ -47,7 +47,7 @@ export function LoginPage() {
             <Button type="submit" fullWidth mt="sm">
               Login
             </Button>
-            <p className={classes.hint}>
+            <p className="login-page-hint">
               Any email/password is accepted — a dummy token is stored.
             </p>
           </Stack>

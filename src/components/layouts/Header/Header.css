@@ -1,4 +1,4 @@
-.header {
+.app-header {
   height: 60px;
   flex-shrink: 0;
   display: flex;
@@ -9,21 +9,21 @@
   border-bottom: 1px solid var(--mantine-color-default-border);
 }
 
-.breadcrumbs {
+.app-header-breadcrumbs {
   font-size: 16px;
 }
 
-.breadcrumbCurrent {
+.app-header-breadcrumb-current {
   font-size: 16px;
   font-weight: 500;
   color: var(--mantine-color-text);
 }
 
-.spacer {
+.app-header-spacer {
   flex: 1;
 }
 
-.userButton {
+.app-header-user-button {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -32,21 +32,21 @@
   color: var(--mantine-color-text);
 }
 
-.userButton:hover {
+.app-header-user-button:hover {
   background: var(--mantine-color-default-hover);
 }
 
-.userName {
+.app-header-user-name {
   font-size: 14px;
   font-weight: 500;
 }
 
 @media (max-width: 600px) {
-  .userName {
+  .app-header-user-name {
     display: none;
   }
 
-  .breadcrumbs {
+  .app-header-breadcrumbs {
     display: none;
   }
 }
