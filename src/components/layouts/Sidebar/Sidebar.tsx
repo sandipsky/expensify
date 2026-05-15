@@ -8,21 +8,23 @@ import {
   IconWallet,
   type Icon,
 } from '@tabler/icons-react';
+import { Link } from '@tanstack/react-router';
 import './Sidebar.css';
 
 interface INavItem {
   label: string;
   icon: Icon;
-  href: string;
+  to: string;
+  exact?: boolean;
 }
 
 const NAV_ITEMS: INavItem[] = [
-  { label: 'Dashboard', icon: IconLayoutDashboard, href: '/' },
-  { label: 'Transactions', icon: IconReceipt2, href: '/transactions' },
-  { label: 'Categories', icon: IconCategory, href: '/categories' },
-  { label: 'Accounts', icon: IconWallet, href: '/accounts' },
-  { label: 'Budgets', icon: IconChartPie, href: '/budgets' },
-  { label: 'Calendar', icon: IconCalendar, href: '/calendar' },
+  { label: 'Dashboard', icon: IconLayoutDashboard, to: '/', exact: true },
+  { label: 'Transactions', icon: IconReceipt2, to: '/transactions' },
+  { label: 'Categories', icon: IconCategory, to: '/categories' },
+  { label: 'Accounts', icon: IconWallet, to: '/accounts' },
+  { label: 'Budgets', icon: IconChartPie, to: '/budgets' },
+  { label: 'Calendar', icon: IconCalendar, to: '/calendar' },
 ];
 
 interface SidebarProps {
@@ -40,7 +42,7 @@ export function Sidebar({ collapsed, onNavigate }: SidebarProps) {
       <Stack gap={4} className="app-sidebar-nav">
         {NAV_ITEMS.map((item) => (
           <NavItem
-            key={item.href}
+            key={item.to}
             item={item}
             collapsed={collapsed}
             onClick={onNavigate}
@@ -61,7 +63,14 @@ function NavItem({ item, collapsed, onClick }: NavItemProps) {
   const Icon = item.icon;
 
   const button = (
-    <UnstyledButton className="app-sidebar-nav-item" onClick={onClick}>
+    <UnstyledButton
+      component={Link}
+      to={item.to}
+      activeOptions={{ exact: item.exact }}
+      activeProps={{ 'data-active': 'true' }}
+      className="app-sidebar-nav-item"
+      onClick={onClick}
+    >
       <Icon size={20} className="app-sidebar-nav-icon" />
       {!collapsed && <span className="app-sidebar-nav-label">{item.label}</span>}
     </UnstyledButton>

@@ -49,6 +49,12 @@
   background: var(--mantine-color-default-hover);
 }
 
+.app-sidebar-nav-item[data-active='true'] {
+  background: var(--mantine-color-blue-light);
+  color: var(--mantine-color-blue-light-color);
+  font-weight: 500;
+}
+
 .app-sidebar[data-collapsed='true'] .app-sidebar-nav-item {
   justify-content: center;
   padding: 10px;

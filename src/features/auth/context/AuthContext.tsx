@@ -11,6 +11,10 @@ import type { ILoginCredentials, IUser } from '../types';
 const TOKEN_KEY = 'expensify_token';
 const USER_KEY = 'expensify_user';
 
+export function isAuthenticated(): boolean {
+  return Boolean(localStorage.getItem(TOKEN_KEY));
+}
+
 interface AuthContextValue {
   token: string | null;
   user: IUser | null;
@@ -59,6 +63,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.removeItem(USER_KEY);
     setToken(null);
     setUser(null);
+    window.location.href = '/login';
   }, []);
 
   const value = useMemo<AuthContextValue>(

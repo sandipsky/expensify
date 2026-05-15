@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import {
   Button,
   Paper,
@@ -7,13 +7,21 @@ import {
   TextInput,
   Title,
 } from '@mantine/core';
+import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../context/AuthContext';
 import './LoginPage.css';
 
 export function LoginPage() {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('demo@expensify.app');
   const [password, setPassword] = useState('demo');
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate({ to: '/' });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
