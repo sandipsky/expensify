@@ -1,0 +1,43 @@
+{
+  "categories": [
+    {
+      "id": "cat_seed_groceries",
+      "name": "Groceries",
+      "type": "expense",
+      "icon": "shopping-cart",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat_seed_rent",
+      "name": "Rent",
+      "type": "expense",
+      "icon": "home",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat_seed_utilities",
+      "name": "Utilities",
+      "type": "expense",
+      "icon": "bolt",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat_seed_salary",
+      "name": "Salary",
+      "type": "income",
+      "icon": "briefcase",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat_seed_investments",
+      "name": "Investments",
+      "type": "income",
+      "icon": "trending-up",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "transactions": [],
+  "budgets": [],
+  "accounts": [],
+  "$schema": "./node_modules/json-server/schema.json"
+}

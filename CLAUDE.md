@@ -37,7 +37,6 @@ Full spec: [PROJECT.md](PROJECT.md).
 | Router            | TanStack Router    | Type-safe client-side routing    |
 | Runtime           | Node.js 22+        | JavaScript runtime               |
 
-Do **not** introduce Husky or Biome to this project.
 
 ## Project Architecture
 
