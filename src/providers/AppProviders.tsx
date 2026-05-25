@@ -1,5 +1,13 @@
-import { MantineProvider } from '@mantine/core';
+import {
+  MantineProvider,
+  createTheme,
+  localStorageColorSchemeManager,
+} from '@mantine/core';
+import { DatesProvider } from '@mantine/dates';
+import { Notifications } from '@mantine/notifications';
 import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
+import '@mantine/notifications/styles.css';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { RouterProvider } from '@tanstack/react-router';
@@ -8,15 +16,48 @@ import { AuthProvider } from '../features/auth';
 import { queryClient } from '../lib/queryClient';
 import { router } from '../router';
 
+const theme = createTheme({
+  primaryColor: 'indigo',
+  defaultRadius: 'md',
+  fontFamily:
+    "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+  headings: {
+    fontFamily:
+      "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+    fontWeight: '600',
+  },
+  components: {
+    Button: { defaultProps: { radius: 'md' } },
+    Card: { defaultProps: { radius: 'lg', withBorder: true } },
+    Paper: { defaultProps: { radius: 'lg' } },
+    Modal: { defaultProps: { radius: 'lg', centered: true } },
+    TextInput: { defaultProps: { radius: 'md' } },
+    NumberInput: { defaultProps: { radius: 'md' } },
+    Select: { defaultProps: { radius: 'md' } },
+    Textarea: { defaultProps: { radius: 'md' } },
+  },
+});
+
+const colorSchemeManager = localStorageColorSchemeManager({
+  key: 'expensify-color-scheme',
+});
+
 export function AppProviders() {
   return (
-    <MantineProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <RouterProvider router={router} />
-        </AuthProvider>
-        {config.app.isDev && <ReactQueryDevtools initialIsOpen={false} />}
-      </QueryClientProvider>
+    <MantineProvider
+      theme={theme}
+      defaultColorScheme="light"
+      colorSchemeManager={colorSchemeManager}
+    >
+      <DatesProvider settings={{ firstDayOfWeek: 1 }}>
+        <Notifications position="top-right" />
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <RouterProvider router={router} />
+          </AuthProvider>
+          {config.app.isDev && <ReactQueryDevtools initialIsOpen={false} />}
+        </QueryClientProvider>
+      </DatesProvider>
     </MantineProvider>
   );
 }

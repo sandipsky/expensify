@@ -1,0 +1,68 @@
+.txn-page {
+  height: 100%;
+  min-height: 0;
+}
+
+.txn-filters {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.5fr) repeat(3, minmax(140px, 1fr)) auto;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.txn-filters-search {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .txn-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+  .txn-filters-search {
+    grid-column: span 2;
+  }
+}
+
+.txn-table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.txn-table-scroll {
+  height: 100%;
+}
+
+.txn-table {
+  background: transparent;
+}
+
+.txn-table thead th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--app-text-muted);
+  font-weight: 600;
+  background: var(--app-surface-muted);
+}
+
+.txn-kind-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
+}
+
+.txn-kind-badge[data-kind='income'] {
+  background: var(--app-success-soft);
+  color: var(--app-success);
+}
+
+.txn-kind-badge[data-kind='expense'] {
+  background: var(--app-danger-soft);
+  color: var(--app-danger);
+}

@@ -4,9 +4,17 @@ import {
   Avatar,
   Breadcrumbs,
   Menu,
+  Tooltip,
   UnstyledButton,
+  useMantineColorScheme,
 } from '@mantine/core';
-import { IconChevronDown, IconLogout, IconMenu2 } from '@tabler/icons-react';
+import {
+  IconChevronDown,
+  IconLogout,
+  IconMenu2,
+  IconMoon,
+  IconSun,
+} from '@tabler/icons-react';
 import './Header.css';
 
 export interface IHeaderUser {
@@ -29,6 +37,9 @@ export function Header({
   user = DEFAULT_USER,
   onLogout,
 }: HeaderProps) {
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === 'dark';
+
   return (
     <header className="app-header">
       <ActionIcon
@@ -61,10 +72,22 @@ export function Header({
 
       <div className="app-header-spacer" />
 
+      <Tooltip label={isDark ? 'Light mode' : 'Dark mode'} withArrow>
+        <ActionIcon
+          variant="subtle"
+          color="gray"
+          size="lg"
+          onClick={toggleColorScheme}
+          aria-label="Toggle color scheme"
+        >
+          {isDark ? <IconSun size={18} /> : <IconMoon size={18} />}
+        </ActionIcon>
+      </Tooltip>
+
       <Menu position="bottom-end" withArrow shadow="md" width={180}>
         <Menu.Target>
           <UnstyledButton className="app-header-user-button" aria-label="Open user menu">
-            <Avatar src={user.avatarUrl} radius="xl" size={32} color="blue">
+            <Avatar src={user.avatarUrl} radius="xl" size={32} color="indigo">
               {user.name.slice(0, 1).toUpperCase()}
             </Avatar>
             <span className="app-header-user-name">{user.name}</span>

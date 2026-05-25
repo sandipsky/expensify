@@ -1,8 +1,9 @@
 .categories-page {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding: 0.5rem;
+  gap: 1.25rem;
+  height: 100%;
+  min-height: 0;
 }
 
 .categories-page-header {
@@ -21,12 +22,29 @@
 
 .categories-page-subtitle {
   margin: 0.25rem 0 0;
-  color: var(--mantine-color-dimmed);
+  color: var(--app-text-muted);
   font-size: 0.875rem;
 }
 
+.categories-page-scroll {
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface);
+  overflow: hidden;
+}
+
 .categories-page-table {
-  background: var(--mantine-color-body);
+  background: transparent;
+}
+
+.categories-page-table thead th {
+  background: var(--app-surface-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--app-text-muted);
 }
 
 .categories-page-row-icon {
@@ -35,9 +53,9 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: var(--mantine-radius-sm);
-  background: var(--mantine-color-default-hover);
-  color: var(--mantine-color-blue-6);
+  border-radius: var(--app-radius-sm);
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
 }
 
 .categories-page-empty {
@@ -47,8 +65,8 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 3rem 1rem;
-  border: 1px dashed var(--mantine-color-default-border);
-  border-radius: var(--mantine-radius-md);
-  color: var(--mantine-color-dimmed);
+  border: 1px dashed var(--app-border-strong);
+  border-radius: var(--app-radius-lg);
+  color: var(--app-text-muted);
   text-align: center;
 }

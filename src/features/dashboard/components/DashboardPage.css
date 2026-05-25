@@ -1,0 +1,96 @@
+.dash-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.dash-chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.dash-bottom-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 1100px) {
+  .dash-chart-grid {
+    grid-template-columns: 1fr;
+  }
+  .dash-bottom-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .dash-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.dash-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dash-card-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.dash-recent-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.5rem;
+  border-radius: var(--app-radius-md);
+}
+
+.dash-recent-row:hover {
+  background: var(--app-surface-muted);
+}
+
+.dash-recent-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
+}
+
+.dash-recent-icon[data-kind='income'] {
+  background: var(--app-success-soft);
+  color: var(--app-success);
+}
+
+.dash-recent-icon[data-kind='expense'] {
+  background: var(--app-danger-soft);
+  color: var(--app-danger);
+}
+
+.dash-account-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.5rem;
+  border-radius: var(--app-radius-md);
+}
+
+.dash-account-row:hover {
+  background: var(--app-surface-muted);
+}

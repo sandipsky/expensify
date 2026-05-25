@@ -133,8 +133,13 @@ export function CategoriesPage() {
           </Stack>
         </div>
       ) : (
-        <Table.ScrollContainer minWidth={520}>
+        <Table.ScrollContainer
+          minWidth={520}
+          maxHeight="100%"
+          className="categories-page-scroll"
+        >
           <Table
+            stickyHeader
             highlightOnHover
             withTableBorder
             withColumnBorders={false}

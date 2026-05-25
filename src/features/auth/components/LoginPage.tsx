@@ -30,10 +30,16 @@ export function LoginPage() {
 
   return (
     <div className="login-page">
-      <Paper className="login-page-card" shadow="md" radius="md" p="xl" withBorder>
-        <Title order={2} ta="center" mb="lg">
-          Welcome to Expensify
+      <Paper className="login-page-card" radius="lg" p="xl">
+        <div className="login-page-brand">
+          <span className="login-page-brand-mark">E</span>
+        </div>
+        <Title order={2} ta="center" mb="xs">
+          Welcome back
         </Title>
+        <p className="login-page-hint" style={{ marginBottom: '1.5rem' }}>
+          Sign in to manage your finances
+        </p>
 
         <form onSubmit={handleSubmit}>
           <Stack gap="md">
@@ -52,11 +58,11 @@ export function LoginPage() {
               onChange={(event) => setPassword(event.currentTarget.value)}
               required
             />
-            <Button type="submit" fullWidth mt="sm">
-              Login
+            <Button type="submit" fullWidth mt="sm" size="md">
+              Sign in
             </Button>
             <p className="login-page-hint">
-              Any email/password is accepted — a dummy token is stored.
+              Demo mode — any email/password works.
             </p>
           </Stack>
         </form>

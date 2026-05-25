@@ -1,8 +1,10 @@
 import { Stack, Tooltip, UnstyledButton } from '@mantine/core';
 import {
+  IconArrowsExchange,
   IconCalendar,
   IconCategory,
   IconChartPie,
+  IconDatabaseExport,
   IconLayoutDashboard,
   IconReceipt2,
   IconWallet,
@@ -18,13 +20,32 @@ interface INavItem {
   exact?: boolean;
 }
 
-const NAV_ITEMS: INavItem[] = [
-  { label: 'Dashboard', icon: IconLayoutDashboard, to: '/', exact: true },
-  { label: 'Transactions', icon: IconReceipt2, to: '/transactions' },
-  { label: 'Categories', icon: IconCategory, to: '/categories' },
-  { label: 'Accounts', icon: IconWallet, to: '/accounts' },
-  { label: 'Budgets', icon: IconChartPie, to: '/budgets' },
-  { label: 'Calendar', icon: IconCalendar, to: '/calendar' },
+interface INavSection {
+  label?: string;
+  items: INavItem[];
+}
+
+const NAV_SECTIONS: INavSection[] = [
+  {
+    label: 'Overview',
+    items: [
+      { label: 'Dashboard', icon: IconLayoutDashboard, to: '/', exact: true },
+      { label: 'Calendar', icon: IconCalendar, to: '/calendar' },
+    ],
+  },
+  {
+    label: 'Money',
+    items: [
+      { label: 'Transactions', icon: IconReceipt2, to: '/transactions' },
+      { label: 'Accounts', icon: IconWallet, to: '/accounts' },
+      { label: 'Budgets', icon: IconChartPie, to: '/budgets' },
+      { label: 'Categories', icon: IconCategory, to: '/categories' },
+    ],
+  },
+  {
+    label: 'Data',
+    items: [{ label: 'Import / Export', icon: IconDatabaseExport, to: '/data' }],
+  },
 ];
 
 interface SidebarProps {
@@ -36,19 +57,31 @@ export function Sidebar({ collapsed, onNavigate }: SidebarProps) {
   return (
     <aside className="app-sidebar" data-collapsed={collapsed}>
       <div className="app-sidebar-logo">
-        <span className="app-sidebar-logo-text">{collapsed ? 'E' : 'Expensify'}</span>
+        <span className="app-sidebar-logo-mark">
+          <IconArrowsExchange size={18} stroke={2.5} />
+        </span>
+        {!collapsed && <span className="app-sidebar-logo-text">Expensify</span>}
       </div>
 
-      <Stack gap={4} className="app-sidebar-nav">
-        {NAV_ITEMS.map((item) => (
-          <NavItem
-            key={item.to}
-            item={item}
-            collapsed={collapsed}
-            onClick={onNavigate}
-          />
+      <div className="app-sidebar-nav">
+        {NAV_SECTIONS.map((section, index) => (
+          <div key={section.label ?? index}>
+            {section.label && (
+              <div className="app-sidebar-section-label">{section.label}</div>
+            )}
+            <Stack gap={2}>
+              {section.items.map((item) => (
+                <NavItem
+                  key={item.to}
+                  item={item}
+                  collapsed={collapsed}
+                  onClick={onNavigate}
+                />
+              ))}
+            </Stack>
+          </div>
         ))}
-      </Stack>
+      </div>
     </aside>
   );
 }
@@ -71,7 +104,7 @@ function NavItem({ item, collapsed, onClick }: NavItemProps) {
       className="app-sidebar-nav-item"
       onClick={onClick}
     >
-      <Icon size={20} className="app-sidebar-nav-icon" />
+      <Icon size={18} className="app-sidebar-nav-icon" />
       {!collapsed && <span className="app-sidebar-nav-label">{item.label}</span>}
     </UnstyledButton>
   );

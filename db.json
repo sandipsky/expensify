@@ -1,43 +1,443 @@
 {
   "categories": [
     {
-      "id": "cat_seed_groceries",
+      "id": "cat_groceries",
       "name": "Groceries",
       "type": "expense",
       "icon": "shopping-cart",
       "createdAt": "2026-01-01T00:00:00.000Z"
     },
     {
-      "id": "cat_seed_rent",
+      "id": "cat_rent",
       "name": "Rent",
       "type": "expense",
       "icon": "home",
       "createdAt": "2026-01-01T00:00:00.000Z"
     },
     {
-      "id": "cat_seed_utilities",
+      "id": "cat_utilities",
       "name": "Utilities",
       "type": "expense",
       "icon": "bolt",
       "createdAt": "2026-01-01T00:00:00.000Z"
     },
     {
-      "id": "cat_seed_salary",
+      "id": "cat_dining",
+      "name": "Dining",
+      "type": "expense",
+      "icon": "coffee",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat_transport",
+      "name": "Transport",
+      "type": "expense",
+      "icon": "car",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat_entertainment",
+      "name": "Entertainment",
+      "type": "expense",
+      "icon": "device-tv",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat_health",
+      "name": "Health",
+      "type": "expense",
+      "icon": "heart",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat_shopping",
+      "name": "Shopping",
+      "type": "expense",
+      "icon": "shirt",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat_salary",
       "name": "Salary",
       "type": "income",
       "icon": "briefcase",
       "createdAt": "2026-01-01T00:00:00.000Z"
     },
     {
-      "id": "cat_seed_investments",
+      "id": "cat_investments",
       "name": "Investments",
       "type": "income",
       "icon": "trending-up",
       "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "cat_freelance",
+      "name": "Freelance",
+      "type": "income",
+      "icon": "star",
+      "createdAt": "2026-01-01T00:00:00.000Z"
     }
   ],
-  "transactions": [],
-  "budgets": [],
-  "accounts": [],
+  "accounts": [
+    {
+      "id": "acc_checking",
+      "name": "Main Checking",
+      "initialAmount": 4500,
+      "notes": "Primary salary account",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "acc_savings",
+      "name": "Savings",
+      "initialAmount": 12000,
+      "notes": "Emergency fund",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "acc_wallet",
+      "name": "Cash Wallet",
+      "initialAmount": 200,
+      "notes": "Pocket cash",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "acc_credit",
+      "name": "Credit Card",
+      "initialAmount": 0,
+      "notes": "Pays from checking",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "txn_001",
+      "kind": "income",
+      "amount": 4200,
+      "accountId": "acc_checking",
+      "toAccountId": null,
+      "categoryId": "cat_salary",
+      "date": "2026-05-01",
+      "notes": "Monthly salary",
+      "createdAt": "2026-05-01T09:00:00.000Z"
+    },
+    {
+      "id": "txn_002",
+      "kind": "expense",
+      "amount": 1500,
+      "accountId": "acc_checking",
+      "toAccountId": null,
+      "categoryId": "cat_rent",
+      "date": "2026-05-02",
+      "notes": "May rent",
+      "createdAt": "2026-05-02T10:00:00.000Z"
+    },
+    {
+      "id": "txn_003",
+      "kind": "expense",
+      "amount": 145.32,
+      "accountId": "acc_credit",
+      "toAccountId": null,
+      "categoryId": "cat_groceries",
+      "date": "2026-05-04",
+      "notes": "Weekly groceries",
+      "createdAt": "2026-05-04T18:30:00.000Z"
+    },
+    {
+      "id": "txn_004",
+      "kind": "expense",
+      "amount": 89.5,
+      "accountId": "acc_credit",
+      "toAccountId": null,
+      "categoryId": "cat_utilities",
+      "date": "2026-05-05",
+      "notes": "Electricity bill",
+      "createdAt": "2026-05-05T08:15:00.000Z"
+    },
+    {
+      "id": "txn_005",
+      "kind": "expense",
+      "amount": 32.5,
+      "accountId": "acc_wallet",
+      "toAccountId": null,
+      "categoryId": "cat_dining",
+      "date": "2026-05-06",
+      "notes": "Lunch with friends",
+      "createdAt": "2026-05-06T13:00:00.000Z"
+    },
+    {
+      "id": "txn_006",
+      "kind": "transfer",
+      "amount": 500,
+      "accountId": "acc_checking",
+      "toAccountId": "acc_savings",
+      "categoryId": null,
+      "date": "2026-05-07",
+      "notes": "Move to savings",
+      "createdAt": "2026-05-07T11:00:00.000Z"
+    },
+    {
+      "id": "txn_007",
+      "kind": "expense",
+      "amount": 55,
+      "accountId": "acc_credit",
+      "toAccountId": null,
+      "categoryId": "cat_transport",
+      "date": "2026-05-08",
+      "notes": "Fuel",
+      "createdAt": "2026-05-08T17:00:00.000Z"
+    },
+    {
+      "id": "txn_008",
+      "kind": "expense",
+      "amount": 15.99,
+      "accountId": "acc_credit",
+      "toAccountId": null,
+      "categoryId": "cat_entertainment",
+      "date": "2026-05-10",
+      "notes": "Streaming subscription",
+      "createdAt": "2026-05-10T07:00:00.000Z"
+    },
+    {
+      "id": "txn_009",
+      "kind": "expense",
+      "amount": 178,
+      "accountId": "acc_credit",
+      "toAccountId": null,
+      "categoryId": "cat_groceries",
+      "date": "2026-05-12",
+      "notes": "Weekly groceries",
+      "createdAt": "2026-05-12T19:00:00.000Z"
+    },
+    {
+      "id": "txn_010",
+      "kind": "income",
+      "amount": 650,
+      "accountId": "acc_checking",
+      "toAccountId": null,
+      "categoryId": "cat_freelance",
+      "date": "2026-05-14",
+      "notes": "Design contract",
+      "createdAt": "2026-05-14T15:00:00.000Z"
+    },
+    {
+      "id": "txn_011",
+      "kind": "expense",
+      "amount": 220,
+      "accountId": "acc_checking",
+      "toAccountId": null,
+      "categoryId": "cat_shopping",
+      "date": "2026-05-15",
+      "notes": "New running shoes",
+      "createdAt": "2026-05-15T12:00:00.000Z"
+    },
+    {
+      "id": "txn_012",
+      "kind": "expense",
+      "amount": 60,
+      "accountId": "acc_wallet",
+      "toAccountId": null,
+      "categoryId": "cat_health",
+      "date": "2026-05-17",
+      "notes": "Pharmacy",
+      "createdAt": "2026-05-17T11:00:00.000Z"
+    },
+    {
+      "id": "txn_013",
+      "kind": "expense",
+      "amount": 42,
+      "accountId": "acc_wallet",
+      "toAccountId": null,
+      "categoryId": "cat_dining",
+      "date": "2026-05-18",
+      "notes": "Dinner",
+      "createdAt": "2026-05-18T20:00:00.000Z"
+    },
+    {
+      "id": "txn_014",
+      "kind": "expense",
+      "amount": 192.4,
+      "accountId": "acc_credit",
+      "toAccountId": null,
+      "categoryId": "cat_groceries",
+      "date": "2026-05-19",
+      "notes": "Weekly groceries",
+      "createdAt": "2026-05-19T18:00:00.000Z"
+    },
+    {
+      "id": "txn_015",
+      "kind": "income",
+      "amount": 110,
+      "accountId": "acc_savings",
+      "toAccountId": null,
+      "categoryId": "cat_investments",
+      "date": "2026-05-20",
+      "notes": "Dividends",
+      "createdAt": "2026-05-20T09:00:00.000Z"
+    },
+    {
+      "id": "txn_016",
+      "kind": "expense",
+      "amount": 45,
+      "accountId": "acc_credit",
+      "toAccountId": null,
+      "categoryId": "cat_transport",
+      "date": "2026-05-22",
+      "notes": "Cab rides",
+      "createdAt": "2026-05-22T22:00:00.000Z"
+    },
+    {
+      "id": "txn_017",
+      "kind": "expense",
+      "amount": 28,
+      "accountId": "acc_wallet",
+      "toAccountId": null,
+      "categoryId": "cat_entertainment",
+      "date": "2026-05-23",
+      "notes": "Cinema",
+      "createdAt": "2026-05-23T21:00:00.000Z"
+    },
+    {
+      "id": "txn_018",
+      "kind": "expense",
+      "amount": 75.6,
+      "accountId": "acc_credit",
+      "toAccountId": null,
+      "categoryId": "cat_utilities",
+      "date": "2026-05-24",
+      "notes": "Internet bill",
+      "createdAt": "2026-05-24T10:00:00.000Z"
+    },
+    {
+      "id": "txn_019",
+      "kind": "expense",
+      "amount": 168,
+      "accountId": "acc_credit",
+      "toAccountId": null,
+      "categoryId": "cat_groceries",
+      "date": "2026-04-26",
+      "notes": "Groceries",
+      "createdAt": "2026-04-26T17:00:00.000Z"
+    },
+    {
+      "id": "txn_020",
+      "kind": "income",
+      "amount": 4200,
+      "accountId": "acc_checking",
+      "toAccountId": null,
+      "categoryId": "cat_salary",
+      "date": "2026-04-01",
+      "notes": "April salary",
+      "createdAt": "2026-04-01T09:00:00.000Z"
+    },
+    {
+      "id": "txn_021",
+      "kind": "expense",
+      "amount": 1500,
+      "accountId": "acc_checking",
+      "toAccountId": null,
+      "categoryId": "cat_rent",
+      "date": "2026-04-02",
+      "notes": "April rent",
+      "createdAt": "2026-04-02T10:00:00.000Z"
+    },
+    {
+      "id": "txn_022",
+      "kind": "expense",
+      "amount": 540,
+      "accountId": "acc_credit",
+      "toAccountId": null,
+      "categoryId": "cat_groceries",
+      "date": "2026-04-15",
+      "notes": "Groceries (month)",
+      "createdAt": "2026-04-15T18:00:00.000Z"
+    },
+    {
+      "id": "txn_023",
+      "kind": "expense",
+      "amount": 165,
+      "accountId": "acc_credit",
+      "toAccountId": null,
+      "categoryId": "cat_utilities",
+      "date": "2026-04-10",
+      "notes": "Power + Internet",
+      "createdAt": "2026-04-10T08:00:00.000Z"
+    },
+    {
+      "id": "txn_024",
+      "kind": "expense",
+      "amount": 320,
+      "accountId": "acc_credit",
+      "toAccountId": null,
+      "categoryId": "cat_dining",
+      "date": "2026-04-18",
+      "notes": "Dining out (month)",
+      "createdAt": "2026-04-18T20:00:00.000Z"
+    },
+    {
+      "id": "783hcDa3Kpw",
+      "kind": "expense",
+      "amount": 100,
+      "accountId": "acc_checking",
+      "toAccountId": null,
+      "categoryId": "cat_groceries",
+      "date": "2026-05-25",
+      "notes": "dinit out",
+      "createdAt": "2026-05-25T11:15:46.303Z"
+    },
+    {
+      "id": "boJiyal1MeU",
+      "kind": "expense",
+      "amount": 10,
+      "accountId": "acc_checking",
+      "toAccountId": null,
+      "categoryId": "cat_groceries",
+      "date": "2026-05-25",
+      "notes": "d",
+      "createdAt": "2026-05-25T11:16:11.445Z"
+    },
+    {
+      "id": "vqLzCaDHLks",
+      "kind": "expense",
+      "amount": 100,
+      "accountId": "acc_checking",
+      "toAccountId": null,
+      "categoryId": "cat_groceries",
+      "date": "2026-05-25",
+      "notes": "1",
+      "createdAt": "2026-05-25T11:22:00.949Z"
+    }
+  ],
+  "budgets": [
+    {
+      "id": "bud_groceries",
+      "amount": 700,
+      "categoryId": "cat_groceries",
+      "accountId": "acc_credit",
+      "duration": "monthly",
+      "startAt": "2026-05-01",
+      "endAt": "2026-05-31",
+      "createdAt": "2026-05-01T00:00:00.000Z"
+    },
+    {
+      "id": "bud_dining",
+      "amount": 200,
+      "categoryId": "cat_dining",
+      "accountId": "acc_wallet",
+      "duration": "monthly",
+      "startAt": "2026-05-01",
+      "endAt": "2026-05-31",
+      "createdAt": "2026-05-01T00:00:00.000Z"
+    },
+    {
+      "id": "bud_entertainment",
+      "amount": 100,
+      "categoryId": "cat_entertainment",
+      "accountId": "acc_credit",
+      "duration": "monthly",
+      "startAt": "2026-05-01",
+      "endAt": "2026-05-31",
+      "createdAt": "2026-05-01T00:00:00.000Z"
+    }
+  ],
   "$schema": "./node_modules/json-server/schema.json"
 }

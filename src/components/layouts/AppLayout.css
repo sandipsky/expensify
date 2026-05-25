@@ -3,6 +3,7 @@
   height: 100vh;
   width: 100%;
   overflow: hidden;
+  background: var(--app-bg);
 }
 
 .app-layout-main {
@@ -15,5 +16,11 @@
 .app-layout-content {
   flex: 1;
   overflow: auto;
-  padding: 16px;
+  padding: 1.5rem clamp(1rem, 3vw, 2rem);
+}
+
+@media (max-width: 600px) {
+  .app-layout-content {
+    padding: 1rem;
+  }
 }

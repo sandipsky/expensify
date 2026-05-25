@@ -1,22 +1,22 @@
 .app-header {
-  height: 60px;
+  height: 64px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 16px;
-  background: var(--mantine-color-body);
-  border-bottom: 1px solid var(--mantine-color-default-border);
+  gap: 0.75rem;
+  padding: 0 clamp(1rem, 3vw, 2rem);
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .app-header-breadcrumbs {
-  font-size: 16px;
+  font-size: 0.9375rem;
 }
 
 .app-header-breadcrumb-current {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--mantine-color-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--app-text);
 }
 
 .app-header-spacer {
@@ -26,18 +26,19 @@
 .app-header-user-button {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  color: var(--mantine-color-text);
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+  border-radius: 999px;
+  color: var(--app-text);
+  transition: background 120ms ease;
 }
 
 .app-header-user-button:hover {
-  background: var(--mantine-color-default-hover);
+  background: var(--app-surface-muted);
 }
 
 .app-header-user-name {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
 }
 

@@ -1,0 +1,95 @@
+.accounts-total {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, var(--app-primary), #7c3aed);
+  border-radius: var(--app-radius-lg);
+  color: #fff;
+  box-shadow: var(--app-shadow-md);
+}
+
+.accounts-total-label {
+  font-size: 0.8125rem;
+  opacity: 0.85;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.accounts-total-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.accounts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.account-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-sm);
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+
+.account-card:hover {
+  box-shadow: var(--app-shadow-md);
+}
+
+.account-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.account-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
+}
+
+.account-card-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.account-card-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--app-text);
+}
+
+.account-card-balance {
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.account-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.account-card-notes {
+  font-size: 0.8125rem;
+  color: var(--app-text-muted);
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--app-border);
+  white-space: pre-wrap;
+}

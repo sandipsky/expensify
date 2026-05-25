@@ -3,61 +3,90 @@
   display: flex;
   flex-direction: column;
   width: 240px;
-  background: var(--mantine-color-body);
-  border-right: 1px solid var(--mantine-color-default-border);
+  background: var(--app-surface);
+  border-right: 1px solid var(--app-border);
   transition: width 200ms ease;
   overflow: hidden;
 }
 
 .app-sidebar[data-collapsed='true'] {
-  width: 64px;
+  width: 72px;
 }
 
 .app-sidebar-logo {
-  height: 60px;
+  height: 64px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  border-bottom: 1px solid var(--mantine-color-default-border);
+  gap: 0.625rem;
+  padding: 0 1.25rem;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.app-sidebar-logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--app-primary), #7c3aed);
+  color: #fff;
+  font-weight: 700;
 }
 
 .app-sidebar-logo-text {
   font-weight: 700;
-  font-size: 18px;
+  font-size: 1.0625rem;
+  letter-spacing: -0.01em;
   white-space: nowrap;
 }
 
 .app-sidebar-nav {
   flex: 1;
-  padding: 12px 8px;
+  padding: 0.75rem 0.625rem;
   overflow-y: auto;
+}
+
+.app-sidebar-section-label {
+  padding: 0.75rem 0.75rem 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--app-text-muted);
+}
+
+.app-sidebar[data-collapsed='true'] .app-sidebar-section-label {
+  display: none;
 }
 
 .app-sidebar-nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 6px;
-  color: var(--mantine-color-text);
+  padding: 0.5625rem 0.75rem;
+  border-radius: 10px;
+  color: var(--app-text);
   white-space: nowrap;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: background 120ms ease, color 120ms ease;
 }
 
 .app-sidebar-nav-item:hover {
-  background: var(--mantine-color-default-hover);
+  background: var(--app-surface-muted);
 }
 
 .app-sidebar-nav-item[data-active='true'] {
-  background: var(--mantine-color-blue-light);
-  color: var(--mantine-color-blue-light-color);
-  font-weight: 500;
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
 }
 
 .app-sidebar[data-collapsed='true'] .app-sidebar-nav-item {
   justify-content: center;
-  padding: 10px;
+  padding: 0.625rem;
 }
 
 .app-sidebar-nav-icon {
@@ -65,5 +94,5 @@
 }
 
 .app-sidebar-nav-label {
-  font-size: 14px;
+  font-size: 0.875rem;
 }

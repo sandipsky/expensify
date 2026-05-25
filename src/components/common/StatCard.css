@@ -1,0 +1,72 @@
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-sm);
+  min-height: 110px;
+}
+
+.stat-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.stat-card-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--app-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stat-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
+}
+
+.stat-card[data-tone='positive'] .stat-card-icon {
+  background: var(--app-success-soft);
+  color: var(--app-success);
+}
+
+.stat-card[data-tone='negative'] .stat-card-icon {
+  background: var(--app-danger-soft);
+  color: var(--app-danger);
+}
+
+.stat-card[data-tone='warning'] .stat-card-icon {
+  background: var(--app-warning-soft);
+  color: var(--app-warning);
+}
+
+.stat-card-value {
+  font-size: 1.65rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-card[data-tone='positive'] .stat-card-value {
+  color: var(--app-success);
+}
+
+.stat-card[data-tone='negative'] .stat-card-value {
+  color: var(--app-danger);
+}
+
+.stat-card-hint {
+  font-size: 0.8125rem;
+  color: var(--app-text-muted);
+}
