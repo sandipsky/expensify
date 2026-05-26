@@ -1,18 +1,18 @@
 import { useState, type ReactNode } from 'react';
 import { Drawer } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
+import { IconArrowsExchange } from '@tabler/icons-react';
 import { Header, type IHeaderUser } from './Header';
 import { Sidebar } from './Sidebar';
 import './AppLayout.css';
 
 interface AppLayoutProps {
   children: ReactNode;
-  breadcrumbs?: string[];
   user?: IHeaderUser;
   onLogout?: () => void;
 }
 
-export function AppLayout({ children, breadcrumbs, user, onLogout }: AppLayoutProps) {
+export function AppLayout({ children, user, onLogout }: AppLayoutProps) {
   const isMobile = useMediaQuery('(max-width: 768px)', false);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpened, setMobileOpened] = useState(false);
@@ -27,28 +27,37 @@ export function AppLayout({ children, breadcrumbs, user, onLogout }: AppLayoutPr
 
   return (
     <div className="app-layout">
-      {!isMobile && <Sidebar collapsed={collapsed} />}
+      <Header onToggleSidebar={handleToggle} user={user} onLogout={onLogout} />
 
-      {isMobile && (
-        <Drawer
-          opened={mobileOpened}
-          onClose={() => setMobileOpened(false)}
-          size={240}
-          padding={0}
-          withCloseButton={false}
-          position="left"
-        >
-          <Sidebar collapsed={false} onNavigate={() => setMobileOpened(false)} />
-        </Drawer>
-      )}
+      <div className="app-layout-body">
+        {!isMobile && <Sidebar collapsed={collapsed} />}
 
-      <div className="app-layout-main">
-        <Header
-          onToggleSidebar={handleToggle}
-          breadcrumbs={breadcrumbs}
-          user={user}
-          onLogout={onLogout}
-        />
+        {isMobile && (
+          <Drawer
+            opened={mobileOpened}
+            onClose={() => setMobileOpened(false)}
+            size="80%"
+            padding={0}
+            position="left"
+            withCloseButton
+            classNames={{
+              header: 'app-sidebar-drawer-header',
+              body: 'app-sidebar-drawer-body',
+              content: 'app-sidebar-drawer-content',
+            }}
+            title={
+              <span className="app-sidebar-drawer-title">
+                <span className="app-sidebar-drawer-mark">
+                  <IconArrowsExchange size={16} stroke={2.5} />
+                </span>
+                Expensify
+              </span>
+            }
+          >
+            <Sidebar collapsed={false} onNavigate={() => setMobileOpened(false)} />
+          </Drawer>
+        )}
+
         <main className="app-layout-content">{children}</main>
       </div>
     </div>

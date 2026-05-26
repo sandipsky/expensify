@@ -5,7 +5,6 @@ import {
   Button,
   Group,
   Modal,
-  Radio,
   Stack,
   Text,
 } from '@mantine/core';
@@ -25,14 +24,13 @@ import { useCategories } from '../../categories/hooks/useCategories';
 import { categoryKeys } from '../../categories/hooks/useCategories';
 import { useTransactions, transactionKeys } from '../../transactions/hooks/useTransactions';
 import { apiClient } from '../../../lib/apiClient';
+import { getCurrentUserId } from '../../auth';
+import { generateId } from '../../../utils/ids';
 import type { IAccount } from '../../accounts/types';
 import type { IBudget } from '../../budgets/types';
 import type { ICategory } from '../../categories/types';
 import type { ITransaction } from '../../transactions/types';
 import './DataPage.css';
-
-
-type ConflictPolicy = 'skip' | 'overwrite';
 
 interface IBackup {
   exportedAt: string;
@@ -52,7 +50,6 @@ export function DataPage() {
 
   const fileInput = useRef<HTMLInputElement | null>(null);
   const [importData, setImportData] = useState<IBackup | null>(null);
-  const [policy, setPolicy] = useState<ConflictPolicy>('skip');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -117,49 +114,52 @@ export function DataPage() {
     if (!importData) return;
     setBusy(true);
     try {
-      const exists = {
-        accounts: new Set(accounts.map((a) => a.id)),
-        categories: new Set(categories.map((c) => c.id)),
-        budgets: new Set(budgets.map((b) => b.id)),
-        transactions: new Set(transactions.map((t) => t.id)),
-      };
+      const userId = getCurrentUserId();
+      const accountIdMap = new Map<string, string>();
+      const categoryIdMap = new Map<string, string>();
 
-      const sequence: Array<{
-        path: string;
-        items: { id: string }[];
-        existing: Set<string>;
-      }> = [
-        { path: '/accounts', items: importData.accounts, existing: exists.accounts },
-        {
-          path: '/categories',
-          items: importData.categories,
-          existing: exists.categories,
-        },
-        { path: '/budgets', items: importData.budgets, existing: exists.budgets },
-        {
-          path: '/transactions',
-          items: importData.transactions,
-          existing: exists.transactions,
-        },
-      ];
+      const remappedAccounts = importData.accounts.map((a) => {
+        const newId = generateId('acc');
+        accountIdMap.set(a.id, newId);
+        return { ...a, id: newId, userId };
+      });
+      const remappedCategories = importData.categories.map((c) => {
+        const newId = generateId('cat');
+        categoryIdMap.set(c.id, newId);
+        return { ...c, id: newId, userId };
+      });
+      const remappedBudgets = importData.budgets.map((b) => ({
+        ...b,
+        id: generateId('bud'),
+        userId,
+        accountId: accountIdMap.get(b.accountId) ?? b.accountId,
+        categoryId: categoryIdMap.get(b.categoryId) ?? b.categoryId,
+      }));
+      const remappedTransactions = importData.transactions.map((t) => ({
+        ...t,
+        id: generateId('txn'),
+        userId,
+        accountId: accountIdMap.get(t.accountId) ?? t.accountId,
+        toAccountId: t.toAccountId
+          ? accountIdMap.get(t.toAccountId) ?? t.toAccountId
+          : null,
+        categoryId: t.categoryId
+          ? categoryIdMap.get(t.categoryId) ?? t.categoryId
+          : null,
+      }));
 
       let created = 0;
-      let updated = 0;
-      let skipped = 0;
+      const sequence: Array<{ path: string; items: { id: string }[] }> = [
+        { path: '/accounts', items: remappedAccounts },
+        { path: '/categories', items: remappedCategories },
+        { path: '/budgets', items: remappedBudgets },
+        { path: '/transactions', items: remappedTransactions },
+      ];
 
       for (const group of sequence) {
         for (const item of group.items) {
-          if (group.existing.has(item.id)) {
-            if (policy === 'skip') {
-              skipped += 1;
-              continue;
-            }
-            await apiClient.put(`${group.path}/${item.id}`, item);
-            updated += 1;
-          } else {
-            await apiClient.post(group.path, item);
-            created += 1;
-          }
+          await apiClient.post(group.path, item);
+          created += 1;
         }
       }
 
@@ -170,7 +170,7 @@ export function DataPage() {
 
       notifications.show({
         title: 'Import complete',
-        message: `Created ${created}, updated ${updated}, skipped ${skipped}`,
+        message: `Created ${created} items for your account`,
         color: 'teal',
       });
       setImportData(null);
@@ -260,7 +260,8 @@ export function DataPage() {
             <div>
               <h3 className="data-section-title">Import data</h3>
               <p className="data-section-subtitle">
-                Restore from an Expensify JSON backup.
+                Restore from an Expensify JSON backup. All items are imported as
+                new records under your account.
               </p>
             </div>
           </div>
@@ -311,17 +312,10 @@ export function DataPage() {
             </Badge>{' '}
             in the file.
           </Text>
-
-          <Radio.Group
-            label="If a record already exists"
-            value={policy}
-            onChange={(value) => setPolicy(value as ConflictPolicy)}
-          >
-            <Stack gap="xs" mt="xs">
-              <Radio value="skip" label="Skip — keep existing" />
-              <Radio value="overwrite" label="Overwrite — replace existing" />
-            </Stack>
-          </Radio.Group>
+          <Text size="sm" c="dimmed">
+            Items will be added to your account with new IDs. Relations between
+            transactions, budgets, accounts, and categories are preserved.
+          </Text>
 
           <Group justify="flex-end" gap="sm">
             <Button variant="default" onClick={() => setImportData(null)} disabled={busy}>

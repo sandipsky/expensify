@@ -1,0 +1,14 @@
+.users-table-wrap {
+  overflow-x: auto;
+}
+
+.users-table-actions-col {
+  width: 100px;
+  text-align: right;
+}
+
+@media (max-width: 600px) {
+  .users-table-wrap table {
+    font-size: 0.875rem;
+  }
+}

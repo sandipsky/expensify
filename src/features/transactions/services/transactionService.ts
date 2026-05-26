@@ -1,4 +1,5 @@
 import { apiClient } from '../../../lib/apiClient';
+import { getCurrentUserId } from '../../auth';
 import { generateId } from '../../../utils/ids';
 import type { ITransaction } from '../types';
 import type { ITransactionFormValues } from '../validations';
@@ -6,10 +7,13 @@ import type { ITransactionFormValues } from '../validations';
 const RESOURCE = '/transactions';
 
 export function listTransactions(): Promise<ITransaction[]> {
-  return apiClient.get<ITransaction[]>(`${RESOURCE}?_sort=date&_order=desc`);
+  const userId = encodeURIComponent(getCurrentUserId());
+  return apiClient.get<ITransaction[]>(
+    `${RESOURCE}?userId=${userId}&_sort=date&_order=desc`,
+  );
 }
 
-function toPayload(values: ITransactionFormValues): Omit<ITransaction, 'id' | 'createdAt'> {
+function toPayload(values: ITransactionFormValues): Omit<ITransaction, 'id' | 'userId' | 'createdAt'> {
   return {
     kind: values.kind,
     amount: values.amount,
@@ -26,6 +30,7 @@ export function createTransaction(
 ): Promise<ITransaction> {
   const payload: ITransaction = {
     id: generateId('txn'),
+    userId: getCurrentUserId(),
     ...toPayload(values),
     createdAt: new Date().toISOString(),
   };

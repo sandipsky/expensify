@@ -13,35 +13,6 @@
   width: 72px;
 }
 
-.app-sidebar-logo {
-  height: 64px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0 1.25rem;
-  border-bottom: 1px solid var(--app-border);
-}
-
-.app-sidebar-logo-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--app-primary), #7c3aed);
-  color: #fff;
-  font-weight: 700;
-}
-
-.app-sidebar-logo-text {
-  font-weight: 700;
-  font-size: 1.0625rem;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-}
-
 .app-sidebar-nav {
   flex: 1;
   padding: 0.75rem 0.625rem;
@@ -79,6 +50,15 @@
   background: var(--app-surface-muted);
 }
 
+.app-sidebar-nav-item:focus {
+  outline: none;
+}
+
+.app-sidebar-nav-item:focus-visible {
+  outline: 2px solid var(--app-primary);
+  outline-offset: -2px;
+}
+
 .app-sidebar-nav-item[data-active='true'] {
   background: var(--app-primary-soft);
   color: var(--app-primary);
@@ -95,4 +75,53 @@
 
 .app-sidebar-nav-label {
   font-size: 0.875rem;
+}
+
+/* Mobile drawer that hosts the sidebar */
+.app-sidebar-drawer-content {
+  background: var(--app-surface);
+}
+
+.app-sidebar-drawer-header {
+  flex-shrink: 0;
+  height: 56px;
+  min-height: 56px;
+  margin: 0;
+  padding: 0 0.75rem 0 1rem;
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.app-sidebar-drawer-body {
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.app-sidebar-drawer-body .app-sidebar {
+  width: 100%;
+  height: 100%;
+  border-right: none;
+}
+
+.app-sidebar-drawer-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  color: var(--app-text);
+}
+
+.app-sidebar-drawer-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--app-primary), #7c3aed);
+  color: #fff;
 }

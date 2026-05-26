@@ -2,6 +2,7 @@ export type TransactionKind = 'expense' | 'income' | 'transfer';
 
 export interface ITransaction {
   id: string;
+  userId: string;
   kind: TransactionKind;
   amount: number;
   accountId: string;

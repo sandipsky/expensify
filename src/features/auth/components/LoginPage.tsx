@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import {
+  Alert,
   Button,
   Paper,
   PasswordInput,
@@ -7,15 +8,19 @@ import {
   TextInput,
   Title,
 } from '@mantine/core';
+import { IconAlertCircle } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../context/AuthContext';
+import { InvalidCredentialsError } from '../services/authService';
 import './LoginPage.css';
 
 export function LoginPage() {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('demo@expensify.app');
-  const [password, setPassword] = useState('demo');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -23,9 +28,23 @@ export function LoginPage() {
     }
   }, [isAuthenticated, navigate]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    login({ email, password });
+    setError(null);
+    setBusy(true);
+    try {
+      await login({ username, password });
+    } catch (err) {
+      if (err instanceof InvalidCredentialsError) {
+        setError('Invalid username or password.');
+      } else {
+        setError(
+          err instanceof Error ? err.message : 'Sign in failed. Please try again.',
+        );
+      }
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -44,25 +63,36 @@ export function LoginPage() {
         <form onSubmit={handleSubmit}>
           <Stack gap="md">
             <TextInput
-              label="Email"
-              placeholder="you@example.com"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.currentTarget.value)}
+              label="Username"
+              placeholder="your username"
+              autoComplete="username"
+              value={username}
+              onChange={(event) => setUsername(event.currentTarget.value)}
               required
+              autoFocus
             />
             <PasswordInput
               label="Password"
               placeholder="Your password"
+              autoComplete="current-password"
               value={password}
               onChange={(event) => setPassword(event.currentTarget.value)}
               required
             />
-            <Button type="submit" fullWidth mt="sm" size="md">
+            {error && (
+              <Alert
+                color="red"
+                variant="light"
+                icon={<IconAlertCircle size={16} />}
+              >
+                {error}
+              </Alert>
+            )}
+            <Button type="submit" fullWidth mt="sm" size="md" loading={busy}>
               Sign in
             </Button>
             <p className="login-page-hint">
-              Demo mode — any email/password works.
+              Default admin: <strong>admin</strong> / <strong>admin</strong>
             </p>
           </Stack>
         </form>

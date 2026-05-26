@@ -1,14 +1,13 @@
 import {
   ActionIcon,
-  Anchor,
   Avatar,
-  Breadcrumbs,
   Menu,
   Tooltip,
   UnstyledButton,
   useMantineColorScheme,
 } from '@mantine/core';
 import {
+  IconArrowsExchange,
   IconChevronDown,
   IconLogout,
   IconMenu2,
@@ -24,7 +23,6 @@ export interface IHeaderUser {
 
 interface HeaderProps {
   onToggleSidebar: () => void;
-  breadcrumbs?: string[];
   user?: IHeaderUser;
   onLogout?: () => void;
 }
@@ -33,7 +31,6 @@ const DEFAULT_USER: IHeaderUser = { name: 'Guest' };
 
 export function Header({
   onToggleSidebar,
-  breadcrumbs = ['Dashboard'],
   user = DEFAULT_USER,
   onLogout,
 }: HeaderProps) {
@@ -52,23 +49,12 @@ export function Header({
         <IconMenu2 size={20} />
       </ActionIcon>
 
-      <Breadcrumbs separator="/" className="app-header-breadcrumbs">
-        {breadcrumbs.map((label, index) => {
-          const isLast = index === breadcrumbs.length - 1;
-          if (isLast) {
-            return (
-              <span key={label} className="app-header-breadcrumb-current">
-                {label}
-              </span>
-            );
-          }
-          return (
-            <Anchor key={label} c="dimmed" underline="never" size="sm">
-              {label}
-            </Anchor>
-          );
-        })}
-      </Breadcrumbs>
+      <div className="app-header-logo">
+        <span className="app-header-logo-mark">
+          <IconArrowsExchange size={18} stroke={2.5} />
+        </span>
+        <span className="app-header-logo-text">Expensify</span>
+      </div>
 
       <div className="app-header-spacer" />
 
@@ -91,7 +77,7 @@ export function Header({
               {user.name.slice(0, 1).toUpperCase()}
             </Avatar>
             <span className="app-header-user-name">{user.name}</span>
-            <IconChevronDown size={16} />
+            <IconChevronDown size={16} className="app-header-user-caret" />
           </UnstyledButton>
         </Menu.Target>
 

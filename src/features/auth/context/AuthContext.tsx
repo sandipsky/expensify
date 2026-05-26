@@ -6,71 +6,63 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { authenticate } from '../services/authService';
+import {
+  clearSession,
+  persistSession,
+  readStoredToken,
+  readStoredUser,
+} from '../session';
 import type { ILoginCredentials, IUser } from '../types';
-
-const TOKEN_KEY = 'expensify_token';
-const USER_KEY = 'expensify_user';
-
-export function isAuthenticated(): boolean {
-  return Boolean(localStorage.getItem(TOKEN_KEY));
-}
 
 interface AuthContextValue {
   token: string | null;
   user: IUser | null;
   isAuthenticated: boolean;
-  login: (credentials: ILoginCredentials) => void;
+  isAdmin: boolean;
+  login: (credentials: ILoginCredentials) => Promise<IUser>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function readStoredUser(): IUser | null {
-  const raw = localStorage.getItem(USER_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as IUser;
-  } catch {
-    return null;
-  }
-}
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [token, setToken] = useState<string | null>(() =>
-    localStorage.getItem(TOKEN_KEY),
-  );
+  const queryClient = useQueryClient();
+  const [token, setToken] = useState<string | null>(() => readStoredToken());
   const [user, setUser] = useState<IUser | null>(() => readStoredUser());
 
-  const login = useCallback((credentials: ILoginCredentials) => {
-    const dummyToken = `dummy-token-${Date.now()}`;
-    const dummyUser: IUser = {
-      name: credentials.email.split('@')[0] || 'User',
-      email: credentials.email,
-    };
-
-    localStorage.setItem(TOKEN_KEY, dummyToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(dummyUser));
-    setToken(dummyToken);
-    setUser(dummyUser);
-  }, []);
+  const login = useCallback(
+    async (credentials: ILoginCredentials): Promise<IUser> => {
+      const authenticated = await authenticate(credentials);
+      const sessionToken = `session-${authenticated.id}-${Date.now()}`;
+      persistSession(authenticated, sessionToken);
+      queryClient.clear();
+      setToken(sessionToken);
+      setUser(authenticated);
+      return authenticated;
+    },
+    [queryClient],
+  );
 
   const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    clearSession();
+    queryClient.clear();
     setToken(null);
     setUser(null);
     window.location.href = '/login';
-  }, []);
+  }, [queryClient]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       token,
       user,
       isAuthenticated: Boolean(token),
+      isAdmin: user?.role === 'admin',
       login,
       logout,
     }),

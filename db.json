@@ -1,7 +1,18 @@
 {
+  "users": [
+    {
+      "id": "usr_admin",
+      "username": "admin",
+      "password": "admin",
+      "name": "Administrator",
+      "role": "admin",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
   "categories": [
     {
       "id": "cat_groceries",
+      "userId": "usr_admin",
       "name": "Groceries",
       "type": "expense",
       "icon": "shopping-cart",
@@ -9,6 +20,7 @@
     },
     {
       "id": "cat_rent",
+      "userId": "usr_admin",
       "name": "Rent",
       "type": "expense",
       "icon": "home",
@@ -16,6 +28,7 @@
     },
     {
       "id": "cat_utilities",
+      "userId": "usr_admin",
       "name": "Utilities",
       "type": "expense",
       "icon": "bolt",
@@ -23,6 +36,7 @@
     },
     {
       "id": "cat_dining",
+      "userId": "usr_admin",
       "name": "Dining",
       "type": "expense",
       "icon": "coffee",
@@ -30,6 +44,7 @@
     },
     {
       "id": "cat_transport",
+      "userId": "usr_admin",
       "name": "Transport",
       "type": "expense",
       "icon": "car",
@@ -37,6 +52,7 @@
     },
     {
       "id": "cat_entertainment",
+      "userId": "usr_admin",
       "name": "Entertainment",
       "type": "expense",
       "icon": "device-tv",
@@ -44,6 +60,7 @@
     },
     {
       "id": "cat_health",
+      "userId": "usr_admin",
       "name": "Health",
       "type": "expense",
       "icon": "heart",
@@ -51,6 +68,7 @@
     },
     {
       "id": "cat_shopping",
+      "userId": "usr_admin",
       "name": "Shopping",
       "type": "expense",
       "icon": "shirt",
@@ -58,6 +76,7 @@
     },
     {
       "id": "cat_salary",
+      "userId": "usr_admin",
       "name": "Salary",
       "type": "income",
       "icon": "briefcase",
@@ -65,6 +84,7 @@
     },
     {
       "id": "cat_investments",
+      "userId": "usr_admin",
       "name": "Investments",
       "type": "income",
       "icon": "trending-up",
@@ -72,6 +92,7 @@
     },
     {
       "id": "cat_freelance",
+      "userId": "usr_admin",
       "name": "Freelance",
       "type": "income",
       "icon": "star",
@@ -81,6 +102,7 @@
   "accounts": [
     {
       "id": "acc_checking",
+      "userId": "usr_admin",
       "name": "Main Checking",
       "initialAmount": 4500,
       "notes": "Primary salary account",
@@ -88,6 +110,7 @@
     },
     {
       "id": "acc_savings",
+      "userId": "usr_admin",
       "name": "Savings",
       "initialAmount": 12000,
       "notes": "Emergency fund",
@@ -95,6 +118,7 @@
     },
     {
       "id": "acc_wallet",
+      "userId": "usr_admin",
       "name": "Cash Wallet",
       "initialAmount": 200,
       "notes": "Pocket cash",
@@ -102,6 +126,7 @@
     },
     {
       "id": "acc_credit",
+      "userId": "usr_admin",
       "name": "Credit Card",
       "initialAmount": 0,
       "notes": "Pays from checking",
@@ -111,6 +136,7 @@
   "transactions": [
     {
       "id": "txn_001",
+      "userId": "usr_admin",
       "kind": "income",
       "amount": 4200,
       "accountId": "acc_checking",
@@ -122,6 +148,7 @@
     },
     {
       "id": "txn_002",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 1500,
       "accountId": "acc_checking",
@@ -133,6 +160,7 @@
     },
     {
       "id": "txn_003",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 145.32,
       "accountId": "acc_credit",
@@ -144,6 +172,7 @@
     },
     {
       "id": "txn_004",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 89.5,
       "accountId": "acc_credit",
@@ -155,6 +184,7 @@
     },
     {
       "id": "txn_005",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 32.5,
       "accountId": "acc_wallet",
@@ -166,6 +196,7 @@
     },
     {
       "id": "txn_006",
+      "userId": "usr_admin",
       "kind": "transfer",
       "amount": 500,
       "accountId": "acc_checking",
@@ -177,6 +208,7 @@
     },
     {
       "id": "txn_007",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 55,
       "accountId": "acc_credit",
@@ -188,6 +220,7 @@
     },
     {
       "id": "txn_008",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 15.99,
       "accountId": "acc_credit",
@@ -199,6 +232,7 @@
     },
     {
       "id": "txn_009",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 178,
       "accountId": "acc_credit",
@@ -210,6 +244,7 @@
     },
     {
       "id": "txn_010",
+      "userId": "usr_admin",
       "kind": "income",
       "amount": 650,
       "accountId": "acc_checking",
@@ -221,6 +256,7 @@
     },
     {
       "id": "txn_011",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 220,
       "accountId": "acc_checking",
@@ -232,6 +268,7 @@
     },
     {
       "id": "txn_012",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 60,
       "accountId": "acc_wallet",
@@ -243,6 +280,7 @@
     },
     {
       "id": "txn_013",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 42,
       "accountId": "acc_wallet",
@@ -254,6 +292,7 @@
     },
     {
       "id": "txn_014",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 192.4,
       "accountId": "acc_credit",
@@ -265,6 +304,7 @@
     },
     {
       "id": "txn_015",
+      "userId": "usr_admin",
       "kind": "income",
       "amount": 110,
       "accountId": "acc_savings",
@@ -276,6 +316,7 @@
     },
     {
       "id": "txn_016",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 45,
       "accountId": "acc_credit",
@@ -287,6 +328,7 @@
     },
     {
       "id": "txn_017",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 28,
       "accountId": "acc_wallet",
@@ -298,6 +340,7 @@
     },
     {
       "id": "txn_018",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 75.6,
       "accountId": "acc_credit",
@@ -309,6 +352,7 @@
     },
     {
       "id": "txn_019",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 168,
       "accountId": "acc_credit",
@@ -320,6 +364,7 @@
     },
     {
       "id": "txn_020",
+      "userId": "usr_admin",
       "kind": "income",
       "amount": 4200,
       "accountId": "acc_checking",
@@ -331,6 +376,7 @@
     },
     {
       "id": "txn_021",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 1500,
       "accountId": "acc_checking",
@@ -342,6 +388,7 @@
     },
     {
       "id": "txn_022",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 540,
       "accountId": "acc_credit",
@@ -353,6 +400,7 @@
     },
     {
       "id": "txn_023",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 165,
       "accountId": "acc_credit",
@@ -364,6 +412,7 @@
     },
     {
       "id": "txn_024",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 320,
       "accountId": "acc_credit",
@@ -375,6 +424,7 @@
     },
     {
       "id": "783hcDa3Kpw",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 100,
       "accountId": "acc_checking",
@@ -386,6 +436,7 @@
     },
     {
       "id": "boJiyal1MeU",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 10,
       "accountId": "acc_checking",
@@ -397,6 +448,7 @@
     },
     {
       "id": "vqLzCaDHLks",
+      "userId": "usr_admin",
       "kind": "expense",
       "amount": 100,
       "accountId": "acc_checking",
@@ -410,6 +462,7 @@
   "budgets": [
     {
       "id": "bud_groceries",
+      "userId": "usr_admin",
       "amount": 700,
       "categoryId": "cat_groceries",
       "accountId": "acc_credit",
@@ -420,6 +473,7 @@
     },
     {
       "id": "bud_dining",
+      "userId": "usr_admin",
       "amount": 200,
       "categoryId": "cat_dining",
       "accountId": "acc_wallet",
@@ -430,6 +484,7 @@
     },
     {
       "id": "bud_entertainment",
+      "userId": "usr_admin",
       "amount": 100,
       "categoryId": "cat_entertainment",
       "accountId": "acc_credit",

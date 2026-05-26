@@ -7,6 +7,7 @@ export type BudgetDuration =
 
 export interface IBudget {
   id: string;
+  userId: string;
   amount: number;
   categoryId: string;
   accountId: string;

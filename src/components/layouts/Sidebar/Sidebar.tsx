@@ -1,16 +1,18 @@
+import { useMemo } from 'react';
 import { Stack, Tooltip, UnstyledButton } from '@mantine/core';
 import {
-  IconArrowsExchange,
   IconCalendar,
   IconCategory,
   IconChartPie,
   IconDatabaseExport,
   IconLayoutDashboard,
   IconReceipt2,
+  IconUsers,
   IconWallet,
   type Icon,
 } from '@tabler/icons-react';
 import { Link } from '@tanstack/react-router';
+import { useAuth } from '../../../features/auth';
 import './Sidebar.css';
 
 interface INavItem {
@@ -25,28 +27,37 @@ interface INavSection {
   items: INavItem[];
 }
 
-const NAV_SECTIONS: INavSection[] = [
-  {
-    label: 'Overview',
-    items: [
-      { label: 'Dashboard', icon: IconLayoutDashboard, to: '/', exact: true },
-      { label: 'Calendar', icon: IconCalendar, to: '/calendar' },
-    ],
-  },
-  {
-    label: 'Money',
-    items: [
-      { label: 'Transactions', icon: IconReceipt2, to: '/transactions' },
-      { label: 'Accounts', icon: IconWallet, to: '/accounts' },
-      { label: 'Budgets', icon: IconChartPie, to: '/budgets' },
-      { label: 'Categories', icon: IconCategory, to: '/categories' },
-    ],
-  },
-  {
-    label: 'Data',
-    items: [{ label: 'Import / Export', icon: IconDatabaseExport, to: '/data' }],
-  },
-];
+function buildSections(isAdmin: boolean): INavSection[] {
+  const sections: INavSection[] = [
+    {
+      label: 'Overview',
+      items: [
+        { label: 'Dashboard', icon: IconLayoutDashboard, to: '/', exact: true },
+        { label: 'Calendar', icon: IconCalendar, to: '/calendar' },
+      ],
+    },
+    {
+      label: 'Money',
+      items: [
+        { label: 'Transactions', icon: IconReceipt2, to: '/transactions' },
+        { label: 'Accounts', icon: IconWallet, to: '/accounts' },
+        { label: 'Budgets', icon: IconChartPie, to: '/budgets' },
+        { label: 'Categories', icon: IconCategory, to: '/categories' },
+      ],
+    },
+    {
+      label: 'Data',
+      items: [{ label: 'Import / Export', icon: IconDatabaseExport, to: '/data' }],
+    },
+  ];
+  if (isAdmin) {
+    sections.push({
+      label: 'Admin',
+      items: [{ label: 'Users', icon: IconUsers, to: '/users' }],
+    });
+  }
+  return sections;
+}
 
 interface SidebarProps {
   collapsed: boolean;
@@ -54,17 +65,13 @@ interface SidebarProps {
 }
 
 export function Sidebar({ collapsed, onNavigate }: SidebarProps) {
+  const { isAdmin } = useAuth();
+  const sections = useMemo(() => buildSections(isAdmin), [isAdmin]);
+
   return (
     <aside className="app-sidebar" data-collapsed={collapsed}>
-      <div className="app-sidebar-logo">
-        <span className="app-sidebar-logo-mark">
-          <IconArrowsExchange size={18} stroke={2.5} />
-        </span>
-        {!collapsed && <span className="app-sidebar-logo-text">Expensify</span>}
-      </div>
-
       <div className="app-sidebar-nav">
-        {NAV_SECTIONS.map((section, index) => (
+        {sections.map((section, index) => (
           <div key={section.label ?? index}>
             {section.label && (
               <div className="app-sidebar-section-label">{section.label}</div>
