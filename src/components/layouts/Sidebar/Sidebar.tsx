@@ -12,7 +12,7 @@ import {
   type Icon,
 } from '@tabler/icons-react';
 import { Link } from '@tanstack/react-router';
-import { useAuth } from '../../../features/auth';
+import { selectIsAdmin, useAuthStore } from '../../../features/auth';
 import './Sidebar.css';
 
 interface INavItem {
@@ -65,7 +65,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ collapsed, onNavigate }: SidebarProps) {
-  const { isAdmin } = useAuth();
+  const isAdmin = useAuthStore(selectIsAdmin);
   const sections = useMemo(() => buildSections(isAdmin), [isAdmin]);
 
   return (

@@ -10,12 +10,16 @@ import {
 } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
-import { useAuth } from '../context/AuthContext';
+import {
+  selectIsAuthenticated,
+  useAuthStore,
+} from '../../../stores/authStore';
 import { InvalidCredentialsError } from '../services/authService';
 import './LoginPage.css';
 
 export function LoginPage() {
-  const { login, isAuthenticated } = useAuth();
+  const login = useAuthStore((state) => state.login);
+  const isAuthenticated = useAuthStore(selectIsAuthenticated);
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');

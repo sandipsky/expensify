@@ -22,7 +22,7 @@ import {
 } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import { EmptyState, PageHeader } from '../../../components/common';
-import { useAuth } from '../../auth';
+import { selectUser, useAuthStore } from '../../auth';
 import type { IUser } from '../../auth/types';
 import {
   useCreateUser,
@@ -39,7 +39,7 @@ import { UserFormModal } from './UserFormModal';
 import './UsersPage.css';
 
 export function UsersPage() {
-  const { user: currentUser } = useAuth();
+  const currentUser = useAuthStore(selectUser);
   const [modalOpened, setModalOpened] = useState(false);
   const [editing, setEditing] = useState<IUser | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<IUser | null>(null);

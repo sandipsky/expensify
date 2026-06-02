@@ -1,6 +1,6 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router';
 import { AppLayout } from '../components/layouts';
-import { isAuthenticated, useAuth } from '../features/auth';
+import { isAuthenticated, selectUser, useAuthStore } from '../features/auth';
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: ({ location }) => {
@@ -16,7 +16,8 @@ export const Route = createFileRoute('/_authenticated')({
 });
 
 function AuthenticatedLayout() {
-  const { user, logout } = useAuth();
+  const user = useAuthStore(selectUser);
+  const logout = useAuthStore((state) => state.logout);
 
   return (
     <AppLayout

@@ -1,7 +1,6 @@
 import axios, { type AxiosError, type AxiosRequestConfig, type AxiosResponse } from 'axios';
 import { config } from '../config/env';
-
-const TOKEN_KEY = 'expensify_token';
+import { useAuthStore } from '../stores/authStore';
 
 const instance = axios.create({
   baseURL: config.api.baseUrl,
@@ -12,7 +11,7 @@ const instance = axios.create({
 });
 
 instance.interceptors.request.use((requestConfig) => {
-  const token = localStorage.getItem(TOKEN_KEY);
+  const { token } = useAuthStore.getState();
   if (token) {
     requestConfig.headers.Authorization = `Bearer ${token}`;
   }
@@ -23,9 +22,7 @@ instance.interceptors.response.use(
   (response: AxiosResponse) => response.data,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem('expensify_user');
-      window.location.href = '/login';
+      useAuthStore.getState().logout();
     }
     return Promise.reject(error);
   },
