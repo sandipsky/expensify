@@ -9,7 +9,7 @@ import {
   Title,
 } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import {
   selectIsAuthenticated,
   useAuthStore,
@@ -21,6 +21,7 @@ export function LoginPage() {
   const login = useAuthStore((state) => state.login);
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
   const navigate = useNavigate();
+  const { redirect } = useSearch({ from: '/login' });
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -28,9 +29,10 @@ export function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate({ to: '/' });
+      // Honor the ?redirect set by the auth guard, falling back to the dashboard.
+      navigate({ to: redirect ?? '/' });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, redirect]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

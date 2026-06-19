@@ -87,6 +87,15 @@ export function BudgetsPage() {
   };
 
   const handleSubmit = (values: IBudgetFormValues) => {
+    const category = categoryById.get(values.categoryId);
+    if (!category || category.type !== 'expense') {
+      notifications.show({
+        title: 'Invalid category',
+        message: 'Budgets can only target expense categories.',
+        color: 'red',
+      });
+      return;
+    }
     if (editing) {
       updateMutation.mutate(
         { id: editing.id, values },
@@ -220,7 +229,7 @@ export function BudgetsPage() {
 
               <div className="budget-card-footer">
                 <Text size="xs" c="dimmed">
-                  {dayjs(budget.startAt).format('MMM D')} – {dayjs(budget.endAt).format('MMM D, YYYY')}
+                  {dayjs(usage.startAt).format('MMM D')} – {dayjs(usage.endAt).format('MMM D, YYYY')}
                 </Text>
                 <Text
                   size="xs"

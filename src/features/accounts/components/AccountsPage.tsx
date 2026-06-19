@@ -22,6 +22,7 @@ import {
 import { EmptyState, PageHeader } from '../../../components/common';
 import { formatCurrency } from '../../../utils/format';
 import { useTransactions } from '../../transactions/hooks/useTransactions';
+import { useBudgets } from '../../budgets/hooks/useBudgets';
 import { computeAccountBalance } from '../../transactions/utils';
 import {
   useAccounts,
@@ -41,9 +42,20 @@ export function AccountsPage() {
 
   const { data: accounts = [], isLoading } = useAccounts();
   const { data: transactions = [] } = useTransactions();
+  const { data: budgets = [] } = useBudgets();
   const createMutation = useCreateAccount();
   const updateMutation = useUpdateAccount();
   const deleteMutation = useDeleteAccount();
+
+  // Names must be unique (case-insensitive), excluding the account being edited.
+  const existingNames = useMemo(() => {
+    const set = new Set<string>();
+    for (const account of accounts) {
+      if (editing && account.id === editing.id) continue;
+      set.add(account.name.trim().toLowerCase());
+    }
+    return set;
+  }, [accounts, editing]);
 
   const accountsWithBalance = useMemo(
     () =>
@@ -73,6 +85,14 @@ export function AccountsPage() {
   };
 
   const handleSubmit = (values: IAccountFormValues) => {
+    if (existingNames.has(values.name.trim().toLowerCase())) {
+      notifications.show({
+        title: 'Duplicate name',
+        message: 'An account with this name already exists.',
+        color: 'red',
+      });
+      return;
+    }
     if (editing) {
       updateMutation.mutate(
         { id: editing.id, values },
@@ -110,13 +130,16 @@ export function AccountsPage() {
 
   const handleConfirmDelete = () => {
     if (!deleteTarget) return;
-    const inUse = transactions.some(
+    const usedByTransactions = transactions.some(
       (t) => t.accountId === deleteTarget.id || t.toAccountId === deleteTarget.id,
     );
-    if (inUse) {
+    const usedByBudgets = budgets.some((b) => b.accountId === deleteTarget.id);
+    if (usedByTransactions || usedByBudgets) {
       notifications.show({
         title: 'Cannot delete',
-        message: 'Account is referenced by transactions.',
+        message: usedByBudgets
+          ? 'Account is referenced by budgets.'
+          : 'Account is referenced by transactions.',
         color: 'red',
       });
       return;

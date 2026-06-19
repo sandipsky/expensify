@@ -45,13 +45,36 @@
   background: var(--app-surface);
   border-right: 1px solid var(--app-border);
   border-bottom: 1px solid var(--app-border);
-  cursor: pointer;
-  text-align: left;
   transition: background 120ms ease;
 }
 
 .cal-cell:hover {
   background: var(--app-surface-muted);
+}
+
+.cal-grid[data-view='week'] .cal-cell {
+  min-height: 320px;
+}
+
+.cal-cell-date-btn,
+.cal-cell-body {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.cal-cell-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  width: 100%;
+  text-align: left;
 }
 
 .cal-cell[data-current-month='false'] {
@@ -83,6 +106,9 @@
 }
 
 .cal-cell-add {
+  appearance: none;
+  border: none;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -91,8 +117,15 @@
   border-radius: 999px;
   background: transparent;
   color: var(--app-text-muted);
+  cursor: pointer;
   opacity: 0;
   transition: opacity 120ms ease, background 120ms ease;
+}
+
+.cal-cell-add:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--app-primary);
+  outline-offset: 1px;
 }
 
 .cal-cell:hover .cal-cell-add {
@@ -102,12 +135,6 @@
 .cal-cell-add:hover {
   background: var(--app-primary-soft);
   color: var(--app-primary);
-}
-
-.cal-cell-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
 }
 
 .cal-cell:nth-child(7n) {

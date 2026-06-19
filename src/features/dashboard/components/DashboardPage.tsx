@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Badge, Group, Loader, Progress, SegmentedControl, Stack, Text } from '@mantine/core';
+import { DatePickerInput } from '@mantine/dates';
 import {
   IconArrowDownLeft,
   IconArrowUpRight,
@@ -16,12 +17,12 @@ import { useCategories } from '../../categories/hooks/useCategories';
 import { useTransactions } from '../../transactions/hooks/useTransactions';
 import { computeAccountBalance, totalsByKind } from '../../transactions/utils';
 import { useBudgets } from '../../budgets/hooks/useBudgets';
-import { computeBudgetUsage } from '../../budgets/utils';
+import { computeBudgetUsage, isBudgetActive } from '../../budgets/utils';
 import { SpendingByCategoryChart } from './SpendingByCategoryChart';
 import { IncomeExpenseTrendChart } from './IncomeExpenseTrendChart';
 import './DashboardPage.css';
 
-type PeriodKey = 'this-month' | 'last-month' | 'last-3-months' | 'ytd';
+type PeriodKey = 'this-month' | 'last-month' | 'last-3-months' | 'ytd' | 'custom';
 
 const DATE_FORMAT = 'YYYY-MM-DD';
 
@@ -60,7 +61,27 @@ function getPeriodRange(period: PeriodKey): { from: string; to: string; label: s
 
 export function DashboardPage() {
   const [period, setPeriod] = useState<PeriodKey>('this-month');
-  const range = getPeriodRange(period);
+  const [customRange, setCustomRange] = useState<[string | null, string | null]>([
+    null,
+    null,
+  ]);
+
+  const range = useMemo(() => {
+    if (period === 'custom') {
+      const [from, to] = customRange;
+      const resolvedFrom = from ?? dayjs().startOf('month').format(DATE_FORMAT);
+      const resolvedTo = to ?? dayjs().endOf('month').format(DATE_FORMAT);
+      return {
+        from: resolvedFrom,
+        to: resolvedTo,
+        label:
+          from && to
+            ? `${dayjs(from).format('MMM D')} – ${dayjs(to).format('MMM D, YYYY')}`
+            : 'Custom range',
+      };
+    }
+    return getPeriodRange(period);
+  }, [period, customRange]);
 
   const { data: accounts = [], isLoading: aLoading } = useAccounts();
   const { data: transactions = [], isLoading: tLoading } = useTransactions();
@@ -109,6 +130,7 @@ export function DashboardPage() {
   const budgetSummaries = useMemo(
     () =>
       budgets
+        .filter((b) => isBudgetActive(b))
         .map((b) => ({
           budget: b,
           usage: computeBudgetUsage(b, transactions),
@@ -124,16 +146,38 @@ export function DashboardPage() {
         title="Dashboard"
         subtitle={`Overview for ${range.label}`}
         actions={
-          <SegmentedControl
-            value={period}
-            onChange={(value) => setPeriod(value as PeriodKey)}
-            data={[
-              { value: 'this-month', label: 'This month' },
-              { value: 'last-month', label: 'Last month' },
-              { value: 'last-3-months', label: '3 mo' },
-              { value: 'ytd', label: 'YTD' },
-            ]}
-          />
+          <Group gap="sm" wrap="wrap">
+            <SegmentedControl
+              value={period}
+              onChange={(value) => setPeriod(value as PeriodKey)}
+              data={[
+                { value: 'this-month', label: 'This month' },
+                { value: 'last-month', label: 'Last month' },
+                { value: 'last-3-months', label: '3 mo' },
+                { value: 'ytd', label: 'YTD' },
+                { value: 'custom', label: 'Custom' },
+              ]}
+            />
+            {period === 'custom' && (
+              <DatePickerInput
+                type="range"
+                valueFormat="MMM D, YYYY"
+                placeholder="Pick a date range"
+                clearable
+                value={[
+                  customRange[0] ? dayjs(customRange[0]).toDate() : null,
+                  customRange[1] ? dayjs(customRange[1]).toDate() : null,
+                ]}
+                onChange={([from, to]) =>
+                  setCustomRange([
+                    from ? dayjs(from).format(DATE_FORMAT) : null,
+                    to ? dayjs(to).format(DATE_FORMAT) : null,
+                  ])
+                }
+                miw={240}
+              />
+            )}
+          </Group>
         }
       />
 

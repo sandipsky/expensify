@@ -1,7 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"=== TSC EXIT: $? ===\")",
+      "Bash(npx eslint *)",
+      "Bash(echo \"=== ESLINT EXIT: $? ===\")",
+      "PowerShell(node --version; npx eslint . 2>&1 | Select-Object -Last 40; \"=== ESLINT EXIT: $LASTEXITCODE ===\")",
+      "Bash(ls -la .env*)",
+      "Bash(git check-ignore *)",
+      "Bash(cd \"C:/Users/Sandip.Shakya/.claude/projects/c--Users-Sandip-Shakya-Downloads-Projects-Sandip-expensify/b1cd7dd1-753d-4061-a90d-8825b616fa3f/subagents/workflows/wf_ebd3dea9-a4c\" 2>/dev/null && ls -la 2>/dev/null | tail -20; echo \"---runs---\"; ls -la \"C:/Users/Sandip.Shakya/.claude/projects/c--Users-Sandip-Shakya-Downloads-Projects-Sandip-expensify/b1cd7dd1-753d-4061-a90d-8825b616fa3f/subagents/workflows/\" 2>/dev/null)",
+      "Read(//c/Users/Sandip.Shakya/.claude/projects/c--Users-Sandip-Shakya-Downloads-Projects-Sandip-expensify/b1cd7dd1-753d-4061-a90d-8825b616fa3f/subagents/workflows/wf_ebd3dea9-a4c/**)",
+      "Read(//c/Users/Sandip.Shakya/.claude/projects/c--Users-Sandip-Shakya-Downloads-Projects-Sandip-expensify/b1cd7dd1-753d-4061-a90d-8825b616fa3f/subagents/workflows/**)",
+      "Bash(cat .env.local)",
+      "Bash(cat .env.example)"
     ]
   }
 }

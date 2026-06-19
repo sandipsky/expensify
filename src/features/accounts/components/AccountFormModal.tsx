@@ -10,6 +10,7 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { zodResolver } from '../../../lib/zodResolver';
+import { getCurrencySymbol } from '../../../utils/format';
 import type { IAccount } from '../types';
 import { accountFormSchema, type IAccountFormValues } from '../validations';
 
@@ -72,7 +73,7 @@ export function AccountFormModal({
           <NumberInput
             label="Initial amount"
             placeholder="0.00"
-            prefix="Rs "
+            prefix={`${getCurrencySymbol()} `}
             decimalScale={2}
             thousandSeparator=","
             allowNegative

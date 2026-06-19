@@ -1,11 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActionIcon,
+  Anchor,
   Badge,
   Button,
   Group,
   Loader,
   Modal,
+  Pagination,
   Select,
   Stack,
   Table,
@@ -13,11 +15,13 @@ import {
   TextInput,
   Tooltip,
 } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
 import { notifications } from '@mantine/notifications';
 import {
   IconArrowDownLeft,
   IconArrowUpRight,
   IconArrowsExchange,
+  IconPaperclip,
   IconPencil,
   IconPlus,
   IconReceipt2,
@@ -36,12 +40,16 @@ import {
   useTransactions,
   useUpdateTransaction,
 } from '../hooks/useTransactions';
+import { isWithinRange } from '../utils';
 import type { ITransaction, TransactionKind } from '../types';
 import type { ITransactionFormValues } from '../validations';
 import { TransactionFormModal } from './TransactionFormModal';
 import './TransactionsPage.css';
 
 type KindFilter = TransactionKind | 'all';
+
+const PAGE_SIZE = 12;
+const DATE_FORMAT = 'YYYY-MM-DD';
 
 const KIND_META: Record<
   TransactionKind,
@@ -60,7 +68,10 @@ export function TransactionsPage() {
   const [kindFilter, setKindFilter] = useState<KindFilter>('all');
   const [accountFilter, setAccountFilter] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [fromDate, setFromDate] = useState<string | null>(null);
+  const [toDate, setToDate] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
   const { data: transactions = [], isLoading } = useTransactions();
   const { data: accounts = [] } = useAccounts();
@@ -86,10 +97,29 @@ export function TransactionsPage() {
       if (accountFilter && t.accountId !== accountFilter && t.toAccountId !== accountFilter)
         return false;
       if (categoryFilter && t.categoryId !== categoryFilter) return false;
+      if (!isWithinRange(t.date, fromDate ?? undefined, toDate ?? undefined))
+        return false;
       if (q && !t.notes.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [transactions, kindFilter, accountFilter, categoryFilter, search]);
+  }, [transactions, kindFilter, accountFilter, categoryFilter, fromDate, toDate, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  // Keep the current page valid as filters narrow the result set.
+  useEffect(() => {
+    setPage((current) => Math.min(current, totalPages));
+  }, [totalPages]);
+
+  // Any filter change resets to the first page.
+  useEffect(() => {
+    setPage(1);
+  }, [kindFilter, accountFilter, categoryFilter, fromDate, toDate, search]);
+
+  const paged = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page],
+  );
 
   const openCreate = () => {
     setEditing(null);
@@ -155,11 +185,18 @@ export function TransactionsPage() {
     setKindFilter('all');
     setAccountFilter(null);
     setCategoryFilter(null);
+    setFromDate(null);
+    setToDate(null);
     setSearch('');
   };
 
   const hasActiveFilters =
-    kindFilter !== 'all' || accountFilter || categoryFilter || search;
+    kindFilter !== 'all' ||
+    accountFilter ||
+    categoryFilter ||
+    fromDate ||
+    toDate ||
+    search;
 
   return (
     <div className="page txn-page">
@@ -208,6 +245,26 @@ export function TransactionsPage() {
           clearable
           searchable
         />
+        <DateInput
+          placeholder="From"
+          valueFormat="MMM D, YYYY"
+          clearable
+          value={fromDate ? dayjs(fromDate).toDate() : null}
+          onChange={(value) =>
+            setFromDate(value ? dayjs(value).format(DATE_FORMAT) : null)
+          }
+          maxDate={toDate ? dayjs(toDate).toDate() : undefined}
+        />
+        <DateInput
+          placeholder="To"
+          valueFormat="MMM D, YYYY"
+          clearable
+          value={toDate ? dayjs(toDate).toDate() : null}
+          onChange={(value) =>
+            setToDate(value ? dayjs(value).format(DATE_FORMAT) : null)
+          }
+          minDate={fromDate ? dayjs(fromDate).toDate() : undefined}
+        />
         {hasActiveFilters && (
           <Button
             variant="subtle"
@@ -242,128 +299,156 @@ export function TransactionsPage() {
           }
         />
       ) : (
-        <div className="surface-card txn-table-wrap">
-          <Table.ScrollContainer
-            minWidth={760}
-            maxHeight="100%"
-            className="txn-table-scroll"
-          >
-            <Table
-              stickyHeader
-              verticalSpacing="sm"
-              highlightOnHover
-              className="txn-table"
+        <>
+          <div className="surface-card txn-table-wrap">
+            <Table.ScrollContainer
+              minWidth={760}
+              maxHeight="100%"
+              className="txn-table-scroll"
             >
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th style={{ width: 44 }} />
-                  <Table.Th>Description</Table.Th>
-                  <Table.Th>Category</Table.Th>
-                  <Table.Th>Account</Table.Th>
-                  <Table.Th>Date</Table.Th>
-                  <Table.Th style={{ textAlign: 'right' }}>Amount</Table.Th>
-                  <Table.Th style={{ width: 88 }} />
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {filtered.map((txn) => {
-                  const meta = KIND_META[txn.kind];
-                  const fromAccount = accountById.get(txn.accountId);
-                  const toAccount = txn.toAccountId
-                    ? accountById.get(txn.toAccountId)
-                    : null;
-                  const category = txn.categoryId
-                    ? categoryById.get(txn.categoryId)
-                    : null;
+              <Table
+                stickyHeader
+                verticalSpacing="sm"
+                highlightOnHover
+                className="txn-table"
+              >
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th style={{ width: 44 }} />
+                    <Table.Th>Description</Table.Th>
+                    <Table.Th>Category</Table.Th>
+                    <Table.Th>Account</Table.Th>
+                    <Table.Th>Date</Table.Th>
+                    <Table.Th style={{ textAlign: 'right' }}>Amount</Table.Th>
+                    <Table.Th style={{ width: 88 }} />
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {paged.map((txn) => {
+                    const meta = KIND_META[txn.kind];
+                    const fromAccount = accountById.get(txn.accountId);
+                    const toAccount = txn.toAccountId
+                      ? accountById.get(txn.toAccountId)
+                      : null;
+                    const category = txn.categoryId
+                      ? categoryById.get(txn.categoryId)
+                      : null;
 
-                  const KindIcon =
-                    txn.kind === 'income'
-                      ? IconArrowDownLeft
-                      : txn.kind === 'expense'
-                        ? IconArrowUpRight
-                        : IconArrowsExchange;
+                    const KindIcon =
+                      txn.kind === 'income'
+                        ? IconArrowDownLeft
+                        : txn.kind === 'expense'
+                          ? IconArrowUpRight
+                          : IconArrowsExchange;
 
-                  return (
-                    <Table.Tr key={txn.id}>
-                      <Table.Td>
-                        <div className="txn-kind-badge" data-kind={txn.kind}>
-                          <KindIcon size={16} />
-                        </div>
-                      </Table.Td>
-                      <Table.Td>
-                        <Stack gap={2}>
-                          <Text fw={500}>{txn.notes || meta.label}</Text>
-                          {txn.kind === 'transfer' && toAccount && (
-                            <Text size="xs" c="dimmed">
-                              {fromAccount?.name} → {toAccount.name}
+                    return (
+                      <Table.Tr key={txn.id}>
+                        <Table.Td>
+                          <div className="txn-kind-badge" data-kind={txn.kind}>
+                            <KindIcon size={16} />
+                          </div>
+                        </Table.Td>
+                        <Table.Td>
+                          <Stack gap={2}>
+                            <Group gap={6} wrap="nowrap">
+                              <Text fw={500}>{txn.notes || meta.label}</Text>
+                              {txn.attachment && (
+                                <Tooltip label={`View ${txn.attachment.name}`} withArrow>
+                                  <Anchor
+                                    href={txn.attachment.dataUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    download={txn.attachment.name}
+                                    aria-label="View attachment"
+                                    c="dimmed"
+                                    style={{ display: 'inline-flex' }}
+                                  >
+                                    <IconPaperclip size={14} />
+                                  </Anchor>
+                                </Tooltip>
+                              )}
+                            </Group>
+                            {txn.kind === 'transfer' && toAccount && (
+                              <Text size="xs" c="dimmed">
+                                {fromAccount?.name} → {toAccount.name}
+                              </Text>
+                            )}
+                          </Stack>
+                        </Table.Td>
+                        <Table.Td>
+                          {category ? (
+                            <Badge size="sm" variant="light" color={category.type === 'income' ? 'teal' : 'indigo'}>
+                              {category.name}
+                            </Badge>
+                          ) : (
+                            <Text size="sm" c="dimmed">
+                              —
                             </Text>
                           )}
-                        </Stack>
-                      </Table.Td>
-                      <Table.Td>
-                        {category ? (
-                          <Badge size="sm" variant="light" color={category.type === 'income' ? 'teal' : 'indigo'}>
-                            {category.name}
-                          </Badge>
-                        ) : (
+                        </Table.Td>
+                        <Table.Td>
+                          <Text size="sm">{fromAccount?.name ?? '—'}</Text>
+                        </Table.Td>
+                        <Table.Td>
                           <Text size="sm" c="dimmed">
-                            —
+                            {dayjs(txn.date).format('MMM D, YYYY')}
                           </Text>
-                        )}
-                      </Table.Td>
-                      <Table.Td>
-                        <Text size="sm">{fromAccount?.name ?? '—'}</Text>
-                      </Table.Td>
-                      <Table.Td>
-                        <Text size="sm" c="dimmed">
-                          {dayjs(txn.date).format('MMM D, YYYY')}
-                        </Text>
-                      </Table.Td>
-                      <Table.Td style={{ textAlign: 'right' }}>
-                        <Text
-                          fw={600}
-                          className={
-                            meta.sign === 1
-                              ? 'amount-positive'
-                              : meta.sign === -1
-                                ? 'amount-negative'
-                                : 'amount-neutral'
-                          }
-                        >
-                          {meta.sign === 1 ? '+' : meta.sign === -1 ? '−' : ''}
-                          {formatCurrency(txn.amount)}
-                        </Text>
-                      </Table.Td>
-                      <Table.Td>
-                        <Group gap={4} justify="flex-end">
-                          <Tooltip label="Edit" withArrow>
-                            <ActionIcon
-                              variant="subtle"
-                              aria-label="Edit transaction"
-                              onClick={() => openEdit(txn)}
-                            >
-                              <IconPencil size={16} />
-                            </ActionIcon>
-                          </Tooltip>
-                          <Tooltip label="Delete" withArrow>
-                            <ActionIcon
-                              variant="subtle"
-                              color="red"
-                              aria-label="Delete transaction"
-                              onClick={() => setDeleteTarget(txn)}
-                            >
-                              <IconTrash size={16} />
-                            </ActionIcon>
-                          </Tooltip>
-                        </Group>
-                      </Table.Td>
-                    </Table.Tr>
-                  );
-                })}
-              </Table.Tbody>
-            </Table>
-          </Table.ScrollContainer>
-        </div>
+                        </Table.Td>
+                        <Table.Td style={{ textAlign: 'right' }}>
+                          <Text
+                            fw={600}
+                            className={
+                              meta.sign === 1
+                                ? 'amount-positive'
+                                : meta.sign === -1
+                                  ? 'amount-negative'
+                                  : 'amount-neutral'
+                            }
+                          >
+                            {meta.sign === 1 ? '+' : meta.sign === -1 ? '−' : ''}
+                            {formatCurrency(txn.amount)}
+                          </Text>
+                        </Table.Td>
+                        <Table.Td>
+                          <Group gap={4} justify="flex-end">
+                            <Tooltip label="Edit" withArrow>
+                              <ActionIcon
+                                variant="subtle"
+                                aria-label="Edit transaction"
+                                onClick={() => openEdit(txn)}
+                              >
+                                <IconPencil size={16} />
+                              </ActionIcon>
+                            </Tooltip>
+                            <Tooltip label="Delete" withArrow>
+                              <ActionIcon
+                                variant="subtle"
+                                color="red"
+                                aria-label="Delete transaction"
+                                onClick={() => setDeleteTarget(txn)}
+                              >
+                                <IconTrash size={16} />
+                              </ActionIcon>
+                            </Tooltip>
+                          </Group>
+                        </Table.Td>
+                      </Table.Tr>
+                    );
+                  })}
+                </Table.Tbody>
+              </Table>
+            </Table.ScrollContainer>
+          </div>
+
+          <Group justify="space-between" mt="sm">
+            <Text size="sm" c="dimmed">
+              {filtered.length} {filtered.length === 1 ? 'transaction' : 'transactions'}
+            </Text>
+            {totalPages > 1 && (
+              <Pagination total={totalPages} value={page} onChange={setPage} size="sm" />
+            )}
+          </Group>
+        </>
       )}
 
       <TransactionFormModal

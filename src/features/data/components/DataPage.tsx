@@ -4,7 +4,10 @@ import {
   Badge,
   Button,
   Group,
+  List,
   Modal,
+  Radio,
+  ScrollArea,
   Stack,
   Text,
 } from '@mantine/core';
@@ -20,9 +23,9 @@ import dayjs from 'dayjs';
 import { PageHeader } from '../../../components/common';
 import { useAccounts, accountKeys } from '../../accounts/hooks/useAccounts';
 import { useBudgets, budgetKeys } from '../../budgets/hooks/useBudgets';
-import { useCategories } from '../../categories/hooks/useCategories';
-import { categoryKeys } from '../../categories/hooks/useCategories';
+import { useCategories, categoryKeys } from '../../categories/hooks/useCategories';
 import { useTransactions, transactionKeys } from '../../transactions/hooks/useTransactions';
+import { z } from 'zod';
 import { apiClient } from '../../../lib/apiClient';
 import { getCurrentUserId } from '../../auth';
 import { generateId } from '../../../utils/ids';
@@ -30,6 +33,20 @@ import type { IAccount } from '../../accounts/types';
 import type { IBudget } from '../../budgets/types';
 import type { ICategory } from '../../categories/types';
 import type { ITransaction } from '../../transactions/types';
+import {
+  accountImportSchema,
+  backupSchema,
+  budgetImportSchema,
+  categoryImportSchema,
+  transactionImportSchema,
+  type ConflictPolicy,
+  type EntityName,
+  type IImportAccount,
+  type IImportBudget,
+  type IImportCategory,
+  type IImportTransaction,
+  type IRowError,
+} from '../validations';
 import './DataPage.css';
 
 interface IBackup {
@@ -41,6 +58,22 @@ interface IBackup {
   transactions: ITransaction[];
 }
 
+interface IImportReport {
+  accounts: IImportAccount[];
+  categories: IImportCategory[];
+  budgets: IImportBudget[];
+  transactions: IImportTransaction[];
+  errors: IRowError[];
+  invalidCount: number;
+}
+
+const ENTITY_LABELS: Record<EntityName, string> = {
+  accounts: 'accounts',
+  categories: 'categories',
+  budgets: 'budgets',
+  transactions: 'transactions',
+};
+
 export function DataPage() {
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
@@ -49,7 +82,8 @@ export function DataPage() {
   const queryClient = useQueryClient();
 
   const fileInput = useRef<HTMLInputElement | null>(null);
-  const [importData, setImportData] = useState<IBackup | null>(null);
+  const [report, setReport] = useState<IImportReport | null>(null);
+  const [conflictPolicy, setConflictPolicy] = useState<ConflictPolicy>('rename');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,9 +104,7 @@ export function DataPage() {
     notifications.show({ message: 'JSON export downloaded', color: 'teal' });
   };
 
-  const exportCsv = (
-    entity: 'accounts' | 'categories' | 'budgets' | 'transactions',
-  ) => {
+  const exportCsv = (entity: EntityName) => {
     const rows = {
       accounts: accountsToCsv(accounts),
       categories: categoriesToCsv(categories),
@@ -93,16 +125,12 @@ export function DataPage() {
     setError(null);
     try {
       const text = await file.text();
-      const parsed = JSON.parse(text) as IBackup;
-      if (
-        !Array.isArray(parsed.accounts) ||
-        !Array.isArray(parsed.categories) ||
-        !Array.isArray(parsed.transactions) ||
-        !Array.isArray(parsed.budgets)
-      ) {
-        throw new Error('Invalid file shape — expected an Expensify JSON backup.');
+      const json: unknown = JSON.parse(text);
+      const shape = backupSchema.safeParse(json);
+      if (!shape.success) {
+        throw new Error('Invalid file — expected an Expensify JSON backup.');
       }
-      setImportData(parsed);
+      setReport(buildReport(shape.data));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not parse file.');
     } finally {
@@ -111,56 +139,129 @@ export function DataPage() {
   };
 
   const runImport = async () => {
-    if (!importData) return;
+    if (!report) return;
     setBusy(true);
     try {
       const userId = getCurrentUserId();
       const accountIdMap = new Map<string, string>();
       const categoryIdMap = new Map<string, string>();
 
-      const remappedAccounts = importData.accounts.map((a) => {
-        const newId = generateId('acc');
-        accountIdMap.set(a.id, newId);
-        return { ...a, id: newId, userId };
-      });
-      const remappedCategories = importData.categories.map((c) => {
-        const newId = generateId('cat');
-        categoryIdMap.set(c.id, newId);
-        return { ...c, id: newId, userId };
-      });
-      const remappedBudgets = importData.budgets.map((b) => ({
-        ...b,
-        id: generateId('bud'),
-        userId,
-        accountId: accountIdMap.get(b.accountId) ?? b.accountId,
-        categoryId: categoryIdMap.get(b.categoryId) ?? b.categoryId,
-      }));
-      const remappedTransactions = importData.transactions.map((t) => ({
-        ...t,
-        id: generateId('txn'),
-        userId,
-        accountId: accountIdMap.get(t.accountId) ?? t.accountId,
-        toAccountId: t.toAccountId
-          ? accountIdMap.get(t.toAccountId) ?? t.toAccountId
-          : null,
-        categoryId: t.categoryId
-          ? categoryIdMap.get(t.categoryId) ?? t.categoryId
-          : null,
-      }));
+      // Index existing records for conflict detection.
+      const accountByName = new Map(
+        accounts.map((a) => [a.name.trim().toLowerCase(), a]),
+      );
+      const categoryByKey = new Map(
+        categories.map((c) => [categoryKey(c.name, c.type), c]),
+      );
+      const usedAccountNames = new Set(accountByName.keys());
+      const usedCategoryKeys = new Set(categoryByKey.keys());
 
       let created = 0;
-      const sequence: Array<{ path: string; items: { id: string }[] }> = [
-        { path: '/accounts', items: remappedAccounts },
-        { path: '/categories', items: remappedCategories },
-        { path: '/budgets', items: remappedBudgets },
-        { path: '/transactions', items: remappedTransactions },
-      ];
+      let updated = 0;
+      let skipped = 0;
 
-      for (const group of sequence) {
-        for (const item of group.items) {
-          await apiClient.post(group.path, item);
-          created += 1;
+      // Accounts (unique name).
+      for (const incoming of report.accounts) {
+        const key = incoming.name.trim().toLowerCase();
+        const existing = accountByName.get(key);
+        if (existing && conflictPolicy === 'skip') {
+          accountIdMap.set(incoming.id, existing.id);
+          skipped += 1;
+          continue;
         }
+        if (existing && conflictPolicy === 'overwrite') {
+          await apiClient.patch(`/accounts/${existing.id}`, {
+            name: incoming.name,
+            initialAmount: incoming.initialAmount,
+            notes: incoming.notes,
+          });
+          accountIdMap.set(incoming.id, existing.id);
+          updated += 1;
+          continue;
+        }
+        // Rename policy, or a duplicate of a name already taken this import.
+        const name = usedAccountNames.has(key)
+          ? dedupeName(incoming.name, usedAccountNames)
+          : incoming.name;
+        usedAccountNames.add(name.trim().toLowerCase());
+        const newId = generateId('acc');
+        await apiClient.post('/accounts', {
+          ...incoming,
+          id: newId,
+          userId,
+          name,
+          createdAt: incoming.createdAt ?? new Date().toISOString(),
+        });
+        accountIdMap.set(incoming.id, newId);
+        created += 1;
+      }
+
+      // Categories (unique name within type).
+      for (const incoming of report.categories) {
+        const key = categoryKey(incoming.name, incoming.type);
+        const existing = categoryByKey.get(key);
+        if (existing && conflictPolicy === 'skip') {
+          categoryIdMap.set(incoming.id, existing.id);
+          skipped += 1;
+          continue;
+        }
+        if (existing && conflictPolicy === 'overwrite') {
+          await apiClient.patch(`/categories/${existing.id}`, {
+            name: incoming.name,
+            icon: incoming.icon,
+          });
+          categoryIdMap.set(incoming.id, existing.id);
+          updated += 1;
+          continue;
+        }
+        // Rename policy, or a duplicate of a name+type already taken this import.
+        const name = usedCategoryKeys.has(key)
+          ? dedupeName(incoming.name, usedCategoryKeys, (n) =>
+              categoryKey(n, incoming.type),
+            )
+          : incoming.name;
+        usedCategoryKeys.add(categoryKey(name, incoming.type));
+        const newId = generateId('cat');
+        await apiClient.post('/categories', {
+          ...incoming,
+          id: newId,
+          userId,
+          name,
+          createdAt: incoming.createdAt ?? new Date().toISOString(),
+        });
+        categoryIdMap.set(incoming.id, newId);
+        created += 1;
+      }
+
+      // Budgets and transactions are always created new, with remapped relations.
+      for (const incoming of report.budgets) {
+        await apiClient.post('/budgets', {
+          ...incoming,
+          id: generateId('bud'),
+          userId,
+          accountId: accountIdMap.get(incoming.accountId) ?? incoming.accountId,
+          categoryId: categoryIdMap.get(incoming.categoryId) ?? incoming.categoryId,
+          createdAt: incoming.createdAt ?? new Date().toISOString(),
+        });
+        created += 1;
+      }
+
+      for (const incoming of report.transactions) {
+        await apiClient.post('/transactions', {
+          ...incoming,
+          id: generateId('txn'),
+          userId,
+          accountId: accountIdMap.get(incoming.accountId) ?? incoming.accountId,
+          toAccountId: incoming.toAccountId
+            ? accountIdMap.get(incoming.toAccountId) ?? incoming.toAccountId
+            : null,
+          categoryId: incoming.categoryId
+            ? categoryIdMap.get(incoming.categoryId) ?? incoming.categoryId
+            : null,
+          attachment: incoming.attachment ?? null,
+          createdAt: incoming.createdAt ?? new Date().toISOString(),
+        });
+        created += 1;
       }
 
       queryClient.invalidateQueries({ queryKey: accountKeys.lists() });
@@ -170,10 +271,10 @@ export function DataPage() {
 
       notifications.show({
         title: 'Import complete',
-        message: `Created ${created} items for your account`,
+        message: `${created} created · ${updated} updated · ${skipped} skipped`,
         color: 'teal',
       });
-      setImportData(null);
+      setReport(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Import failed.');
     } finally {
@@ -181,14 +282,12 @@ export function DataPage() {
     }
   };
 
-  const previewCounts = importData
-    ? {
-        accounts: importData.accounts.length,
-        categories: importData.categories.length,
-        budgets: importData.budgets.length,
-        transactions: importData.transactions.length,
-      }
-    : null;
+  const validTotal = report
+    ? report.accounts.length +
+      report.categories.length +
+      report.budgets.length +
+      report.transactions.length
+    : 0;
 
   return (
     <div className="page">
@@ -260,8 +359,8 @@ export function DataPage() {
             <div>
               <h3 className="data-section-title">Import data</h3>
               <p className="data-section-subtitle">
-                Restore from an Expensify JSON backup. All items are imported as
-                new records under your account.
+                Restore from an Expensify JSON backup. Each row is validated and
+                you choose how to resolve duplicate names.
               </p>
             </div>
           </div>
@@ -296,39 +395,167 @@ export function DataPage() {
       </div>
 
       <Modal
-        opened={Boolean(importData)}
-        onClose={() => setImportData(null)}
-        title="Confirm import"
-        size="md"
+        opened={Boolean(report)}
+        onClose={() => setReport(null)}
+        title="Review import"
+        size="lg"
       >
-        <Stack gap="md">
-          <Text size="sm">
-            Found{' '}
-            <Badge variant="light">{previewCounts?.accounts ?? 0} accounts</Badge>,{' '}
-            <Badge variant="light">{previewCounts?.categories ?? 0} categories</Badge>,{' '}
-            <Badge variant="light">{previewCounts?.budgets ?? 0} budgets</Badge>,{' '}
-            <Badge variant="light">
-              {previewCounts?.transactions ?? 0} transactions
-            </Badge>{' '}
-            in the file.
-          </Text>
-          <Text size="sm" c="dimmed">
-            Items will be added to your account with new IDs. Relations between
-            transactions, budgets, accounts, and categories are preserved.
-          </Text>
+        {report && (
+          <Stack gap="md">
+            <Group gap="xs">
+              <Badge variant="light">{report.accounts.length} accounts</Badge>
+              <Badge variant="light">{report.categories.length} categories</Badge>
+              <Badge variant="light">{report.budgets.length} budgets</Badge>
+              <Badge variant="light">{report.transactions.length} transactions</Badge>
+              {report.invalidCount > 0 && (
+                <Badge variant="light" color="red">
+                  {report.invalidCount} invalid rows
+                </Badge>
+              )}
+            </Group>
 
-          <Group justify="flex-end" gap="sm">
-            <Button variant="default" onClick={() => setImportData(null)} disabled={busy}>
-              Cancel
-            </Button>
-            <Button onClick={runImport} loading={busy}>
-              Import
-            </Button>
-          </Group>
-        </Stack>
+            {report.errors.length > 0 && (
+              <Alert
+                color="orange"
+                variant="light"
+                icon={<IconAlertTriangle size={16} />}
+                title="Some rows could not be imported"
+              >
+                <ScrollArea.Autosize mah={160}>
+                  <List size="xs" spacing={2}>
+                    {report.errors.map((e, index) => (
+                      <List.Item key={`${e.entity}-${e.row}-${index}`}>
+                        {ENTITY_LABELS[e.entity]} row {e.row + 1}: {e.message}
+                      </List.Item>
+                    ))}
+                  </List>
+                </ScrollArea.Autosize>
+              </Alert>
+            )}
+
+            <div>
+              <Text size="sm" fw={500} mb={4}>
+                On duplicate name
+              </Text>
+              <Radio.Group
+                value={conflictPolicy}
+                onChange={(value) => setConflictPolicy(value as ConflictPolicy)}
+              >
+                <Stack gap={6}>
+                  <Radio
+                    value="rename"
+                    label="Rename — import duplicates as new records with a suffixed name"
+                  />
+                  <Radio
+                    value="skip"
+                    label="Skip — keep existing records, ignore incoming duplicates"
+                  />
+                  <Radio
+                    value="overwrite"
+                    label="Overwrite — update existing records with imported data"
+                  />
+                </Stack>
+              </Radio.Group>
+              <Text size="xs" c="dimmed" mt={6}>
+                Applies to accounts (by name) and categories (by name + type).
+                Budgets and transactions are always added as new records.
+              </Text>
+            </div>
+
+            <Group justify="flex-end" gap="sm">
+              <Button variant="default" onClick={() => setReport(null)} disabled={busy}>
+                Cancel
+              </Button>
+              <Button onClick={runImport} loading={busy} disabled={validTotal === 0}>
+                Import {validTotal} {validTotal === 1 ? 'record' : 'records'}
+              </Button>
+            </Group>
+          </Stack>
+        )}
       </Modal>
     </div>
   );
+}
+
+function categoryKey(name: string, type: string): string {
+  return `${type}:${name.trim().toLowerCase()}`;
+}
+
+function dedupeName(
+  name: string,
+  used: Set<string>,
+  toKey: (n: string) => string = (n) => n.trim().toLowerCase(),
+): string {
+  let candidate = `${name} (imported)`;
+  let counter = 2;
+  while (used.has(toKey(candidate))) {
+    candidate = `${name} (imported ${counter})`;
+    counter += 1;
+  }
+  return candidate;
+}
+
+function buildReport(data: {
+  accounts: unknown[];
+  categories: unknown[];
+  budgets: unknown[];
+  transactions: unknown[];
+}): IImportReport {
+  const errors: IRowError[] = [];
+
+  return {
+    accounts: validateRows(data.accounts, accountImportSchema, 'accounts', errors).map(
+      withImportId('acc'),
+    ),
+    categories: validateRows(
+      data.categories,
+      categoryImportSchema,
+      'categories',
+      errors,
+    ).map(withImportId('cat')),
+    budgets: validateRows(data.budgets, budgetImportSchema, 'budgets', errors).map(
+      withImportId('bud'),
+    ),
+    transactions: validateRows(
+      data.transactions,
+      transactionImportSchema,
+      'transactions',
+      errors,
+    ).map(withImportId('txn')),
+    errors,
+    invalidCount: errors.length,
+  };
+}
+
+// Ensures every valid row has a stable id used for relation remapping; the real
+// id is assigned at import time.
+function withImportId<T extends { id?: string }>(prefix: string) {
+  return (item: T, index: number): T & { id: string } => ({
+    ...item,
+    id: item.id ?? `${prefix}_import_${index}`,
+  });
+}
+
+function validateRows<T>(
+  rows: unknown[],
+  schema: z.ZodType<T>,
+  entity: EntityName,
+  errors: IRowError[],
+): T[] {
+  const valid: T[] = [];
+  rows.forEach((row, index) => {
+    const result = schema.safeParse(row);
+    if (result.success) {
+      valid.push(result.data);
+    } else {
+      errors.push({
+        entity,
+        row: index,
+        message: result.error.issues.map((i) => i.message).join('; '),
+      });
+    }
+  });
+  return valid;
 }
 
 function downloadFile(name: string, contents: string, mime: string) {

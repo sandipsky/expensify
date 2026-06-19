@@ -7,6 +7,7 @@ import {
   IconDatabaseExport,
   IconLayoutDashboard,
   IconReceipt2,
+  IconSettings,
   IconUsers,
   IconWallet,
   type Icon,
@@ -47,7 +48,10 @@ function buildSections(isAdmin: boolean): INavSection[] {
     },
     {
       label: 'Data',
-      items: [{ label: 'Import / Export', icon: IconDatabaseExport, to: '/data' }],
+      items: [
+        { label: 'Import / Export', icon: IconDatabaseExport, to: '/data' },
+        { label: 'Settings', icon: IconSettings, to: '/settings' },
+      ],
     },
   ];
   if (isAdmin) {

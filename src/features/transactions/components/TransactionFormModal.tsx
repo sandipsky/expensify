@@ -1,22 +1,32 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  ActionIcon,
+  Anchor,
   Button,
+  FileInput,
   Group,
   Modal,
   NumberInput,
   SegmentedControl,
   Select,
   Stack,
+  Text,
   Textarea,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
+import { notifications } from '@mantine/notifications';
+import { IconPaperclip, IconTrash } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import { useAccounts } from '../../accounts/hooks/useAccounts';
 import { useCategories } from '../../categories/hooks/useCategories';
 import { zodResolver } from '../../../lib/zodResolver';
+import { getCurrencySymbol } from '../../../utils/format';
+import { formatFileSize, readFileAsAttachment } from '../utils';
 import type { ITransaction, TransactionKind } from '../types';
 import {
+  ALLOWED_ATTACHMENT_MIME_TYPES,
+  MAX_ATTACHMENT_SIZE,
   transactionFormSchema,
   type ITransactionFormValues,
 } from '../validations';
@@ -41,6 +51,7 @@ export function TransactionFormModal({
   isSubmitting = false,
 }: TransactionFormModalProps) {
   const isEdit = Boolean(initialValue);
+  const [reading, setReading] = useState(false);
 
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
@@ -54,6 +65,7 @@ export function TransactionFormModal({
       categoryId: null,
       date: dayjs().format(DATE_FORMAT),
       notes: '',
+      attachment: null,
     },
     validate: zodResolver(transactionFormSchema),
     validateInputOnBlur: true,
@@ -69,6 +81,7 @@ export function TransactionFormModal({
       categoryId: initialValue?.categoryId ?? null,
       date: initialValue?.date ?? defaultDate ?? dayjs().format(DATE_FORMAT),
       notes: initialValue?.notes ?? '',
+      attachment: initialValue?.attachment ?? null,
     });
     form.resetDirty();
     form.clearErrors();
@@ -91,12 +104,57 @@ export function TransactionFormModal({
   const handleKindChange = (value: string) => {
     const kind = value as TransactionKind;
     form.setFieldValue('kind', kind);
-    if (kind === 'transfer') {
-      form.setFieldValue('categoryId', null);
-    } else {
+    // A category is only valid for a single kind, so clear it whenever the kind
+    // changes to avoid persisting a stale (mismatched) category.
+    form.setFieldValue('categoryId', null);
+    // to_account only applies to transfers.
+    if (kind !== 'transfer') {
       form.setFieldValue('toAccountId', null);
     }
   };
+
+  const handleFileChange = async (file: File | null) => {
+    if (!file) {
+      form.setFieldValue('attachment', null);
+      return;
+    }
+    if (
+      !ALLOWED_ATTACHMENT_MIME_TYPES.includes(
+        file.type as (typeof ALLOWED_ATTACHMENT_MIME_TYPES)[number],
+      )
+    ) {
+      notifications.show({
+        title: 'Unsupported file',
+        message: 'Attachment must be an image (PNG, JPG, WEBP) or a PDF.',
+        color: 'red',
+      });
+      return;
+    }
+    if (file.size > MAX_ATTACHMENT_SIZE) {
+      notifications.show({
+        title: 'File too large',
+        message: 'Attachment must be 5 MB or smaller.',
+        color: 'red',
+      });
+      return;
+    }
+    setReading(true);
+    try {
+      const attachment = await readFileAsAttachment(file);
+      form.setFieldValue('attachment', attachment);
+      form.clearFieldError('attachment');
+    } catch {
+      notifications.show({
+        title: 'Could not read file',
+        message: 'Please try a different file.',
+        color: 'red',
+      });
+    } finally {
+      setReading(false);
+    }
+  };
+
+  const attachment = form.values.attachment;
 
   return (
     <Modal
@@ -121,7 +179,7 @@ export function TransactionFormModal({
           <NumberInput
             label="Amount"
             placeholder="0.00"
-            prefix="Rs "
+            prefix={`${getCurrencySymbol()} `}
             min={0}
             decimalScale={2}
             thousandSeparator=","
@@ -184,11 +242,52 @@ export function TransactionFormModal({
             {...form.getInputProps('notes')}
           />
 
+          <div>
+            <FileInput
+              label="Attachment"
+              placeholder="Image or PDF (max 5 MB)"
+              leftSection={<IconPaperclip size={16} />}
+              accept="image/png,image/jpeg,image/webp,application/pdf"
+              value={null}
+              onChange={handleFileChange}
+              disabled={reading}
+              clearable={false}
+              error={form.errors.attachment as string | undefined}
+            />
+            {attachment && (
+              <Group justify="space-between" mt="xs" gap="xs" wrap="nowrap">
+                <Anchor
+                  href={attachment.dataUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download={attachment.name}
+                  size="sm"
+                  truncate
+                >
+                  {attachment.name} ({formatFileSize(attachment.size)})
+                </Anchor>
+                <ActionIcon
+                  variant="subtle"
+                  color="red"
+                  aria-label="Remove attachment"
+                  onClick={() => form.setFieldValue('attachment', null)}
+                >
+                  <IconTrash size={16} />
+                </ActionIcon>
+              </Group>
+            )}
+            {!attachment && (
+              <Text size="xs" c="dimmed" mt={4}>
+                Optional. PNG, JPG, WEBP, or PDF up to 5 MB.
+              </Text>
+            )}
+          </div>
+
           <Group justify="flex-end" gap="sm">
             <Button variant="default" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit" loading={isSubmitting}>
+            <Button type="submit" loading={isSubmitting} disabled={reading}>
               {isEdit ? 'Save' : 'Create'}
             </Button>
           </Group>

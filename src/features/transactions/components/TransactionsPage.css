@@ -4,23 +4,19 @@
 }
 
 .txn-filters {
-  display: grid;
-  grid-template-columns: minmax(180px, 1.5fr) repeat(3, minmax(140px, 1fr)) auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: end;
   gap: 0.75rem;
 }
 
-.txn-filters-search {
+.txn-filters > * {
+  flex: 1 1 140px;
   min-width: 0;
 }
 
-@media (max-width: 900px) {
-  .txn-filters {
-    grid-template-columns: 1fr 1fr;
-  }
-  .txn-filters-search {
-    grid-column: span 2;
-  }
+.txn-filters-search {
+  flex: 2 1 200px;
 }
 
 .txn-table-wrap {

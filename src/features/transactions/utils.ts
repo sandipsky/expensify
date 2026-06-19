@@ -1,5 +1,27 @@
 import type { IAccount } from '../accounts/types';
-import type { ITransaction } from './types';
+import type { ITransaction, ITransactionAttachment } from './types';
+
+export function readFileAsAttachment(file: File): Promise<ITransactionAttachment> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve({
+        name: file.name,
+        mimeType: file.type,
+        size: file.size,
+        dataUrl: String(reader.result),
+      });
+    };
+    reader.onerror = () => reject(reader.error ?? new Error('Could not read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export function computeAccountBalance(
   account: IAccount,

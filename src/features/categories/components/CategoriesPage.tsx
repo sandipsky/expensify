@@ -13,6 +13,7 @@ import {
   Text,
   Tooltip,
 } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import {
   IconAlertTriangle,
   IconCategory,
@@ -20,6 +21,8 @@ import {
   IconPlus,
   IconTrash,
 } from '@tabler/icons-react';
+import { useTransactions } from '../../transactions/hooks/useTransactions';
+import { useBudgets } from '../../budgets/hooks/useBudgets';
 import { getCategoryIcon } from '../constants';
 import {
   useCategories,
@@ -41,6 +44,8 @@ export function CategoriesPage() {
   const [deleteTarget, setDeleteTarget] = useState<ICategory | null>(null);
 
   const { data: categories = [], isLoading } = useCategories();
+  const { data: transactions = [] } = useTransactions();
+  const { data: budgets = [] } = useBudgets();
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
   const deleteMutation = useDeleteCategory();
@@ -49,6 +54,22 @@ export function CategoriesPage() {
     if (tab === 'all') return categories;
     return categories.filter((category) => category.type === tab);
   }, [categories, tab]);
+
+  // A category referenced by any transaction or budget cannot be deleted.
+  const referencedCategoryIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const txn of transactions) {
+      if (txn.categoryId) set.add(txn.categoryId);
+    }
+    for (const budget of budgets) {
+      set.add(budget.categoryId);
+    }
+    return set;
+  }, [transactions, budgets]);
+
+  const deleteTargetInUse = deleteTarget
+    ? referencedCategoryIds.has(deleteTarget.id)
+    : false;
 
   const existingNames = useMemo(() => {
     const set = new Set<string>();
@@ -77,20 +98,49 @@ export function CategoriesPage() {
           onSuccess: () => {
             setModalOpened(false);
             setEditing(null);
+            notifications.show({ message: 'Category updated', color: 'teal' });
           },
+          onError: (error) =>
+            notifications.show({
+              title: 'Update failed',
+              message: (error as Error).message,
+              color: 'red',
+            }),
         },
       );
     } else {
       createMutation.mutate(values, {
-        onSuccess: () => setModalOpened(false),
+        onSuccess: () => {
+          setModalOpened(false);
+          notifications.show({ message: 'Category created', color: 'teal' });
+        },
+        onError: (error) =>
+          notifications.show({
+            title: 'Could not create category',
+            message:
+              (error as Error).message ||
+              'Check that the mock API is running (npm run mock-api).',
+            color: 'red',
+          }),
       });
     }
   };
 
   const handleConfirmDelete = () => {
     if (!deleteTarget) return;
+    if (referencedCategoryIds.has(deleteTarget.id)) {
+      notifications.show({
+        title: 'Cannot delete',
+        message: 'Category is referenced by transactions or budgets.',
+        color: 'red',
+      });
+      return;
+    }
     deleteMutation.mutate(deleteTarget.id, {
-      onSuccess: () => setDeleteTarget(null),
+      onSuccess: () => {
+        setDeleteTarget(null);
+        notifications.show({ message: 'Category deleted', color: 'teal' });
+      },
     });
   };
 
@@ -230,6 +280,12 @@ export function CategoriesPage() {
           <Text size="sm">
             Delete <strong>{deleteTarget?.name}</strong>? This cannot be undone.
           </Text>
+          {deleteTargetInUse && (
+            <Alert color="orange" icon={<IconAlertTriangle size={16} />} variant="light">
+              This category is referenced by transactions or budgets and cannot be
+              deleted.
+            </Alert>
+          )}
           {deleteMutation.isError && (
             <Alert color="red" icon={<IconAlertTriangle size={16} />} variant="light">
               {(deleteMutation.error as Error)?.message ?? 'Delete failed'}
@@ -247,6 +303,7 @@ export function CategoriesPage() {
               color="red"
               loading={deleteMutation.isPending}
               onClick={handleConfirmDelete}
+              disabled={deleteTargetInUse}
             >
               Delete
             </Button>

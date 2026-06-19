@@ -22,6 +22,7 @@ function toPayload(values: ITransactionFormValues): Omit<ITransaction, 'id' | 'u
     categoryId: values.kind === 'transfer' ? null : values.categoryId ?? null,
     date: values.date,
     notes: values.notes?.trim() ?? '',
+    attachment: values.attachment ?? null,
   };
 }
 

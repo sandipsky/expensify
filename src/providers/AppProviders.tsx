@@ -14,6 +14,7 @@ import { RouterProvider } from '@tanstack/react-router';
 import { config } from '../config/env';
 import { queryClient } from '../lib/queryClient';
 import { router } from '../router';
+import { ErrorBoundary } from '../components/common';
 
 const theme = createTheme({
   primaryColor: 'indigo',
@@ -51,7 +52,9 @@ export function AppProviders() {
       <DatesProvider settings={{ firstDayOfWeek: 1 }}>
         <Notifications position="top-right" />
         <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
+          <ErrorBoundary>
+            <RouterProvider router={router} />
+          </ErrorBoundary>
           {config.app.isDev && <ReactQueryDevtools initialIsOpen={false} />}
         </QueryClientProvider>
       </DatesProvider>

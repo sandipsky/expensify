@@ -2,6 +2,10 @@ import { useState, type ReactNode } from 'react';
 import { Drawer } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { IconArrowsExchange } from '@tabler/icons-react';
+import {
+  selectCurrencyCode,
+  usePreferencesStore,
+} from '../../stores/preferencesStore';
 import { Header, type IHeaderUser } from './Header';
 import { Sidebar } from './Sidebar';
 import './AppLayout.css';
@@ -16,6 +20,8 @@ export function AppLayout({ children, user, onLogout }: AppLayoutProps) {
   const isMobile = useMediaQuery('(max-width: 768px)', false);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpened, setMobileOpened] = useState(false);
+  // Re-render formatted currency across the page tree when the preference changes.
+  const currencyCode = usePreferencesStore(selectCurrencyCode);
 
   const handleToggle = () => {
     if (isMobile) {
@@ -58,7 +64,9 @@ export function AppLayout({ children, user, onLogout }: AppLayoutProps) {
           </Drawer>
         )}
 
-        <main className="app-layout-content">{children}</main>
+        <main className="app-layout-content" key={currencyCode}>
+          {children}
+        </main>
       </div>
     </div>
   );

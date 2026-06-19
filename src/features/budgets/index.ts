@@ -7,4 +7,10 @@ export {
   useUpdateBudget,
   useDeleteBudget,
 } from './hooks/useBudgets';
-export { computeBudgetUsage, deriveBudgetRange } from './utils';
+export {
+  computeBudgetUsage,
+  deriveBudgetRange,
+  getBudgetWindow,
+  isBudgetActive,
+} from './utils';
+export type { IBudgetUsage } from './utils';

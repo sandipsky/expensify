@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
 import {
   ActionIcon,
+  Anchor,
   Badge,
   Button,
   Drawer,
   Group,
   Loader,
+  SegmentedControl,
   Stack,
   Text,
 } from '@mantine/core';
@@ -13,6 +15,7 @@ import { notifications } from '@mantine/notifications';
 import {
   IconChevronLeft,
   IconChevronRight,
+  IconPaperclip,
   IconPlus,
 } from '@tabler/icons-react';
 import dayjs, { type Dayjs } from 'dayjs';
@@ -31,7 +34,10 @@ dayjs.extend(isoWeek);
 
 const DATE_FORMAT = 'YYYY-MM-DD';
 
+type CalendarView = 'month' | 'week';
+
 export function CalendarPage() {
+  const [view, setView] = useState<CalendarView>('month');
   const [cursor, setCursor] = useState<Dayjs>(dayjs().startOf('month'));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [quickAddDate, setQuickAddDate] = useState<string | null>(null);
@@ -45,27 +51,30 @@ export function CalendarPage() {
     [categories],
   );
 
-  const days = useMemo(() => buildMonthGrid(cursor), [cursor]);
+  const days = useMemo(
+    () => (view === 'month' ? buildMonthGrid(cursor) : buildWeekGrid(cursor)),
+    [cursor, view],
+  );
 
   const transactionsByDate = useMemo(() => {
     const map = new Map<string, { count: number; net: number }>();
     for (const txn of transactions) {
-      if (txn.kind === 'transfer') {
-        const entry = map.get(txn.date) ?? { count: 0, net: 0 };
-        entry.count += 1;
-        map.set(txn.date, entry);
-        continue;
-      }
-      const delta = txn.kind === 'income' ? txn.amount : -txn.amount;
       const entry = map.get(txn.date) ?? { count: 0, net: 0 };
       entry.count += 1;
-      entry.net += delta;
+      if (txn.kind !== 'transfer') {
+        entry.net += txn.kind === 'income' ? txn.amount : -txn.amount;
+      }
       map.set(txn.date, entry);
     }
     return map;
   }, [transactions]);
 
-  const monthLabel = cursor.format('MMMM YYYY');
+  const periodLabel =
+    view === 'month'
+      ? cursor.format('MMMM YYYY')
+      : `${cursor.startOf('isoWeek').format('MMM D')} – ${cursor
+          .endOf('isoWeek')
+          .format('MMM D, YYYY')}`;
 
   const selectedTxns = useMemo(
     () =>
@@ -79,31 +88,51 @@ export function CalendarPage() {
 
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+  const goToToday = () => {
+    setCursor(view === 'month' ? dayjs().startOf('month') : dayjs().startOf('isoWeek'));
+  };
+
+  const step = (direction: -1 | 1) => {
+    const unit = view === 'month' ? 'month' : 'week';
+    setCursor((c) => c.add(direction, unit));
+  };
+
+  const handleViewChange = (value: string) => {
+    const next = value as CalendarView;
+    setView(next);
+    setCursor((c) => (next === 'month' ? c.startOf('month') : c.startOf('isoWeek')));
+  };
+
   return (
     <div className="page">
       <PageHeader
         title="Calendar"
         subtitle="See activity by day. Click a date to drill in or quick-add."
         actions={
-          <Group gap="sm">
-            <Button
-              variant="default"
-              onClick={() => setCursor(dayjs().startOf('month'))}
-            >
+          <Group gap="sm" wrap="wrap">
+            <SegmentedControl
+              value={view}
+              onChange={handleViewChange}
+              data={[
+                { value: 'month', label: 'Month' },
+                { value: 'week', label: 'Week' },
+              ]}
+            />
+            <Button variant="default" onClick={goToToday}>
               Today
             </Button>
             <Group gap={4}>
               <ActionIcon
                 variant="default"
-                aria-label="Previous month"
-                onClick={() => setCursor((c) => c.subtract(1, 'month'))}
+                aria-label={view === 'month' ? 'Previous month' : 'Previous week'}
+                onClick={() => step(-1)}
               >
                 <IconChevronLeft size={16} />
               </ActionIcon>
               <ActionIcon
                 variant="default"
-                aria-label="Next month"
-                onClick={() => setCursor((c) => c.add(1, 'month'))}
+                aria-label={view === 'month' ? 'Next month' : 'Next week'}
+                onClick={() => step(1)}
               >
                 <IconChevronRight size={16} />
               </ActionIcon>
@@ -113,7 +142,7 @@ export function CalendarPage() {
       />
 
       <div className="cal-toolbar">
-        <h2 className="cal-month-title">{monthLabel}</h2>
+        <h2 className="cal-month-title">{periodLabel}</h2>
       </div>
 
       {isLoading ? (
@@ -121,7 +150,7 @@ export function CalendarPage() {
           <Loader />
         </Group>
       ) : (
-        <div className="cal-grid surface-card">
+        <div className="cal-grid surface-card" data-view={view}>
           <div className="cal-header-row">
             {dayNames.map((d) => (
               <div className="cal-header-cell" key={d}>
@@ -132,34 +161,42 @@ export function CalendarPage() {
           <div className="cal-body">
             {days.map((day) => {
               const dateKey = day.format(DATE_FORMAT);
-              const isCurrentMonth = day.month() === cursor.month();
+              const isCurrentMonth =
+                view === 'week' ? true : day.month() === cursor.month();
               const isToday = day.isSame(dayjs(), 'day');
               const stats = transactionsByDate.get(dateKey);
               return (
-                <button
+                <div
                   key={dateKey}
-                  type="button"
                   className="cal-cell"
                   data-current-month={isCurrentMonth}
                   data-today={isToday}
-                  onClick={() => setSelectedDate(dateKey)}
+                  data-view={view}
                 >
                   <div className="cal-cell-head">
-                    <span className="cal-cell-date">{day.format('D')}</span>
-                    <span
+                    <button
+                      type="button"
+                      className="cal-cell-date-btn"
+                      onClick={() => setSelectedDate(dateKey)}
+                      aria-label={`View ${day.format('dddd, MMM D')}`}
+                    >
+                      <span className="cal-cell-date">{day.format('D')}</span>
+                    </button>
+                    <button
+                      type="button"
                       className="cal-cell-add"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setQuickAddDate(dateKey);
-                      }}
-                      aria-label="Quick add"
-                      role="button"
+                      onClick={() => setQuickAddDate(dateKey)}
+                      aria-label={`Add transaction on ${day.format('MMM D')}`}
                     >
                       <IconPlus size={12} />
-                    </span>
+                    </button>
                   </div>
                   {stats && stats.count > 0 && (
-                    <div className="cal-cell-body">
+                    <button
+                      type="button"
+                      className="cal-cell-body"
+                      onClick={() => setSelectedDate(dateKey)}
+                    >
                       <Badge size="xs" variant="light" color="gray">
                         {stats.count} {stats.count === 1 ? 'txn' : 'txns'}
                       </Badge>
@@ -173,9 +210,9 @@ export function CalendarPage() {
                           {formatSignedCurrency(stats.net)}
                         </span>
                       )}
-                    </div>
+                    </button>
                   )}
-                </button>
+                </div>
               );
             })}
           </div>
@@ -224,9 +261,24 @@ export function CalendarPage() {
                 return (
                   <div className="cal-day-item" key={txn.id}>
                     <Stack gap={2}>
-                      <Text size="sm" fw={500}>
-                        {txn.notes || category?.name || txn.kind}
-                      </Text>
+                      <Group gap={6} wrap="nowrap">
+                        <Text size="sm" fw={500}>
+                          {txn.notes || category?.name || txn.kind}
+                        </Text>
+                        {txn.attachment && (
+                          <Anchor
+                            href={txn.attachment.dataUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download={txn.attachment.name}
+                            aria-label="View attachment"
+                            c="dimmed"
+                            style={{ display: 'inline-flex' }}
+                          >
+                            <IconPaperclip size={13} />
+                          </Anchor>
+                        )}
+                      </Group>
                       <Text size="xs" c="dimmed">
                         {category?.name ?? (txn.kind === 'transfer' ? 'Transfer' : '—')}
                       </Text>
@@ -287,6 +339,15 @@ function buildMonthGrid(cursor: Dayjs): Dayjs[] {
   while (d.isBefore(end) || d.isSame(end, 'day')) {
     days.push(d);
     d = d.add(1, 'day');
+  }
+  return days;
+}
+
+function buildWeekGrid(cursor: Dayjs): Dayjs[] {
+  const start = cursor.startOf('isoWeek');
+  const days: Dayjs[] = [];
+  for (let i = 0; i < 7; i += 1) {
+    days.push(start.add(i, 'day'));
   }
   return days;
 }

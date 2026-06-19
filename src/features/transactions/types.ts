@@ -1,5 +1,14 @@
 export type TransactionKind = 'expense' | 'income' | 'transfer';
 
+export interface ITransactionAttachment {
+  name: string;
+  mimeType: string;
+  size: number;
+  // For the json-server mock backend the file is stored inline as a data URL.
+  // A real backend would expose a file URL here instead (same field, same UI).
+  dataUrl: string;
+}
+
 export interface ITransaction {
   id: string;
   userId: string;
@@ -10,6 +19,7 @@ export interface ITransaction {
   categoryId: string | null;
   date: string;
   notes: string;
+  attachment: ITransactionAttachment | null;
   createdAt: string;
 }
 

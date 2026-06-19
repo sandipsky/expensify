@@ -11,6 +11,7 @@ import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import dayjs from 'dayjs';
 import { zodResolver } from '../../../lib/zodResolver';
+import { getCurrencySymbol } from '../../../utils/format';
 import { useAccounts } from '../../accounts/hooks/useAccounts';
 import { useCategories } from '../../categories/hooks/useCategories';
 import { deriveBudgetRange } from '../utils';
@@ -108,7 +109,7 @@ export function BudgetFormModal({
           <NumberInput
             label="Amount"
             placeholder="0.00"
-            prefix="Rs "
+            prefix={`${getCurrencySymbol()} `}
             min={0}
             decimalScale={2}
             thousandSeparator=","
