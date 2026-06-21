@@ -13,7 +13,10 @@
       "Read(//c/Users/Sandip.Shakya/.claude/projects/c--Users-Sandip-Shakya-Downloads-Projects-Sandip-expensify/b1cd7dd1-753d-4061-a90d-8825b616fa3f/subagents/workflows/wf_ebd3dea9-a4c/**)",
       "Read(//c/Users/Sandip.Shakya/.claude/projects/c--Users-Sandip-Shakya-Downloads-Projects-Sandip-expensify/b1cd7dd1-753d-4061-a90d-8825b616fa3f/subagents/workflows/**)",
       "Bash(cat .env.local)",
-      "Bash(cat .env.example)"
+      "Bash(cat .env.example)",
+      "Bash(py --version)",
+      "Bash(python -m pip --version)",
+      "PowerShell($cmds = 'python','python3','py'; foreach\\($c in $cmds\\){ $p = \\(Get-Command $c -ErrorAction SilentlyContinue\\); if\\($p\\){ \"$c -> $\\($p.Source\\)\"; & $c --version } else { \"$c -> NOT FOUND\" } })"
     ]
   }
 }

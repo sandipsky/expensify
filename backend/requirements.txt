@@ -1,0 +1,16 @@
+# Core
+Django>=5.2,<5.3
+djangorestframework>=3.16,<3.17
+djangorestframework-simplejwt>=5.5,<6.0
+
+# API tooling
+django-cors-headers>=4.7,<5.0
+django-filter>=25.1
+django-environ>=0.12
+
+# Files / images
+Pillow>=11.0
+
+# Production
+gunicorn>=23.0
+whitenoise>=6.9

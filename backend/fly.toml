@@ -1,0 +1,34 @@
+# Fly.io configuration for the Expensify backend.
+# Rename `app` to your chosen Fly app name before `fly deploy`.
+
+app = "expensify-backend"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  DJANGO_SETTINGS_MODULE = "config.settings.prod"
+  DJANGO_DATA_DIR = "/data"
+  DJANGO_DB_PATH = "/data/db.sqlite3"
+  PORT = "8080"
+  # Set real values for these (and secrets) — see README.
+  # DJANGO_ALLOWED_HOSTS = "expensify-backend.fly.dev"
+  # CORS_ALLOWED_ORIGINS = "https://your-frontend.example"
+
+# Persistent volume so the SQLite DB and uploaded attachments survive deploys.
+# Create once:  fly volumes create expensify_data --size 1 --region iad
+[[mounts]]
+  source = "expensify_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
