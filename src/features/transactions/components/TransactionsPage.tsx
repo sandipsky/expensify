@@ -440,7 +440,7 @@ export function TransactionsPage() {
             </Table.ScrollContainer>
           </div>
 
-          <Group justify="space-between" mt="sm">
+          <Group justify="space-between" className="txn-footer">
             <Text size="sm" c="dimmed">
               {filtered.length} {filtered.length === 1 ? 'transaction' : 'transactions'}
             </Text>

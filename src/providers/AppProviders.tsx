@@ -9,9 +9,7 @@ import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { RouterProvider } from '@tanstack/react-router';
-import { config } from '../config/env';
 import { queryClient } from '../lib/queryClient';
 import { router } from '../router';
 import { ErrorBoundary } from '../components/common';
@@ -30,7 +28,10 @@ const theme = createTheme({
     Button: { defaultProps: { radius: 'md' } },
     Card: { defaultProps: { radius: 'lg', withBorder: true } },
     Paper: { defaultProps: { radius: 'lg' } },
-    Modal: { defaultProps: { radius: 'lg', centered: true } },
+    Modal: {
+      defaultProps: { radius: 'lg', centered: true },
+      styles: { title: { fontSize: '1.25rem', fontWeight: 700 } },
+    },
     TextInput: { defaultProps: { radius: 'md' } },
     NumberInput: { defaultProps: { radius: 'md' } },
     Select: { defaultProps: { radius: 'md' } },
@@ -55,7 +56,6 @@ export function AppProviders() {
           <ErrorBoundary>
             <RouterProvider router={router} />
           </ErrorBoundary>
-          {config.app.isDev && <ReactQueryDevtools initialIsOpen={false} />}
         </QueryClientProvider>
       </DatesProvider>
     </MantineProvider>

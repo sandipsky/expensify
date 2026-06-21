@@ -7,7 +7,6 @@ import {
   useMantineColorScheme,
 } from '@mantine/core';
 import {
-  IconArrowsExchange,
   IconChevronDown,
   IconLogout,
   IconMenu2,
@@ -50,9 +49,6 @@ export function Header({
       </ActionIcon>
 
       <div className="app-header-logo">
-        <span className="app-header-logo-mark">
-          <IconArrowsExchange size={18} stroke={2.5} />
-        </span>
         <span className="app-header-logo-text">Expensify</span>
       </div>
 

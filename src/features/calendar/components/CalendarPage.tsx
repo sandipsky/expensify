@@ -100,7 +100,12 @@ export function CalendarPage() {
   const handleViewChange = (value: string) => {
     const next = value as CalendarView;
     setView(next);
-    setCursor((c) => (next === 'month' ? c.startOf('month') : c.startOf('isoWeek')));
+    setCursor((c) => {
+      if (next === 'month') return c.startOf('month');
+      return c.isSame(dayjs(), 'month')
+        ? dayjs().startOf('isoWeek')
+        : c.startOf('month').startOf('isoWeek');
+    });
   };
 
   return (

@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0 0.75rem;
+  padding: 0 0.5rem;
   background: var(--app-surface);
   border-bottom: 1px solid var(--app-border);
 }
@@ -14,19 +14,6 @@
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
-}
-
-.app-header-logo-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--app-primary), #7c3aed);
-  color: #fff;
-  font-weight: 700;
-  flex-shrink: 0;
 }
 
 .app-header-logo-text {
@@ -80,6 +67,6 @@
   .app-header {
     height: 64px;
     gap: 0.75rem;
-    padding: 0 clamp(1rem, 3vw, 2rem);
+    padding: 0 clamp(0.5rem, 1.5vw, 1rem);
   }
 }

@@ -457,6 +457,32 @@
       "date": "2026-05-25",
       "notes": "1",
       "createdAt": "2026-05-25T11:22:00.949Z"
+    },
+    {
+      "id": "txn_mqnxtsmaght25a",
+      "userId": "usr_admin",
+      "kind": "expense",
+      "amount": 19,
+      "accountId": "acc_savings",
+      "toAccountId": null,
+      "categoryId": "cat_utilities",
+      "date": "2026-06-21",
+      "notes": "dining",
+      "attachment": null,
+      "createdAt": "2026-06-21T15:24:50.338Z"
+    },
+    {
+      "id": "txn_mqnxu46mfo5rdb",
+      "userId": "usr_admin",
+      "kind": "income",
+      "amount": 1000,
+      "accountId": "acc_checking",
+      "toAccountId": null,
+      "categoryId": "cat_salary",
+      "date": "2026-06-21",
+      "notes": "s",
+      "attachment": null,
+      "createdAt": "2026-06-21T15:25:05.326Z"
     }
   ],
   "budgets": [
