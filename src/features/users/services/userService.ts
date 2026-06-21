@@ -1,6 +1,6 @@
+import axios from 'axios';
 import { apiClient } from '../../../lib/apiClient';
-import { generateId } from '../../../utils/ids';
-import type { IStoredUser, IUser } from '../../auth/types';
+import type { IUser } from '../../auth/types';
 import type {
   IUserCreateFormValues,
   IUserUpdateFormValues,
@@ -15,39 +15,33 @@ export class DuplicateUsernameError extends Error {
   }
 }
 
-function toPublicUser(stored: IStoredUser): IUser {
-  const { password: _password, ...rest } = stored;
-  return rest;
+// The API reports a taken username as a 400 with a `username` field error.
+function rethrowUsernameConflict(error: unknown, username: string): never {
+  if (axios.isAxiosError(error) && error.response?.status === 400) {
+    const data = error.response.data as { errors?: { username?: unknown } } | undefined;
+    if (data?.errors?.username) {
+      throw new DuplicateUsernameError(username);
+    }
+  }
+  throw error;
 }
 
-export async function listUsers(): Promise<IUser[]> {
-  const users = await apiClient.get<IStoredUser[]>(RESOURCE);
-  return users.map(toPublicUser);
-}
-
-async function findByUsername(username: string): Promise<IStoredUser | null> {
-  const matches = await apiClient.get<IStoredUser[]>(
-    `${RESOURCE}?username=${encodeURIComponent(username)}`,
-  );
-  return matches[0] ?? null;
+export function listUsers(): Promise<IUser[]> {
+  return apiClient.get<IUser[]>(`${RESOURCE}?page_size=1000`);
 }
 
 export async function createUser(values: IUserCreateFormValues): Promise<IUser> {
   const username = values.username.trim().toLowerCase();
-  const existing = await findByUsername(username);
-  if (existing) {
-    throw new DuplicateUsernameError(username);
+  try {
+    return await apiClient.post<IUser>(RESOURCE, {
+      username,
+      password: values.password,
+      name: values.name.trim(),
+      role: values.role,
+    });
+  } catch (error) {
+    rethrowUsernameConflict(error, username);
   }
-  const payload: IStoredUser = {
-    id: generateId('usr'),
-    username,
-    password: values.password,
-    name: values.name.trim(),
-    role: values.role,
-    createdAt: new Date().toISOString(),
-  };
-  const created = await apiClient.post<IStoredUser>(RESOURCE, payload);
-  return toPublicUser(created);
 }
 
 export async function updateUser(
@@ -55,11 +49,7 @@ export async function updateUser(
   values: IUserUpdateFormValues,
 ): Promise<IUser> {
   const username = values.username.trim().toLowerCase();
-  const existing = await findByUsername(username);
-  if (existing && existing.id !== id) {
-    throw new DuplicateUsernameError(username);
-  }
-  const patch: Partial<IStoredUser> = {
+  const patch: Record<string, unknown> = {
     username,
     name: values.name.trim(),
     role: values.role,
@@ -67,8 +57,11 @@ export async function updateUser(
   if (values.password && values.password.length > 0) {
     patch.password = values.password;
   }
-  const updated = await apiClient.patch<IStoredUser>(`${RESOURCE}/${id}`, patch);
-  return toPublicUser(updated);
+  try {
+    return await apiClient.patch<IUser>(`${RESOURCE}/${id}`, patch);
+  } catch (error) {
+    rethrowUsernameConflict(error, username);
+  }
 }
 
 export function deleteUser(id: string): Promise<void> {

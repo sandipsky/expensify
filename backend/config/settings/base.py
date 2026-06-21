@@ -149,6 +149,9 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'apps.common.pagination.StandardPagination',
     'PAGE_SIZE': 20,
+    # Serialize Decimal as JSON numbers (not strings) so the frontend can do
+    # arithmetic on amounts/balances directly.
+    'COERCE_DECIMAL_TO_STRING': False,
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',

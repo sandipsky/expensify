@@ -1,44 +1,48 @@
 import { apiClient } from '../../../lib/apiClient';
-import { getCurrentUserId } from '../../auth';
-import { generateId } from '../../../utils/ids';
 import type { IBudget } from '../types';
 import type { IBudgetFormValues } from '../validations';
 
 const RESOURCE = '/budgets';
 
-export function listBudgets(): Promise<IBudget[]> {
-  return apiClient.get<IBudget[]>(
-    `${RESOURCE}?userId=${encodeURIComponent(getCurrentUserId())}`,
-  );
+// The API exposes the foreign keys as `account` / `category`; the frontend uses
+// the `*Id` suffix. Map between the two at this boundary.
+interface IBudgetApi extends Omit<IBudget, 'accountId' | 'categoryId'> {
+  account: string;
+  category: string;
 }
 
-export function createBudget(values: IBudgetFormValues): Promise<IBudget> {
-  const payload: IBudget = {
-    id: generateId('bud'),
-    userId: getCurrentUserId(),
+function fromApi(budget: IBudgetApi): IBudget {
+  const { account, category, ...rest } = budget;
+  return { ...rest, accountId: account, categoryId: category };
+}
+
+function toPayload(values: IBudgetFormValues) {
+  return {
     amount: values.amount,
-    categoryId: values.categoryId,
-    accountId: values.accountId,
+    account: values.accountId,
+    category: values.categoryId,
     duration: values.duration,
     startAt: values.startAt,
     endAt: values.endAt,
-    createdAt: new Date().toISOString(),
   };
-  return apiClient.post<IBudget>(RESOURCE, payload);
 }
 
-export function updateBudget(
+export async function listBudgets(): Promise<IBudget[]> {
+  const budgets = await apiClient.get<IBudgetApi[]>(`${RESOURCE}?page_size=1000`);
+  return budgets.map(fromApi);
+}
+
+export async function createBudget(values: IBudgetFormValues): Promise<IBudget> {
+  const created = await apiClient.post<IBudgetApi>(RESOURCE, toPayload(values));
+  return fromApi(created);
+}
+
+export async function updateBudget(
   id: string,
   values: IBudgetFormValues,
 ): Promise<IBudget> {
-  return apiClient.patch<IBudget>(`${RESOURCE}/${id}`, {
-    amount: values.amount,
-    categoryId: values.categoryId,
-    accountId: values.accountId,
-    duration: values.duration,
-    startAt: values.startAt,
-    endAt: values.endAt,
-  });
+  const updated = await apiClient.patch<IBudgetApi>(`${RESOURCE}/${id}`, toPayload(values));
+  return fromApi(updated);
 }
 
 export function deleteBudget(id: string): Promise<void> {

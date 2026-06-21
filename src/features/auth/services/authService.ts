@@ -1,7 +1,6 @@
+import axios from 'axios';
 import { apiClient } from '../../../lib/apiClient';
-import type { ILoginCredentials, IStoredUser, IUser } from '../types';
-
-const RESOURCE = '/users';
+import type { ILoginCredentials, IUser } from '../types';
 
 export class InvalidCredentialsError extends Error {
   constructor() {
@@ -10,21 +9,28 @@ export class InvalidCredentialsError extends Error {
   }
 }
 
-export async function authenticate(
-  credentials: ILoginCredentials,
-): Promise<IUser> {
-  const username = credentials.username.trim().toLowerCase();
-  const matches = await apiClient.get<IStoredUser[]>(
-    `${RESOURCE}?username=${encodeURIComponent(username)}`,
-  );
-  const stored = matches[0];
-  if (!stored || stored.password !== credentials.password) {
-    throw new InvalidCredentialsError();
-  }
-  return stripPassword(stored);
+interface ILoginResponse {
+  token: string;
+  refresh: string;
+  user: IUser;
 }
 
-export function stripPassword(user: IStoredUser): IUser {
-  const { password: _password, ...rest } = user;
-  return rest;
+export interface IAuthResult {
+  token: string;
+  user: IUser;
+}
+
+export async function login(credentials: ILoginCredentials): Promise<IAuthResult> {
+  try {
+    const result = await apiClient.post<ILoginResponse>('/auth/login', {
+      username: credentials.username.trim().toLowerCase(),
+      password: credentials.password,
+    });
+    return { token: result.token, user: result.user };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      throw new InvalidCredentialsError();
+    }
+    throw error;
+  }
 }

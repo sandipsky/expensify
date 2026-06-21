@@ -7,7 +7,9 @@ from rest_framework.response import Response
 class StandardPagination(PageNumberPagination):
     page_size = 20
     page_size_query_param = 'page_size'
-    max_page_size = 200
+    # The frontend fetches full lists and aggregates client-side, so allow a
+    # large page size on request.
+    max_page_size = 1000
 
     def get_paginated_response(self, data) -> Response:
         return Response(

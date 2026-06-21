@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 import { config } from '../config/env';
 import { queryClient } from '../lib/queryClient';
-import { authenticate } from '../features/auth/services/authService';
+import { login as loginRequest } from '../features/auth/services/authService';
 import type { ILoginCredentials, IUser } from '../features/auth/types';
 
 interface AuthState {
@@ -26,8 +26,7 @@ export const useAuthStore = create<AuthStore>()(
         token: null,
         user: null,
         login: async (credentials): Promise<IUser> => {
-          const user = await authenticate(credentials);
-          const token = `session-${user.id}-${Date.now()}`;
+          const { token, user } = await loginRequest(credentials);
           // Drop any cached server state from a previous session.
           queryClient.clear();
           set({ token, user }, false, 'auth/login');

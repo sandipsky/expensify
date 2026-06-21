@@ -325,7 +325,7 @@ export function CalendarPage() {
                 title: 'Could not add transaction',
                 message:
                   (error as Error).message ||
-                  'Check that the mock API is running (npm run mock-api).',
+                  'Check that the API server is running (cd backend && python manage.py runserver).',
                 color: 'red',
               }),
           })

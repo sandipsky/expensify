@@ -4,14 +4,13 @@ export interface ITransactionAttachment {
   name: string;
   mimeType: string;
   size: number;
-  // For the json-server mock backend the file is stored inline as a data URL.
-  // A real backend would expose a file URL here instead (same field, same UI).
+  // A browser-resolvable URL to the file. For a freshly picked file (before
+  // upload) this is a base64 data URL; once stored it is the server file URL.
   dataUrl: string;
 }
 
 export interface ITransaction {
   id: string;
-  userId: string;
   kind: TransactionKind;
   amount: number;
   accountId: string;

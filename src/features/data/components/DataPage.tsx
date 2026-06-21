@@ -27,8 +27,6 @@ import { useCategories, categoryKeys } from '../../categories/hooks/useCategorie
 import { useTransactions, transactionKeys } from '../../transactions/hooks/useTransactions';
 import { z } from 'zod';
 import { apiClient } from '../../../lib/apiClient';
-import { getCurrentUserId } from '../../auth';
-import { generateId } from '../../../utils/ids';
 import type { IAccount } from '../../accounts/types';
 import type { IBudget } from '../../budgets/types';
 import type { ICategory } from '../../categories/types';
@@ -142,7 +140,6 @@ export function DataPage() {
     if (!report) return;
     setBusy(true);
     try {
-      const userId = getCurrentUserId();
       const accountIdMap = new Map<string, string>();
       const categoryIdMap = new Map<string, string>();
 
@@ -184,15 +181,12 @@ export function DataPage() {
           ? dedupeName(incoming.name, usedAccountNames)
           : incoming.name;
         usedAccountNames.add(name.trim().toLowerCase());
-        const newId = generateId('acc');
-        await apiClient.post('/accounts', {
-          ...incoming,
-          id: newId,
-          userId,
+        const createdAccount = await apiClient.post<{ id: string }>('/accounts', {
           name,
-          createdAt: incoming.createdAt ?? new Date().toISOString(),
+          initialAmount: incoming.initialAmount,
+          notes: incoming.notes,
         });
-        accountIdMap.set(incoming.id, newId);
+        accountIdMap.set(incoming.id, createdAccount.id);
         created += 1;
       }
 
@@ -221,45 +215,42 @@ export function DataPage() {
             )
           : incoming.name;
         usedCategoryKeys.add(categoryKey(name, incoming.type));
-        const newId = generateId('cat');
-        await apiClient.post('/categories', {
-          ...incoming,
-          id: newId,
-          userId,
+        const createdCategory = await apiClient.post<{ id: string }>('/categories', {
           name,
-          createdAt: incoming.createdAt ?? new Date().toISOString(),
+          type: incoming.type,
+          icon: incoming.icon,
         });
-        categoryIdMap.set(incoming.id, newId);
+        categoryIdMap.set(incoming.id, createdCategory.id);
         created += 1;
       }
 
       // Budgets and transactions are always created new, with remapped relations.
+      // The API exposes the foreign keys as `account` / `category`.
       for (const incoming of report.budgets) {
         await apiClient.post('/budgets', {
-          ...incoming,
-          id: generateId('bud'),
-          userId,
-          accountId: accountIdMap.get(incoming.accountId) ?? incoming.accountId,
-          categoryId: categoryIdMap.get(incoming.categoryId) ?? incoming.categoryId,
-          createdAt: incoming.createdAt ?? new Date().toISOString(),
+          amount: incoming.amount,
+          account: accountIdMap.get(incoming.accountId) ?? incoming.accountId,
+          category: categoryIdMap.get(incoming.categoryId) ?? incoming.categoryId,
+          duration: incoming.duration,
+          startAt: incoming.startAt,
+          endAt: incoming.endAt,
         });
         created += 1;
       }
 
       for (const incoming of report.transactions) {
         await apiClient.post('/transactions', {
-          ...incoming,
-          id: generateId('txn'),
-          userId,
-          accountId: accountIdMap.get(incoming.accountId) ?? incoming.accountId,
-          toAccountId: incoming.toAccountId
+          kind: incoming.kind,
+          amount: incoming.amount,
+          account: accountIdMap.get(incoming.accountId) ?? incoming.accountId,
+          toAccount: incoming.toAccountId
             ? accountIdMap.get(incoming.toAccountId) ?? incoming.toAccountId
             : null,
-          categoryId: incoming.categoryId
+          category: incoming.categoryId
             ? categoryIdMap.get(incoming.categoryId) ?? incoming.categoryId
             : null,
-          attachment: incoming.attachment ?? null,
-          createdAt: incoming.createdAt ?? new Date().toISOString(),
+          date: incoming.date,
+          notes: incoming.notes,
         });
         created += 1;
       }

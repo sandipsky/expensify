@@ -1,27 +1,19 @@
 import { apiClient } from '../../../lib/apiClient';
-import { getCurrentUserId } from '../../auth';
-import { generateId } from '../../../utils/ids';
 import type { IAccount } from '../types';
 import type { IAccountFormValues } from '../validations';
 
 const RESOURCE = '/accounts';
 
 export function listAccounts(): Promise<IAccount[]> {
-  return apiClient.get<IAccount[]>(
-    `${RESOURCE}?userId=${encodeURIComponent(getCurrentUserId())}`,
-  );
+  return apiClient.get<IAccount[]>(`${RESOURCE}?page_size=1000`);
 }
 
 export function createAccount(values: IAccountFormValues): Promise<IAccount> {
-  const payload: IAccount = {
-    id: generateId('acc'),
-    userId: getCurrentUserId(),
+  return apiClient.post<IAccount>(RESOURCE, {
     name: values.name.trim(),
     initialAmount: values.initialAmount,
     notes: values.notes?.trim() ?? '',
-    createdAt: new Date().toISOString(),
-  };
-  return apiClient.post<IAccount>(RESOURCE, payload);
+  });
 }
 
 export function updateAccount(

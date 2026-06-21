@@ -1,6 +1,7 @@
 import axios, { type AxiosError, type AxiosRequestConfig, type AxiosResponse } from 'axios';
 import { config } from '../config/env';
 import { useAuthStore } from '../stores/authStore';
+import { camelizeKeys, snakeizeKeys } from './caseConvert';
 
 const instance = axios.create({
   baseURL: config.api.baseUrl,
@@ -15,11 +16,29 @@ instance.interceptors.request.use((requestConfig) => {
   if (token) {
     requestConfig.headers.Authorization = `Bearer ${token}`;
   }
+  // Let the browser set the multipart boundary for file uploads; otherwise
+  // convert the camelCase request body to the snake_case the API expects.
+  if (requestConfig.data instanceof FormData) {
+    delete requestConfig.headers['Content-Type'];
+  } else if (requestConfig.data && typeof requestConfig.data === 'object') {
+    requestConfig.data = snakeizeKeys(requestConfig.data);
+  }
   return requestConfig;
 });
 
+// Unwrap the API envelope: IApiResponse<T> -> T, IPaginatedResponse<T> -> T[].
+function unwrap(body: unknown): unknown {
+  if (body && typeof body === 'object' && !Array.isArray(body) && 'data' in body) {
+    const record = body as Record<string, unknown>;
+    if ('success' in record || 'pagination' in record) {
+      return record.data;
+    }
+  }
+  return body;
+}
+
 instance.interceptors.response.use(
-  (response: AxiosResponse) => response.data,
+  (response: AxiosResponse) => camelizeKeys(unwrap(response.data)),
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();

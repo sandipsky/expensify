@@ -63,13 +63,13 @@ pip install -r requirements.txt
 cp .env.example .env            # adjust if needed
 
 python manage.py migrate
-python manage.py seed_demo      # loads ../db.json -> admin / admin
+python manage.py seed_demo      # loads demo data -> admin / admin
 python manage.py runserver      # http://127.0.0.1:8000
 ```
 
-`seed_demo` mirrors the frontend's `db.json` mock data into real tables
-(fresh UUIDs, rebuilt relationships). Re-run with `--reset` to wipe and reload.
-Create your own admin instead with `python manage.py createsuperuser`.
+`seed_demo` loads the bundled demo dataset (`apps/data/seed_data.json`) into real
+tables (fresh UUIDs, rebuilt relationships). Re-run with `--reset` to wipe and
+reload. Create your own admin instead with `python manage.py createsuperuser`.
 
 ### Environment variables
 
@@ -169,20 +169,23 @@ SQLite lives on the same disk on PythonAnywhere — no volume needed.
 
 ---
 
-## Connecting the existing frontend
+## Frontend integration
 
-The current frontend was built against `json-server` (raw arrays, camelCase,
-`?userId=` filters, client-generated ids, fake auth). This backend implements
-the **idealized DRF contract**, so the frontend's API layer needs updating.
-See the migration checklist in the project root summary / ask the maintainer —
-the changes are confined to:
+The React frontend talks to this backend directly (the old `json-server` mock
+has been removed). The API layer adapts at the boundary so the rest of the
+frontend stays camelCase:
 
 - `.env.local` → `VITE_API_BASE_URL=http://localhost:8000/api/v1`
-- `lib/apiClient.ts` → unwrap the `{ data }` envelope in the response interceptor.
-- `features/auth` → call `POST /auth/login`, store the returned real JWT.
-- `features/*/services` → drop client-side id/`createdAt` generation and
-  `?userId=` filters (the server scopes to the authenticated user); rename
-  fields to snake_case (`initialAmount`→`initial_amount`, `toAccountId`→`to_account`,
-  `categoryId`→`category`, `startAt`/`endAt`→`start_at`/`end_at`).
-- Dashboard/calendar can now use the server aggregation endpoints instead of
-  computing client-side.
+- `src/lib/apiClient.ts` → unwraps the `{ data }` / `{ data, pagination }`
+  envelope and auto-converts snake_case ↔ camelCase (`src/lib/caseConvert.ts`).
+- `features/auth` → calls `POST /auth/login` and stores the JWT.
+- `features/{transactions,budgets}/services` → map the FK `*Id` suffix
+  (`account`/`to_account`/`category` ↔ `accountId`/`toAccountId`/`categoryId`);
+  transactions upload attachments via `POST /transactions/{id}/attachment`.
+
+Run both together: `python manage.py runserver` here, and `npm run dev` in the
+project root.
+
+The dashboard/calendar still aggregate client-side from the full lists; the
+server `/dashboard/summary` and `/calendar` endpoints are available if you want
+to offload that later.

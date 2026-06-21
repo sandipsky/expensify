@@ -124,7 +124,7 @@ export function BudgetsPage() {
             title: 'Could not create budget',
             message:
               (error as Error).message ||
-              'Check that the mock API is running (npm run mock-api).',
+              'Check that the API server is running (cd backend && python manage.py runserver).',
             color: 'red',
           }),
       });
