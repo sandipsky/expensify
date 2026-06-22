@@ -6,6 +6,7 @@ import {
   Button,
   Group,
   Loader,
+  Menu,
   Modal,
   Pagination,
   Select,
@@ -21,6 +22,9 @@ import {
   IconArrowDownLeft,
   IconArrowUpRight,
   IconArrowsExchange,
+  IconDownload,
+  IconFileSpreadsheet,
+  IconFileTypePdf,
   IconPaperclip,
   IconPencil,
   IconPlus,
@@ -181,6 +185,27 @@ export function TransactionsPage() {
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
+  // Exports reflect the active filters, not just the current page. The export
+  // module (xlsx + jspdf) is loaded on demand so it doesn't weigh down the page.
+  const handleExport = async (format: 'excel' | 'pdf') => {
+    if (filtered.length === 0) return;
+    try {
+      const exporters = await import('../export');
+      const lookups = { accountById, categoryById };
+      if (format === 'excel') {
+        exporters.exportTransactionsToExcel(filtered, lookups);
+      } else {
+        exporters.exportTransactionsToPdf(filtered, lookups);
+      }
+    } catch {
+      notifications.show({
+        title: 'Export failed',
+        message: 'Could not generate the file. Please try again.',
+        color: 'red',
+      });
+    }
+  };
+
   const resetFilters = () => {
     setKindFilter('all');
     setAccountFilter(null);
@@ -204,9 +229,37 @@ export function TransactionsPage() {
         title="Transactions"
         subtitle="All movements across your accounts."
         actions={
-          <Button leftSection={<IconPlus size={16} />} onClick={openCreate}>
-            New transaction
-          </Button>
+          <Group gap="sm">
+            <Menu shadow="md" position="bottom-end" width={200}>
+              <Menu.Target>
+                <Button
+                  variant="default"
+                  leftSection={<IconDownload size={16} />}
+                  disabled={filtered.length === 0}
+                >
+                  Export
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Label>Export {filtered.length} record(s)</Menu.Label>
+                <Menu.Item
+                  leftSection={<IconFileSpreadsheet size={16} />}
+                  onClick={() => handleExport('excel')}
+                >
+                  Excel (.xlsx)
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconFileTypePdf size={16} />}
+                  onClick={() => handleExport('pdf')}
+                >
+                  PDF (.pdf)
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+            <Button leftSection={<IconPlus size={16} />} onClick={openCreate}>
+              New transaction
+            </Button>
+          </Group>
         }
       />
 
