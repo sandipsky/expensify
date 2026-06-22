@@ -11,9 +11,10 @@ env/
 
 # Django
 *.sqlite3
-data/
-media/
-staticfiles/
+# Runtime data dir only (anchored to backend/) — must NOT match apps/data/.
+/data/
+/media/
+/staticfiles/
 
 # Env
 .env

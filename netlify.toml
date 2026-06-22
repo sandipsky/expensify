@@ -1,0 +1,22 @@
+# Netlify configuration for the Expensify frontend (Vite + TanStack Router).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# SPA fallback: TanStack Router handles routing client-side, so every deep
+# link (e.g. /transactions, /budgets) must serve index.html instead of 404ing.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Long-cache the fingerprinted build assets; index.html stays uncached so new
+# deploys are picked up immediately.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
