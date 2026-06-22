@@ -25,11 +25,9 @@ class LoginView(TokenObtainPairView):
 
 
 class IsAdminRole(permissions.BasePermission):
-    """Only admins may manage other users; everyone may read themselves."""
+    """Only admins may view or manage users (the ``me`` action is exempt)."""
 
     def has_permission(self, request: Request, view) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            return request.user and request.user.is_authenticated
         return bool(request.user and request.user.role == User.Role.ADMIN)
 
 

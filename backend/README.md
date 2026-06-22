@@ -63,13 +63,13 @@ pip install -r requirements.txt
 cp .env.example .env            # adjust if needed
 
 python manage.py migrate
-python manage.py seed_demo      # loads demo data -> admin / admin
+python manage.py seed_demo      # creates baseline users -> admin/admin, demo/demo
 python manage.py runserver      # http://127.0.0.1:8000
 ```
 
-`seed_demo` loads the bundled demo dataset (`apps/data/seed_data.json`) into real
-tables (fresh UUIDs, rebuilt relationships). Re-run with `--reset` to wipe and
-reload. Create your own admin instead with `python manage.py createsuperuser`.
+`seed_demo` creates only the two baseline users — `admin`/`admin` (admin role)
+and `demo`/`demo` (user role) — and no other data. Re-run with `--reset` to reset
+their passwords. Create additional admins with `python manage.py createsuperuser`.
 
 ### Environment variables
 

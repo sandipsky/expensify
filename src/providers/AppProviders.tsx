@@ -19,10 +19,34 @@ const theme = createTheme({
   defaultRadius: 'md',
   fontFamily:
     "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+  // Compact, consistent type scale (rem against a 16px root) so Mantine
+  // components match the 14px body base instead of their default 16px scale.
+  fontSizes: {
+    xs: '0.75rem', // 12px
+    sm: '0.8125rem', // 13px — default size for inputs, buttons, tables
+    md: '0.875rem', // 14px — base body text
+    lg: '1rem', // 16px
+    xl: '1.125rem', // 18px
+  },
+  lineHeights: {
+    xs: '1.4',
+    sm: '1.45',
+    md: '1.5',
+    lg: '1.55',
+    xl: '1.6',
+  },
   headings: {
     fontFamily:
       "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
     fontWeight: '600',
+    sizes: {
+      h1: { fontSize: '1.5rem', lineHeight: '1.3', fontWeight: '600' }, // 24px
+      h2: { fontSize: '1.25rem', lineHeight: '1.35', fontWeight: '600' }, // 20px
+      h3: { fontSize: '1.125rem', lineHeight: '1.4', fontWeight: '600' }, // 18px
+      h4: { fontSize: '1rem', lineHeight: '1.45', fontWeight: '600' }, // 16px
+      h5: { fontSize: '0.875rem', lineHeight: '1.5', fontWeight: '600' }, // 14px
+      h6: { fontSize: '0.8125rem', lineHeight: '1.5', fontWeight: '600' }, // 13px
+    },
   },
   components: {
     Button: { defaultProps: { radius: 'md' } },

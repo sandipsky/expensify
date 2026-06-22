@@ -97,9 +97,6 @@ export function LoginPage() {
             <Button type="submit" fullWidth mt="sm" size="md" loading={busy}>
               Sign in
             </Button>
-            <p className="login-page-hint">
-              Default admin: <strong>admin</strong> / <strong>admin</strong>
-            </p>
           </Stack>
         </form>
       </Paper>
