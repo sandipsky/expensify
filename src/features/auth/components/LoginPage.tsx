@@ -22,8 +22,9 @@ export function LoginPage() {
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
   const navigate = useNavigate();
   const { redirect } = useSearch({ from: '/login' });
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  // Prefilled with the seeded demo account so the deployed demo is one click away.
+  const [username, setUsername] = useState('demo');
+  const [password, setPassword] = useState('demo');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
