@@ -1,0 +1,90 @@
+.showcase-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-light);
+}
+
+.showcase-layout .sidebar {
+  flex: 0 0 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px 16px;
+  background: var(--bg-lightest);
+  border-right: 1px solid var(--separator);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 4px;
+}
+
+.sidebar__logo {
+  color: var(--accent);
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* Take the remaining height and scroll independently of the pinned brand. */
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* Room for the scrollbar so links don't sit under it. */
+  padding-right: 4px;
+  margin-right: -4px;
+}
+
+.sidebar__heading {
+  margin: 0 0 6px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-quaternary);
+}
+
+.sidebar__link {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition:
+    background-color 120ms ease-out,
+    color 120ms ease-out;
+}
+
+.sidebar__link:hover {
+  background: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+.sidebar__link--active {
+  background: var(--accent-bg);
+  color: var(--accent-dark);
+  font-weight: 600;
+}
+
+.showcase-layout .content {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 40px 48px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar__link {
+    transition: none;
+  }
+}

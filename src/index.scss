@@ -1,0 +1,228 @@
+@use './styles/variables' as *;
+
+// Deliberately minimal: enough to make the pages readable, nothing more.
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: $color-text;
+  background: $color-bg;
+  line-height: 1.5;
+}
+
+a {
+  color: $color-primary;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+code {
+  padding: 0 0.25em;
+  border-radius: 3px;
+  background: $color-border;
+}
+
+// ---- Layout -----------------------------------------------------------------
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: $space * 3;
+  padding: $space * 2 $space * 3;
+  background: $color-surface;
+  border-bottom: 1px solid $color-border;
+
+  nav {
+    display: flex;
+    gap: $space * 2;
+
+    // TanStack Router adds this class to the <Link> of the current route
+    a.active {
+      font-weight: 600;
+    }
+  }
+
+  .spacer {
+    flex: 1;
+  }
+
+  .user {
+    color: $color-muted;
+    font-size: 0.9rem;
+  }
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: $space * 3;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space * 2;
+  margin-bottom: $space * 2;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.card {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius;
+  padding: $space * 3;
+}
+
+// ---- Forms ------------------------------------------------------------------
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: $space * 2;
+  max-width: 420px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: $space * 0.5;
+
+  label {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  input,
+  textarea {
+    padding: $space $space * 1.5;
+    border: 1px solid $color-border;
+    border-radius: $radius;
+    font: inherit;
+
+    &:focus {
+      outline: 2px solid $color-primary;
+      outline-offset: 1px;
+    }
+  }
+
+  .error {
+    color: $color-danger;
+    font-size: 0.85rem;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: $space * 1.5;
+}
+
+// ---- Buttons ----------------------------------------------------------------
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: $space $space * 2;
+  border: 1px solid transparent;
+  border-radius: $radius;
+  background: $color-primary;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: $color-primary-dark;
+    text-decoration: none;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.btn-secondary {
+    background: $color-surface;
+    color: $color-text;
+    border-color: $color-border;
+
+    &:hover {
+      background: $color-bg;
+    }
+  }
+
+  &.btn-danger {
+    background: $color-danger;
+  }
+
+  &.btn-sm {
+    padding: $space * 0.5 $space;
+    font-size: 0.85rem;
+  }
+}
+
+// ---- Tables -----------------------------------------------------------------
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: $color-surface;
+  border: 1px solid $color-border;
+
+  th,
+  td {
+    text-align: left;
+    padding: $space $space * 1.5;
+    border-bottom: 1px solid $color-border;
+  }
+
+  th {
+    background: $color-bg;
+    font-weight: 600;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  .actions {
+    display: flex;
+    gap: $space;
+  }
+}
+
+// ---- Misc -------------------------------------------------------------------
+.alert {
+  padding: $space $space * 1.5;
+  border-radius: $radius;
+  background: #fef2f2;
+  color: $color-danger;
+  border: 1px solid #fecaca;
+}
+
+.muted {
+  color: $color-muted;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: $space * 2;
+
+  .card {
+    width: 100%;
+    max-width: 380px;
+  }
+
+  h1 {
+    margin-top: 0;
+  }
+}

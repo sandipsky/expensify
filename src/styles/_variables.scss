@@ -1,0 +1,13 @@
+// Shared SCSS variables. Pull them into a stylesheet with:
+//   @use './styles/variables' as *;   (path relative to the importing file)
+$color-primary: #2563eb;
+$color-primary-dark: #1d4ed8;
+$color-danger: #dc2626;
+$color-text: #1f2937;
+$color-muted: #6b7280;
+$color-border: #e5e7eb;
+$color-bg: #f9fafb;
+$color-surface: #ffffff;
+
+$radius: 6px;
+$space: 0.5rem;
