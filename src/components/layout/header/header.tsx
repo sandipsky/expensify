@@ -1,16 +1,11 @@
-import type { ComponentPropsWithRef } from 'react';
-import './header.css';
+import type { ComponentPropsWithRef } from 'react'
+import './header.scss'
 
-export interface LUIHeaderProps extends ComponentPropsWithRef<'header'> {
-  /** Fired by the hamburger button; wire it to the sidebar's `toggle()`. */
-  onMenuToggle?: () => void;
+export interface HeaderProps extends ComponentPropsWithRef<'header'> {
+  onMenuToggle?: () => void
 }
 
-/**
- * A 40px app bar with a built-in hamburger button. Header content is passed
- * as children.
- */
-export function LUIHeader({ onMenuToggle, className, children, ...rest }: LUIHeaderProps) {
+export function Header({ onMenuToggle, className, children, ...rest }: HeaderProps) {
   return (
     <header className={['l-header', className ?? ''].filter(Boolean).join(' ')} {...rest}>
       <button
@@ -31,5 +26,5 @@ export function LUIHeader({ onMenuToggle, className, children, ...rest }: LUIHea
 
       <div className="l-header__content">{children}</div>
     </header>
-  );
+  )
 }

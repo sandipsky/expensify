@@ -1,65 +1,63 @@
-import type { ReactNode } from 'react';
-import { LUITooltip } from '../../ui/tooltip/tooltip';
-import './sidebar-item.css';
+import type { ReactNode } from 'react'
+import { Link } from '@tanstack/react-router'
+import { LUIIcon, type LUIIconName } from '@lumen-ui/react'
+import type { AppPath } from './sidebar.data'
+import './sidebar-item.scss'
 
-export interface LUISidebarItemProps {
-  /** Leading icon; hidden label-only rendering when omitted. */
-  icon?: ReactNode;
-  /** Visible item text; also used as the tooltip when the rail is collapsed. */
-  label: string;
-  /** Highlights the item as the current selection (leaf items only). */
-  active?: boolean;
-  /**
-   * Group state: when the item has `children` it renders as a group header
-   * with a chevron; `expanded` controls whether the children are shown.
-   */
-  expanded?: boolean;
-  /** Leaf items: select. Group items: toggle `expanded`. */
-  onClick?: () => void;
-  /**
-   * Show the label in a `LUITooltip` on hover/focus instead of the native
-   * `title` — pass it when the rail is collapsed and labels are hidden.
-   */
-  tooltip?: boolean;
-  /** Child items; providing them turns this item into a collapsible group. */
-  children?: ReactNode;
+export interface SidebarItemProps {
+  label: string
+  icon?: LUIIconName
+  to?: AppPath
+  exact?: boolean
+  active?: boolean
+  expanded?: boolean
+  collapsed?: boolean
+  /** How many items wait behind this entry; hidden when 0. */
+  count?: number
+  onClick?: () => void
+  children?: ReactNode
 }
 
-/**
- * A single nav entry for the sidebar rail. Pass nested `LUISidebarItem`s as
- * `children` to render a collapsible group with a chevron (open/close it via
- * `expanded` + `onClick`). When the sidebar is collapsed on desktop only the
- * icon remains visible (the label is exposed via `title`).
- */
-export function LUISidebarItem({
-  icon,
+const ACTIVE_CLASS = 'l-sidebar-item--active'
+
+export function SidebarItem({
   label,
+  icon,
+  to,
+  exact = false,
   active = false,
   expanded = false,
+  collapsed = false,
+  count = 0,
   onClick,
-  tooltip = false,
   children,
-}: LUISidebarItemProps) {
-  const isGroup = children != null;
+}: SidebarItemProps) {
+  const isGroup = children != null
+  const title = collapsed ? label : undefined
 
   const classes = [
     'l-sidebar-item',
-    active ? 'l-sidebar-item--active' : '',
+    active ? ACTIVE_CLASS : '',
+    collapsed ? 'l-sidebar-item--collapsed' : '',
     isGroup && expanded ? 'l-sidebar-item--expanded' : '',
   ]
     .filter(Boolean)
-    .join(' ');
+    .join(' ')
 
-  const button = (
-    <button
-      type="button"
-      className={classes}
-      title={tooltip ? undefined : label}
-      onClick={onClick}
-      aria-expanded={isGroup ? expanded : undefined}
-    >
-      {icon != null && <span className="l-sidebar-item__icon">{icon}</span>}
+  const content = (
+    <>
+      {icon != null && (
+        <span className="l-sidebar-item__icon" aria-hidden="true">
+          <LUIIcon name={icon} color="inherit" />
+        </span>
+      )}
       <span className="l-sidebar-item__label">{label}</span>
+      {count > 0 && (
+        <span className="l-sidebar-item__count">
+          {count}
+          <span className="visually-hidden"> waiting for you</span>
+        </span>
+      )}
       {isGroup && (
         <svg
           className="l-sidebar-item__chevron"
@@ -78,25 +76,44 @@ export function LUISidebarItem({
           />
         </svg>
       )}
+    </>
+  )
+
+  if (!isGroup && to != null) {
+    return (
+      <Link
+        to={to}
+        className={classes}
+        activeOptions={{ exact }}
+        activeProps={{ className: ACTIVE_CLASS }}
+        title={title}
+        onClick={onClick}
+      >
+        {content}
+      </Link>
+    )
+  }
+
+  const trigger = (
+    <button
+      type="button"
+      className={classes}
+      title={title}
+      onClick={onClick}
+      aria-expanded={isGroup ? expanded : undefined}
+    >
+      {content}
     </button>
-  );
+  )
 
-  const trigger = tooltip ? (
-    <LUITooltip content={label} placement="right">
-      {button}
-    </LUITooltip>
-  ) : (
-    button
-  );
-
-  if (!isGroup) return trigger;
+  if (!isGroup) return trigger
 
   const childrenClasses = [
     'l-sidebar-item__children',
     expanded ? 'l-sidebar-item__children--open' : '',
   ]
     .filter(Boolean)
-    .join(' ');
+    .join(' ')
 
   return (
     <div className="l-sidebar-item-group">
@@ -105,5 +122,5 @@ export function LUISidebarItem({
         <div className="l-sidebar-item__children-inner">{children}</div>
       </div>
     </div>
-  );
+  )
 }

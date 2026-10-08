@@ -1,90 +1,40 @@
-.showcase-layout {
+.app-layout {
   display: flex;
   min-height: 100vh;
   background: var(--bg-light);
 }
 
-.showcase-layout .sidebar {
-  flex: 0 0 240px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 20px 16px;
-  background: var(--bg-lightest);
-  border-right: 1px solid var(--separator);
+.app-layout > .l-sidebar {
   position: sticky;
   top: 0;
   height: 100vh;
-  overflow: hidden;
+  height: 100dvh;
 }
 
-.sidebar__brand {
+.app-layout__main {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-primary);
-  padding: 4px;
-}
-
-.sidebar__logo {
-  color: var(--accent);
-}
-
-.sidebar__nav {
-  display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
-  gap: 2px;
-  /* Take the remaining height and scroll independently of the pinned brand. */
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  /* Room for the scrollbar so links don't sit under it. */
-  padding-right: 4px;
-  margin-right: -4px;
+  min-width: 0;
 }
 
-.sidebar__heading {
-  margin: 0 0 6px;
-  padding: 0 8px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-quaternary);
+.app-layout .l-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.sidebar__link {
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: var(--text-secondary);
-  text-decoration: none;
-  transition:
-    background-color 120ms ease-out,
-    color 120ms ease-out;
-}
-
-.sidebar__link:hover {
-  background: var(--bg-dark);
-  color: var(--text-primary);
-}
-
-.sidebar__link--active {
-  background: var(--accent-bg);
-  color: var(--accent-dark);
-  font-weight: 600;
-}
-
-.showcase-layout .content {
+.app-layout__content {
   flex: 1 1 auto;
   min-width: 0;
-  padding: 40px 48px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .sidebar__link {
-    transition: none;
-  }
+.app-header__spacer {
+  flex: 1;
+}
+
+.app-header__user {
+  color: var(--text-secondary);
+  font-size: 13px;
+  white-space: nowrap;
 }

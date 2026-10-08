@@ -1,4 +1,5 @@
-import { Link, Outlet, createFileRoute, redirect } from '@tanstack/react-router'
+import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
+import { AppLayout } from '@/components/layout'
 import { useAuthStore } from '@/features/auth'
 
 // Layout route: everything inside src/routes/_authenticated/ requires a login.
@@ -17,28 +18,9 @@ export const Route = createFileRoute('/_authenticated')({
 })
 
 function AuthenticatedLayout() {
-  const user = useAuthStore((s) => s.user)
-  const logout = useAuthStore((s) => s.logout)
-
   return (
-    <>
-      <header className="app-header">
-        <strong>expensify</strong>
-        <nav>
-          <Link to="/" activeOptions={{ exact: true }}>
-            Home
-          </Link>
-          <Link to="/products">Products</Link>
-        </nav>
-        <span className="spacer" />
-        <span className="user">{user?.name}</span>
-        <button className="btn btn-secondary btn-sm" type="button" onClick={() => logout()}>
-          Logout
-        </button>
-      </header>
-      <main className="page">
-        <Outlet />
-      </main>
-    </>
+    <AppLayout>
+      <Outlet />
+    </AppLayout>
   )
 }

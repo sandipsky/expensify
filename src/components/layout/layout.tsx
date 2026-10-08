@@ -1,33 +1,36 @@
-import { Link, Outlet } from '@tanstack/react-router';
-import { SHOWCASE_COMPONENTS } from '../showcase.data';
-import './showcase-layout.css';
+import { useRef, type ReactNode } from 'react'
+import { useAuthStore } from '@/features/auth'
+import { Header } from './header/header'
+import { Sidebar, type SidebarHandle } from './sidebar/sidebar'
+import { SIDEBAR_ITEMS } from './sidebar/sidebar.data'
+import './layout.scss'
 
-export function ShowcaseLayout() {
+interface AppLayoutProps {
+  children: ReactNode
+}
+
+export function AppLayout({ children }: AppLayoutProps) {
+  const sidebarRef = useRef<SidebarHandle>(null)
+  const user = useAuthStore((s) => s.user)
+  const logout = useAuthStore((s) => s.logout)
+
   return (
-    <div className="showcase-layout">
-      <aside className="sidebar">
-        <div className="sidebar__brand">
-          <span className="sidebar__logo">◆</span>
-          LumenUI
-        </div>
-        <nav className="sidebar__nav">
-          <p className="sidebar__heading">Components</p>
-          {SHOWCASE_COMPONENTS.map((c) => (
-            <Link
-              key={c.path}
-              to={`/${c.path}`}
-              className="sidebar__link"
-              activeProps={{ className: 'sidebar__link--active' }}
-            >
-              {c.name}
-            </Link>
-          ))}
-        </nav>
-      </aside>
+    <div className="app-layout">
+      <Sidebar ref={sidebarRef} items={SIDEBAR_ITEMS} />
 
-      <main className="content">
-        <Outlet />
-      </main>
+      <div className="app-layout__main">
+        <Header onMenuToggle={() => sidebarRef.current?.toggle()}>
+          <span className="app-header__spacer" />
+          {user && <span className="app-header__user">{user.name}</span>}
+          <button className="btn btn-secondary btn-sm" type="button" onClick={() => logout()}>
+            Logout
+          </button>
+        </Header>
+
+        <main className="app-layout__content">
+          <div className="page">{children}</div>
+        </main>
+      </div>
     </div>
-  );
+  )
 }
