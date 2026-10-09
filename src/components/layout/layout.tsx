@@ -27,7 +27,10 @@ export function AppLayout({ children }: AppLayoutProps) {
           </button>
         </Header>
 
-        <main className="app-layout__content">{children}</main>
+        {/* The pane scrolls, not the window, so the router restores its position by this id. */}
+        <main className="app-layout__content" data-scroll-restoration-id="app-content">
+          {children}
+        </main>
       </div>
     </div>
   )

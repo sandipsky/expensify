@@ -1,20 +1,23 @@
+// The shell fills the viewport and only the content pane scrolls, so the header
+// and sidebar stay put and the scrollbar runs beside the page, not the header.
+// The body never scrolls, so a modal's or drawer's body scroll lock has no
+// window scrollbar to remove and the page doesn't shift when one opens.
 .app-layout {
   // Every page gets this much room around its content; features never add their own.
   --app-content-padding: 16px;
 
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   background: var(--bg-light);
 }
 
-// Sticky makes the sidebar its own stacking context, so the mobile drawer and its
-// backdrop can only rise above the page if the sidebar itself sits above the header.
+// Its own stacking context above the header, so the mobile drawer and its
+// backdrop rise above the whole page, not just the content.
 .app-layout > .l-sidebar {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 20;
-  height: 100vh;
-  height: 100dvh;
 }
 
 .app-layout__main {
@@ -25,14 +28,16 @@
 }
 
 .app-layout .l-header {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 10;
+  flex-shrink: 0;
 }
 
 .app-layout__content {
   flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
+  overflow: auto;
   padding: var(--app-content-padding);
 }
 

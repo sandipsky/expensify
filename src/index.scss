@@ -10,6 +10,15 @@
   scroll-behavior: smooth;
 }
 
+// Form controls default to the system font instead of inheriting the page's,
+// so buttons, tabs and inputs would otherwise not match the text around them.
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
 body {
   font-family: "Fira Sans", sans-serif;
   font-size: 14px;

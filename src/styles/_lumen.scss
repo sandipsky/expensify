@@ -9,3 +9,18 @@
     background-color: var(--separator);
   }
 }
+
+// The segmented control ships with Ant Design's fixed colors and system font
+// stack. expensify-web draws it from the theme tokens and the page font, so it
+// matches the labels around it. The doubled class outranks lumen's own rule
+// whatever order the stylesheets load in.
+.l-segmented.l-segmented {
+  --l-seg-track-bg: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  --l-seg-item-color: var(--text-secondary);
+  --l-seg-item-hover-color: var(--text-primary);
+  --l-seg-item-hover-bg: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  --l-seg-selected-color: var(--text-primary);
+  --l-seg-thumb-bg: var(--bg-lightest);
+  --l-seg-disabled-color: var(--text-quaternary);
+  font-family: inherit;
+}
