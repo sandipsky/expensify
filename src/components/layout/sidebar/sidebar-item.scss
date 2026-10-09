@@ -48,20 +48,6 @@
     text-overflow: ellipsis;
   }
 
-  // How many items wait, such as recurring entries to confirm.
-  &__count {
-    min-width: 20px;
-    margin-left: auto;
-    padding: 0 6px;
-    border-radius: 10px;
-    background: var(--accent);
-    color: var(--text-white);
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 20px;
-    text-align: center;
-  }
-
   &__chevron {
     flex-shrink: 0;
     margin-left: auto;
@@ -116,22 +102,8 @@
     clip-path: inset(50%);
   }
 
-  &--collapsed &__count {
-    position: absolute;
-    top: 2px;
-    right: 6px;
-    min-width: 16px;
-    padding: 0 4px;
-    font-size: 10px;
-    line-height: 16px;
-  }
-
   &--collapsed &__chevron {
     display: none;
-  }
-
-  &--collapsed ~ &__children &__children-inner {
-    padding-left: 0;
   }
 
   @media (prefers-reduced-motion: reduce) {
