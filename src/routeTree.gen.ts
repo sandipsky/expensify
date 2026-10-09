@@ -13,6 +13,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedAccountsIndexRouteImport } from './routes/_authenticated/accounts/index'
+import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_authenticated/categories/index'
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
 import { Route as AuthenticatedProductsAddRouteImport } from './routes/_authenticated/products/add'
 import { Route as AuthenticatedAccountsAccountIdIndexRouteImport } from './routes/_authenticated/accounts/$accountId/index'
@@ -37,6 +38,12 @@ const AuthenticatedAccountsIndexRoute =
   AuthenticatedAccountsIndexRouteImport.update({
     id: '/accounts/',
     path: '/accounts/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCategoriesIndexRoute =
+  AuthenticatedCategoriesIndexRouteImport.update({
+    id: '/categories/',
+    path: '/categories/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedProductsIndexRoute =
@@ -75,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/products/add': typeof AuthenticatedProductsAddRoute
   '/accounts/': typeof AuthenticatedAccountsIndexRoute
+  '/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/products/': typeof AuthenticatedProductsIndexRoute
   '/products/$productId/edit': typeof AuthenticatedProductsProductIdEditRoute
   '/accounts/$accountId/': typeof AuthenticatedAccountsAccountIdIndexRoute
@@ -85,6 +93,7 @@ export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/products/add': typeof AuthenticatedProductsAddRoute
   '/accounts': typeof AuthenticatedAccountsIndexRoute
+  '/categories': typeof AuthenticatedCategoriesIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
   '/products/$productId/edit': typeof AuthenticatedProductsProductIdEditRoute
   '/accounts/$accountId': typeof AuthenticatedAccountsAccountIdIndexRoute
@@ -97,6 +106,7 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/products/add': typeof AuthenticatedProductsAddRoute
   '/_authenticated/accounts/': typeof AuthenticatedAccountsIndexRoute
+  '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
   '/_authenticated/products/$productId/edit': typeof AuthenticatedProductsProductIdEditRoute
   '/_authenticated/accounts/$accountId/': typeof AuthenticatedAccountsAccountIdIndexRoute
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/products/add'
     | '/accounts/'
+    | '/categories/'
     | '/products/'
     | '/products/$productId/edit'
     | '/accounts/$accountId/'
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/'
     | '/products/add'
     | '/accounts'
+    | '/categories'
     | '/products'
     | '/products/$productId/edit'
     | '/accounts/$accountId'
@@ -130,6 +142,7 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/_authenticated/products/add'
     | '/_authenticated/accounts/'
+    | '/_authenticated/categories/'
     | '/_authenticated/products/'
     | '/_authenticated/products/$productId/edit'
     | '/_authenticated/accounts/$accountId/'
@@ -169,6 +182,13 @@ declare module '@tanstack/react-router' {
       path: '/accounts'
       fullPath: '/accounts/'
       preLoaderRoute: typeof AuthenticatedAccountsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/categories/': {
+      id: '/_authenticated/categories/'
+      path: '/categories'
+      fullPath: '/categories/'
+      preLoaderRoute: typeof AuthenticatedCategoriesIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/products/': {
@@ -213,6 +233,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedProductsAddRoute: typeof AuthenticatedProductsAddRoute
   AuthenticatedAccountsIndexRoute: typeof AuthenticatedAccountsIndexRoute
+  AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
   AuthenticatedProductsProductIdEditRoute: typeof AuthenticatedProductsProductIdEditRoute
   AuthenticatedAccountsAccountIdIndexRoute: typeof AuthenticatedAccountsAccountIdIndexRoute
@@ -223,6 +244,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedProductsAddRoute: AuthenticatedProductsAddRoute,
   AuthenticatedAccountsIndexRoute: AuthenticatedAccountsIndexRoute,
+  AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,
   AuthenticatedProductsProductIdEditRoute:
     AuthenticatedProductsProductIdEditRoute,

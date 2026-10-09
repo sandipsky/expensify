@@ -1,0 +1,35 @@
+.categories-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+}
+
+.categories-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
+
+  &__note {
+    padding-bottom: 8px;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    line-height: 16px;
+  }
+}
+
+.category-list {
+  list-style: none;
+
+  li + li {
+    border-top: 1px solid var(--separator-light);
+  }
+}

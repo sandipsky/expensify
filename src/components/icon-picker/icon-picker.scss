@@ -1,0 +1,70 @@
+// A grid of icon tiles; the chosen one shows in `--pick-color`, the color the
+// icon will be drawn in.
+.icon-picker {
+  --_pick: var(--pick-color, var(--accent));
+}
+
+// Stretched, since `.form-group` aligns its children to the start and a
+// shrink-to-fit grid would `auto-fill` a single column.
+.icon-picker__grid {
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  gap: 4px;
+
+  // Nested, so these win over lumen's `.form-group label` text styles.
+  > .icon-picker__tile {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition:
+      background-color 150ms ease-out,
+      border-color 150ms ease-out;
+
+    &:hover {
+      background: var(--bg-light);
+    }
+
+    &.is-checked {
+      border-color: var(--_pick);
+      background: color-mix(in srgb, var(--_pick) 12%, transparent);
+      color: var(--_pick);
+    }
+
+    &:has(.icon-picker__input:focus-visible) {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    &:has(.icon-picker__input:disabled) {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    // The input covers the tile, so the icon must not take the clicks.
+    > :not(.icon-picker__input) {
+      pointer-events: none;
+    }
+  }
+}
+
+// Covers the tile, so a tap anywhere selects it and focus scrolls it into view.
+.icon-picker__input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-picker__grid > .icon-picker__tile {
+    transition: none;
+  }
+}
