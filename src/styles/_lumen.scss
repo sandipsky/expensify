@@ -1,0 +1,11 @@
+// App-wide adjustments to lumen-ui components.
+
+// A menu's trigger button hovers the way lumen draws it while the menu is open:
+// 8px corners and the separator fill, instead of the round button's own circle.
+.dropdown-menu > .btn.rounded {
+  border-radius: 8px;
+
+  &:hover {
+    background-color: var(--separator);
+  }
+}

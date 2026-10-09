@@ -24,12 +24,51 @@ const SEED = {
     { id: 2, name: 'Mouse', price: 1200, description: 'Wireless mouse' },
     { id: 3, name: 'Monitor', price: 15000, description: '27 inch 4K display' },
   ],
+  // Amounts are plain numbers in the account's currency. A card's balance is
+  // negative while money is owed on it.
+  accounts: [
+    account(1, 'Cash', 'cash', 5000, { icon: 'money', color: '#36B37E' }),
+    account(2, 'Everyday bank', 'bank', 120000, { icon: 'bank', color: '#2456E6' }),
+    account(3, 'Credit card', 'credit_card', -15000, {
+      icon: 'card',
+      color: '#AB20A9',
+      creditLimit: 100000,
+    }),
+  ],
+}
+
+function account(id, name, type, openingBalance, { icon, color, creditLimit = null }) {
+  const createdAt = '2026-01-01T00:00:00.000Z'
+  return {
+    id,
+    name,
+    type,
+    currency: 'NPR',
+    openingBalance,
+    currentBalance: openingBalance,
+    creditLimit,
+    icon,
+    color,
+    includeInTotal: true,
+    archived: false,
+    sortOrder: id - 1,
+    createdAt,
+    updatedAt: createdAt,
+  }
 }
 
 const writeDb = (db) => writeFileSync(DB_PATH, JSON.stringify(db, null, 2) + '\n')
 const readDb = () => {
   if (!existsSync(DB_PATH)) writeDb(SEED)
-  return JSON.parse(readFileSync(DB_PATH, 'utf-8'))
+  const db = JSON.parse(readFileSync(DB_PATH, 'utf-8'))
+  // A db.json written before a collection existed gets that collection's seed.
+  for (const key of Object.keys(SEED)) {
+    if (!db[key]) {
+      db[key] = SEED[key]
+      writeDb(db)
+    }
+  }
+  return db
 }
 
 // Next id = highest existing id + 1 (starts at 1 when the list is empty)
@@ -143,6 +182,151 @@ app.delete('/products/:id', requireAuth, (req, res) => {
     return res.status(404).json({ message: 'Product not found' })
   }
   db.products = db.products.filter((p) => p.id !== id)
+  writeDb(db)
+  res.status(204).end()
+})
+
+// ---------------------------------------------------------------------------
+// Accounts (protected)
+// ---------------------------------------------------------------------------
+const ACCOUNT_TYPES = ['cash', 'bank', 'credit_card', 'wallet', 'savings', 'loan', 'other']
+
+const validateAccount = (body) => {
+  const { name, type, currency, openingBalance, creditLimit, icon, color, includeInTotal } = body
+  if (typeof name !== 'string' || !name.trim()) return 'name is required'
+  if (name.trim().length > 40) return 'name must be at most 40 characters'
+  if (!ACCOUNT_TYPES.includes(type)) return `type must be one of ${ACCOUNT_TYPES.join(', ')}`
+  if (typeof currency !== 'string' || !/^[A-Z]{3}$/.test(currency)) {
+    return 'currency must be a 3-letter ISO 4217 code'
+  }
+  if (typeof openingBalance !== 'number' || !Number.isFinite(openingBalance)) {
+    return 'openingBalance must be a number'
+  }
+  if (creditLimit != null && (typeof creditLimit !== 'number' || creditLimit <= 0)) {
+    return 'creditLimit must be a positive number or null'
+  }
+  if (typeof icon !== 'string' || !icon) return 'icon is required'
+  if (typeof color !== 'string' || !/^#[0-9A-Fa-f]{6}$/.test(color)) {
+    return 'color must be a hex color'
+  }
+  if (typeof includeInTotal !== 'boolean') return 'includeInTotal must be a boolean'
+  return null
+}
+
+// The fields a client may set; everything else belongs to the server.
+const accountFields = (body) => ({
+  name: body.name.trim(),
+  type: body.type,
+  currency: body.currency,
+  openingBalance: body.openingBalance,
+  creditLimit: body.type === 'credit_card' && body.creditLimit ? body.creditLimit : null,
+  icon: body.icon,
+  color: body.color,
+  includeInTotal: body.includeInTotal,
+})
+
+const findAccount = (db, id) => db.accounts.find((a) => a.id === Number(id))
+
+const saveAccount = (db, updated) => {
+  db.accounts = db.accounts.map((a) => (a.id === updated.id ? updated : a))
+  writeDb(db)
+  return updated
+}
+
+app.get('/accounts', requireAuth, (req, res) => {
+  res.json([...readDb().accounts].sort((a, b) => a.sortOrder - b.sortOrder))
+})
+
+app.get('/accounts/:id', requireAuth, (req, res) => {
+  const account = findAccount(readDb(), req.params.id)
+  if (!account) return res.status(404).json({ message: 'Account not found' })
+  res.json(account)
+})
+
+app.post('/accounts', requireAuth, (req, res) => {
+  const body = req.body ?? {}
+  const error = validateAccount(body)
+  if (error) return res.status(400).json({ message: error })
+
+  const db = readDb()
+  const now = new Date().toISOString()
+  const account = {
+    id: nextId(db.accounts),
+    ...accountFields(body),
+    // The current balance starts at the opening balance and then only moves with transactions.
+    currentBalance: body.openingBalance,
+    archived: false,
+    sortOrder: Math.max(-1, ...db.accounts.map((a) => a.sortOrder)) + 1,
+    createdAt: now,
+    updatedAt: now,
+  }
+  db.accounts.push(account)
+  writeDb(db)
+  res.status(201).json(account)
+})
+
+app.put('/accounts/:id', requireAuth, (req, res) => {
+  const db = readDb()
+  const existing = findAccount(db, req.params.id)
+  if (!existing) return res.status(404).json({ message: 'Account not found' })
+
+  const body = req.body ?? {}
+  const error = validateAccount(body)
+  if (error) return res.status(400).json({ message: error })
+
+  // A new opening balance shifts the current balance by the same difference.
+  const delta = body.openingBalance - existing.openingBalance
+  const updated = {
+    ...existing,
+    ...accountFields(body),
+    currentBalance: existing.currentBalance + delta,
+    updatedAt: new Date().toISOString(),
+  }
+  res.json(saveAccount(db, updated))
+})
+
+// Archived accounts leave pickers and the total but keep their history.
+app.patch('/accounts/:id/archived', requireAuth, (req, res) => {
+  const db = readDb()
+  const existing = findAccount(db, req.params.id)
+  if (!existing) return res.status(404).json({ message: 'Account not found' })
+
+  const { archived } = req.body ?? {}
+  if (typeof archived !== 'boolean') {
+    return res.status(400).json({ message: 'archived must be a boolean' })
+  }
+
+  res.json(saveAccount(db, { ...existing, archived, updatedAt: new Date().toISOString() }))
+})
+
+// Reconcile: move the current balance to what the bank really shows. Once
+// transactions exist, the difference becomes a "Balance adjustment" entry.
+app.post('/accounts/:id/reconcile', requireAuth, (req, res) => {
+  const db = readDb()
+  const existing = findAccount(db, req.params.id)
+  if (!existing) return res.status(404).json({ message: 'Account not found' })
+
+  const { actualBalance } = req.body ?? {}
+  if (typeof actualBalance !== 'number' || !Number.isFinite(actualBalance)) {
+    return res.status(400).json({ message: 'actualBalance must be a number' })
+  }
+
+  res.json(
+    saveAccount(db, {
+      ...existing,
+      currentBalance: actualBalance,
+      updatedAt: new Date().toISOString(),
+    }),
+  )
+})
+
+app.delete('/accounts/:id', requireAuth, (req, res) => {
+  const id = Number(req.params.id)
+  const db = readDb()
+  if (!db.accounts.some((a) => a.id === id)) {
+    return res.status(404).json({ message: 'Account not found' })
+  }
+  db.accounts = db.accounts.filter((a) => a.id !== id)
   writeDb(db)
   res.status(204).end()
 })

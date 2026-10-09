@@ -1,12 +1,18 @@
 .app-layout {
+  // Every page gets this much room around its content; features never add their own.
+  --app-content-padding: 16px;
+
   display: flex;
   min-height: 100vh;
   background: var(--bg-light);
 }
 
+// Sticky makes the sidebar its own stacking context, so the mobile drawer and its
+// backdrop can only rise above the page if the sidebar itself sits above the header.
 .app-layout > .l-sidebar {
   position: sticky;
   top: 0;
+  z-index: 20;
   height: 100vh;
   height: 100dvh;
 }
@@ -27,6 +33,7 @@
 .app-layout__content {
   flex: 1 1 auto;
   min-width: 0;
+  padding: var(--app-content-padding);
 }
 
 .app-header__spacer {

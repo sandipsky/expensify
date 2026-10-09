@@ -1,7 +1,8 @@
 :root {
-  --accent: #4CB139;
-  --accent-bg: #EEF9EC;
-  --accent-dark: #3B8A2D;
+  /* A deep blue; the lighter and darker shades follow it. */
+  --accent: #2456E6;
+  --accent-bg: color-mix(in srgb, var(--accent) 9%, var(--bg-lightest));
+  --accent-dark: color-mix(in srgb, var(--accent) 78%, black);
 
   --success: #36B37E;
   --success-bg: #EBF7F2;

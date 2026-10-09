@@ -1,0 +1,35 @@
+// What the app holds now and what will change, under the field.
+.reconcile-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--bg-light);
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    line-height: 20px;
+
+    dt {
+      color: var(--text-tertiary);
+    }
+
+    dd {
+      color: var(--text-primary);
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+
+      &.is-income {
+        color: var(--success);
+      }
+
+      &.is-expense {
+        color: var(--error);
+      }
+    }
+  }
+}

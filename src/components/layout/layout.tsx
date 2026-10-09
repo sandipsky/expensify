@@ -27,9 +27,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           </button>
         </Header>
 
-        <main className="app-layout__content">
-          <div className="page">{children}</div>
-        </main>
+        <main className="app-layout__content">{children}</main>
       </div>
     </div>
   )

@@ -1,0 +1,30 @@
+.progress {
+  --progress-color: var(--accent);
+
+  width: 100%;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--bg-dark);
+
+  &--warn {
+    --progress-color: var(--warn);
+  }
+
+  &--error {
+    --progress-color: var(--error);
+  }
+
+  &__bar {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--progress-color);
+    transition: width 200ms ease-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__bar {
+      transition: none;
+    }
+  }
+}
