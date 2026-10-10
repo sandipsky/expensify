@@ -69,6 +69,8 @@ const SEED = {
   ],
   // Expense and income categories; each type's list is numbered on its own.
   categories: seedCategories(),
+  // Entries start empty; every one written moves its account balances.
+  transactions: [],
 }
 
 function account(id, name, type, openingBalance, { icon, color, creditLimit = null }) {
@@ -529,6 +531,166 @@ app.delete('/categories/:id', requireAuth, (req, res) => {
     return res.status(404).json({ message: 'Category not found' })
   }
   db.categories = db.categories.filter((c) => c.id !== id)
+  writeDb(db)
+  res.status(204).end()
+})
+
+// ---------------------------------------------------------------------------
+// Transactions (protected)
+// ---------------------------------------------------------------------------
+const TX_TYPES = ['expense', 'income', 'transfer']
+const MAX_NOTE_LENGTH = 500
+const YMD = /^\d{4}-\d{2}-\d{2}$/
+
+// A real calendar date written as YYYY-MM-DD: "2026-02-30" rolls over, so it fails.
+const isYmd = (value) => {
+  if (typeof value !== 'string' || !YMD.test(value)) return false
+  const [y, m, d] = value.split('-').map(Number)
+  const date = new Date(y, m - 1, d)
+  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d
+}
+
+const validateTransaction = (body, db) => {
+  const { type, amount, accountId, toAccountId, categoryId, date, note } = body
+  if (!TX_TYPES.includes(type)) return `type must be one of ${TX_TYPES.join(', ')}`
+  if (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0) {
+    return 'amount must be a positive number'
+  }
+  if (!findAccount(db, accountId)) return 'accountId must be an existing account'
+  if (type === 'transfer') {
+    if (!findAccount(db, toAccountId)) return 'toAccountId must be an existing account'
+    if (Number(toAccountId) === Number(accountId)) return 'a transfer needs two different accounts'
+    if (categoryId != null) return 'a transfer has no category'
+  } else {
+    if (toAccountId != null) return 'only a transfer has a toAccountId'
+    const category = findCategory(db, categoryId)
+    if (!category) return 'categoryId must be an existing category'
+    if (category.type !== type) return `categoryId must be an ${type} category`
+  }
+  if (!isYmd(date)) return 'date must be a calendar date written as YYYY-MM-DD'
+  if (note != null && typeof note !== 'string') return 'note must be a string'
+  if (note && note.trim().length > MAX_NOTE_LENGTH) {
+    return `note must be at most ${MAX_NOTE_LENGTH} characters`
+  }
+  return null
+}
+
+// The fields a client may set; everything else belongs to the server. The
+// currency is the source account's, since every amount is in it.
+const transactionFields = (body, db) => ({
+  type: body.type,
+  amount: body.amount,
+  currency: findAccount(db, body.accountId).currency,
+  accountId: Number(body.accountId),
+  toAccountId: body.type === 'transfer' ? Number(body.toAccountId) : null,
+  categoryId: body.type === 'transfer' ? null : Number(body.categoryId),
+  date: body.date,
+  note: body.note?.trim() || null,
+})
+
+// What an entry does to each account it touches: income adds to its account,
+// an expense takes from it, and a transfer moves the amount across.
+const effects = (tx) => {
+  if (tx.type === 'income') return [{ accountId: tx.accountId, delta: tx.amount }]
+  if (tx.type === 'expense') return [{ accountId: tx.accountId, delta: -tx.amount }]
+  return [
+    { accountId: tx.accountId, delta: -tx.amount },
+    { accountId: tx.toAccountId, delta: tx.amount },
+  ]
+}
+
+// Moves balances by the effects, scaled by `sign` (-1 reverses them). An
+// account deleted since the entry was written has no balance to move.
+const applyEffects = (db, tx, sign) => {
+  for (const { accountId, delta } of effects(tx)) {
+    const account = findAccount(db, accountId)
+    if (!account) continue
+    account.currentBalance += sign * delta
+    account.updatedAt = new Date().toISOString()
+  }
+}
+
+const findTransaction = (db, id) => db.transactions.find((t) => t.id === Number(id))
+
+// Newest first: by date, then creation, then id.
+const newestFirst = (a, b) =>
+  (a.date < b.date ? 1 : a.date > b.date ? -1 : 0) ||
+  (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0) ||
+  b.id - a.id
+
+// ?from=YYYY-MM-DD&to=YYYY-MM-DD narrows to a period; ?accountId= to entries
+// touching an account, on either side of a transfer. Without any, every entry.
+app.get('/transactions', requireAuth, (req, res) => {
+  const { from, to, accountId } = req.query
+  if ((from && !isYmd(from)) || (to && !isYmd(to))) {
+    return res.status(400).json({ message: 'from and to must be dates written as YYYY-MM-DD' })
+  }
+  const account = accountId === undefined ? null : Number(accountId)
+  if (account !== null && !Number.isInteger(account)) {
+    return res.status(400).json({ message: 'accountId must be a number' })
+  }
+  const list = readDb().transactions.filter(
+    (t) =>
+      (!from || t.date >= from) &&
+      (!to || t.date <= to) &&
+      (account === null || t.accountId === account || t.toAccountId === account),
+  )
+  res.json(list.sort(newestFirst))
+})
+
+app.get('/transactions/:id', requireAuth, (req, res) => {
+  const transaction = findTransaction(readDb(), req.params.id)
+  if (!transaction) return res.status(404).json({ message: 'Transaction not found' })
+  res.json(transaction)
+})
+
+app.post('/transactions', requireAuth, (req, res) => {
+  const body = req.body ?? {}
+  const db = readDb()
+  const error = validateTransaction(body, db)
+  if (error) return res.status(400).json({ message: error })
+
+  const now = new Date().toISOString()
+  const transaction = {
+    id: nextId(db.transactions),
+    ...transactionFields(body, db),
+    createdAt: now,
+    updatedAt: now,
+  }
+  db.transactions.push(transaction)
+  applyEffects(db, transaction, 1)
+  writeDb(db)
+  res.status(201).json(transaction)
+})
+
+// An edit reverses what the old entry did to balances and applies the new one.
+app.put('/transactions/:id', requireAuth, (req, res) => {
+  const db = readDb()
+  const existing = findTransaction(db, req.params.id)
+  if (!existing) return res.status(404).json({ message: 'Transaction not found' })
+
+  const body = req.body ?? {}
+  const error = validateTransaction(body, db)
+  if (error) return res.status(400).json({ message: error })
+
+  const updated = {
+    ...existing,
+    ...transactionFields(body, db),
+    updatedAt: new Date().toISOString(),
+  }
+  applyEffects(db, existing, -1)
+  applyEffects(db, updated, 1)
+  db.transactions = db.transactions.map((t) => (t.id === updated.id ? updated : t))
+  writeDb(db)
+  res.json(updated)
+})
+
+app.delete('/transactions/:id', requireAuth, (req, res) => {
+  const db = readDb()
+  const existing = findTransaction(db, req.params.id)
+  if (!existing) return res.status(404).json({ message: 'Transaction not found' })
+  applyEffects(db, existing, -1)
+  db.transactions = db.transactions.filter((t) => t.id !== existing.id)
   writeDb(db)
   res.status(204).end()
 })

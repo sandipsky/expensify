@@ -11,6 +11,7 @@ import {
 } from '@lumen-ui/react'
 import { EmptyState } from '@/components/empty-state'
 import { Progress } from '@/components/progress'
+import { AccountTransactions } from '@/features/transactions/components/AccountTransactions'
 import { formatMoney } from '@/utils'
 import { useAccountActions } from '../account.actions'
 import { flipForLiability, isLiability } from '../account.domain'
@@ -202,20 +203,7 @@ const AccountPage = ({ account, actions }: AccountPageProps) => {
         )}
       </LUIRow>
 
-      {/* Transactions arrive with the transactions feature; until then the card offers reconcile. */}
-      <LUICard title="Transactions">
-        <EmptyState
-          icon="receipt"
-          title="No transactions yet"
-          message="Entries on this account show up here with its running balance. If the balance is off, reconcile it with your statement."
-        >
-          {!account.archived && (
-            <LUIButton size="lg" onClick={() => actions.reconcile(account)}>
-              Reconcile balance
-            </LUIButton>
-          )}
-        </EmptyState>
-      </LUICard>
+      <AccountTransactions account={account} />
     </div>
   )
 }

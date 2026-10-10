@@ -1,0 +1,110 @@
+.tx-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__title {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 160px;
+
+    h1 {
+      color: var(--text-primary);
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 28px;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  // A menu row is a button, so it needs the native chrome removed.
+  &__item {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+
+    &--danger {
+      color: var(--error);
+    }
+  }
+
+  &__amount {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__caption {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  // Label over value, two to a row where there's room; the note takes a whole row.
+  &__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px 24px;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    dt {
+      color: var(--text-tertiary);
+      font-size: 12px;
+      line-height: 16px;
+    }
+
+    dd {
+      overflow-wrap: anywhere;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 20px;
+    }
+
+    &--wide {
+      grid-column: 1 / -1;
+    }
+  }
+
+  &__note {
+    white-space: pre-wrap;
+  }
+
+  &__empty {
+    color: var(--text-quaternary);
+    font-weight: 400;
+  }
+}

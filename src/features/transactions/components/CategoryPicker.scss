@@ -1,0 +1,126 @@
+// A grid of category tiles: the icon in the category's color on a tint of it,
+// with the name beneath. The chosen tile takes a border in that color.
+
+// Laid out like lumen's `.form-group`, without being one: lumen paints every
+// span inside a form-group label in the error color, and the tiles are labels.
+.category-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.category-picker__title {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.category-picker__grid {
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 4px;
+
+  // Nested, so these win over lumen's `.form-group label` text styles.
+  > .category-picker__tile {
+    --_pick: var(--pick-color, var(--accent));
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 4px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition:
+      background-color 150ms ease-out,
+      border-color 150ms ease-out;
+
+    &:hover {
+      background: var(--bg-light);
+    }
+
+    &.is-checked {
+      border-color: var(--_pick);
+      background: color-mix(in srgb, var(--_pick) 10%, transparent);
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    &:has(.category-picker__input:focus-visible) {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    &:has(.category-picker__input:disabled) {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    // The input covers the tile, so the icon and label must not take the clicks.
+    > :not(.category-picker__input) {
+      pointer-events: none;
+    }
+  }
+}
+
+.category-picker__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--_pick) 12%, transparent);
+  color: var(--_pick);
+}
+
+.category-picker__label {
+  display: -webkit-box;
+  max-width: 100%;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
+}
+
+// Covers the tile, so a tap anywhere selects it and focus scrolls it into view.
+.category-picker__input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.category-picker__more {
+  align-self: flex-end;
+}
+
+.category-picker__error {
+  color: var(--error);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.category-picker.has-error .category-picker__grid {
+  border-radius: 12px;
+  outline: 1px solid var(--error);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-picker__grid > .category-picker__tile {
+    transition: none;
+  }
+}

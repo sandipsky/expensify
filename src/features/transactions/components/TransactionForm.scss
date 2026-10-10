@@ -1,0 +1,52 @@
+.tx-form__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 40px;
+}
+
+// A menu row is a button, so it needs the native chrome removed.
+.tx-form__item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+
+  &--danger {
+    color: var(--error);
+  }
+}
+
+.tx-form__no-categories {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+// The date field grows; the quick-date buttons sit beside it, or under it when narrow.
+.tx-form__date {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.tx-form__date-input {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.tx-form__date-chips {
+  display: flex;
+  gap: 8px;
+  padding-bottom: 1px;
+}
+
+// Three buttons wrap on a phone, with Save staying on the end.
+.tx-form__actions {
+  flex-wrap: wrap;
+}

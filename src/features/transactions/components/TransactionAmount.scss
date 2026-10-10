@@ -1,0 +1,22 @@
+// Income green, expense red, always beside a sign, so color is never the only cue.
+.tx-amount {
+  flex-shrink: 0;
+  color: var(--text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+
+  &--lg {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 36px;
+  }
+
+  &.is-income {
+    color: var(--success);
+  }
+
+  &.is-expense {
+    color: var(--error);
+  }
+}

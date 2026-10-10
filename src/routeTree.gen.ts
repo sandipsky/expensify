@@ -16,9 +16,11 @@ import { Route as AuthenticatedAccountsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_authenticated/categories/index'
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
 import { Route as AuthenticatedProductsAddRouteImport } from './routes/_authenticated/products/add'
+import { Route as AuthenticatedTransactionsIndexRouteImport } from './routes/_authenticated/transactions/index'
 import { Route as AuthenticatedAccountsAccountIdIndexRouteImport } from './routes/_authenticated/accounts/$accountId/index'
 import { Route as AuthenticatedProductsProductIdIndexRouteImport } from './routes/_authenticated/products/$productId/index'
 import { Route as AuthenticatedProductsProductIdEditRouteImport } from './routes/_authenticated/products/$productId/edit'
+import { Route as AuthenticatedTransactionsTransactionIdIndexRouteImport } from './routes/_authenticated/transactions/$transactionId/index'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
@@ -58,6 +60,12 @@ const AuthenticatedProductsAddRoute =
     path: '/products/add',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedTransactionsIndexRoute =
+  AuthenticatedTransactionsIndexRouteImport.update({
+    id: '/transactions/',
+    path: '/transactions/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAccountsAccountIdIndexRoute =
   AuthenticatedAccountsAccountIdIndexRouteImport.update({
     id: '/accounts/$accountId/',
@@ -76,6 +84,12 @@ const AuthenticatedProductsProductIdEditRoute =
     path: '/products/$productId/edit',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedTransactionsTransactionIdIndexRoute =
+  AuthenticatedTransactionsTransactionIdIndexRouteImport.update({
+    id: '/transactions/$transactionId/',
+    path: '/transactions/$transactionId/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -84,9 +98,11 @@ export interface FileRoutesByFullPath {
   '/accounts/': typeof AuthenticatedAccountsIndexRoute
   '/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/products/': typeof AuthenticatedProductsIndexRoute
+  '/transactions/': typeof AuthenticatedTransactionsIndexRoute
   '/products/$productId/edit': typeof AuthenticatedProductsProductIdEditRoute
   '/accounts/$accountId/': typeof AuthenticatedAccountsAccountIdIndexRoute
   '/products/$productId/': typeof AuthenticatedProductsProductIdIndexRoute
+  '/transactions/$transactionId/': typeof AuthenticatedTransactionsTransactionIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -95,9 +111,11 @@ export interface FileRoutesByTo {
   '/accounts': typeof AuthenticatedAccountsIndexRoute
   '/categories': typeof AuthenticatedCategoriesIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
+  '/transactions': typeof AuthenticatedTransactionsIndexRoute
   '/products/$productId/edit': typeof AuthenticatedProductsProductIdEditRoute
   '/accounts/$accountId': typeof AuthenticatedAccountsAccountIdIndexRoute
   '/products/$productId': typeof AuthenticatedProductsProductIdIndexRoute
+  '/transactions/$transactionId': typeof AuthenticatedTransactionsTransactionIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -108,9 +126,11 @@ export interface FileRoutesById {
   '/_authenticated/accounts/': typeof AuthenticatedAccountsIndexRoute
   '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
+  '/_authenticated/transactions/': typeof AuthenticatedTransactionsIndexRoute
   '/_authenticated/products/$productId/edit': typeof AuthenticatedProductsProductIdEditRoute
   '/_authenticated/accounts/$accountId/': typeof AuthenticatedAccountsAccountIdIndexRoute
   '/_authenticated/products/$productId/': typeof AuthenticatedProductsProductIdIndexRoute
+  '/_authenticated/transactions/$transactionId/': typeof AuthenticatedTransactionsTransactionIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,9 +141,11 @@ export interface FileRouteTypes {
     | '/accounts/'
     | '/categories/'
     | '/products/'
+    | '/transactions/'
     | '/products/$productId/edit'
     | '/accounts/$accountId/'
     | '/products/$productId/'
+    | '/transactions/$transactionId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -132,9 +154,11 @@ export interface FileRouteTypes {
     | '/accounts'
     | '/categories'
     | '/products'
+    | '/transactions'
     | '/products/$productId/edit'
     | '/accounts/$accountId'
     | '/products/$productId'
+    | '/transactions/$transactionId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -144,9 +168,11 @@ export interface FileRouteTypes {
     | '/_authenticated/accounts/'
     | '/_authenticated/categories/'
     | '/_authenticated/products/'
+    | '/_authenticated/transactions/'
     | '/_authenticated/products/$productId/edit'
     | '/_authenticated/accounts/$accountId/'
     | '/_authenticated/products/$productId/'
+    | '/_authenticated/transactions/$transactionId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -205,6 +231,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProductsAddRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/transactions/': {
+      id: '/_authenticated/transactions/'
+      path: '/transactions'
+      fullPath: '/transactions/'
+      preLoaderRoute: typeof AuthenticatedTransactionsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/accounts/$accountId/': {
       id: '/_authenticated/accounts/$accountId/'
       path: '/accounts/$accountId'
@@ -226,6 +259,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProductsProductIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/transactions/$transactionId/': {
+      id: '/_authenticated/transactions/$transactionId/'
+      path: '/transactions/$transactionId'
+      fullPath: '/transactions/$transactionId/'
+      preLoaderRoute: typeof AuthenticatedTransactionsTransactionIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -235,9 +275,11 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAccountsIndexRoute: typeof AuthenticatedAccountsIndexRoute
   AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
+  AuthenticatedTransactionsIndexRoute: typeof AuthenticatedTransactionsIndexRoute
   AuthenticatedProductsProductIdEditRoute: typeof AuthenticatedProductsProductIdEditRoute
   AuthenticatedAccountsAccountIdIndexRoute: typeof AuthenticatedAccountsAccountIdIndexRoute
   AuthenticatedProductsProductIdIndexRoute: typeof AuthenticatedProductsProductIdIndexRoute
+  AuthenticatedTransactionsTransactionIdIndexRoute: typeof AuthenticatedTransactionsTransactionIdIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -246,12 +288,15 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountsIndexRoute: AuthenticatedAccountsIndexRoute,
   AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,
+  AuthenticatedTransactionsIndexRoute: AuthenticatedTransactionsIndexRoute,
   AuthenticatedProductsProductIdEditRoute:
     AuthenticatedProductsProductIdEditRoute,
   AuthenticatedAccountsAccountIdIndexRoute:
     AuthenticatedAccountsAccountIdIndexRoute,
   AuthenticatedProductsProductIdIndexRoute:
     AuthenticatedProductsProductIdIndexRoute,
+  AuthenticatedTransactionsTransactionIdIndexRoute:
+    AuthenticatedTransactionsTransactionIdIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
