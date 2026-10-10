@@ -2,7 +2,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { z } from 'zod'
 import { LoginPage, useAuthStore } from '@/features/auth'
 
-// /login?redirect=/products -> after logging in, go back to where the user was heading.
+// /login?redirect=/transactions -> after logging in, go back to where the user was heading.
 // /login?deleted=1 -> the account was just deleted, so say so.
 const loginSearchSchema = z.object({
   redirect: z.string().optional(),
