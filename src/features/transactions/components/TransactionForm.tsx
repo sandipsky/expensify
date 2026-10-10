@@ -222,7 +222,12 @@ export const TransactionForm = ({
 
   /** Clears what differs between entries and goes back to the amount. */
   const startAnother = () => {
-    reset({ ...getValues(), amount: null as unknown as number, categoryId: null, note: '' })
+    // keepFieldsRef writes the values into the inputs: the compiled JSX keeps
+    // its ref callbacks, so the fields wouldn't register again to pick them up.
+    reset(
+      { ...getValues(), amount: null as unknown as number, categoryId: null, note: '' },
+      { keepFieldsRef: true },
+    )
     categoryByType.current = {}
     amountRef.current?.focus()
   }
