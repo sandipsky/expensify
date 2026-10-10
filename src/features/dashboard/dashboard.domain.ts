@@ -73,7 +73,7 @@ export function summaryChange(
 /** One category's part of a period's income or expense. */
 export interface CategoryTotal {
   /** Null for entries without a category. */
-  categoryId: number | null
+  categoryId: string | null
   amount: number
   count: number
 }
@@ -84,7 +84,7 @@ export interface CategoryTotal {
  * never reorders between renders.
  */
 export function categoryTotals(txs: readonly ReportTx[], type: CategoryType): CategoryTotal[] {
-  const totals = new Map<number | null, CategoryTotal>()
+  const totals = new Map<string | null, CategoryTotal>()
   for (const tx of txs) {
     if (tx.type !== type) continue
     const total = totals.get(tx.categoryId) ?? { categoryId: tx.categoryId, amount: 0, count: 0 }
@@ -93,7 +93,7 @@ export function categoryTotals(txs: readonly ReportTx[], type: CategoryType): Ca
     totals.set(tx.categoryId, total)
   }
   return [...totals.values()].sort(
-    (a, b) => b.amount - a.amount || (a.categoryId ?? -1) - (b.categoryId ?? -1),
+    (a, b) => b.amount - a.amount || (a.categoryId ?? '').localeCompare(b.categoryId ?? ''),
   )
 }
 
@@ -103,7 +103,7 @@ export function topAndOther(
   keep: number,
 ): {
   top: CategoryTotal[]
-  other: { amount: number; count: number; categoryIds: number[] } | null
+  other: { amount: number; count: number; categoryIds: string[] } | null
 } {
   const top = rows.slice(0, keep)
   const rest = rows.slice(keep)
@@ -113,7 +113,7 @@ export function topAndOther(
     other: {
       amount: rest.reduce((sum, r) => sum + r.amount, 0),
       count: rest.reduce((sum, r) => sum + r.count, 0),
-      categoryIds: rest.map((r) => r.categoryId).filter((id): id is number => id !== null),
+      categoryIds: rest.map((r) => r.categoryId).filter((id): id is string => id !== null),
     },
   }
 }

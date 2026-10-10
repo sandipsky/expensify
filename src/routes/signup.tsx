@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { z } from 'zod'
-import { SignupPage, useAuthStore } from '@/features/auth'
+import { SignupPage, isLoggedIn, sessionReady } from '@/features/auth'
 
 // /signup?redirect=/transactions -> once the account exists, go on to where the user was heading.
 const signupSearchSchema = z.object({
@@ -10,8 +10,9 @@ const signupSearchSchema = z.object({
 export const Route = createFileRoute('/signup')({
   validateSearch: signupSearchSchema,
   // Already logged in? There's nothing to sign up for.
-  beforeLoad: () => {
-    if (useAuthStore.getState().token) {
+  beforeLoad: async () => {
+    await sessionReady()
+    if (isLoggedIn()) {
       throw redirect({ to: '/' })
     }
   },

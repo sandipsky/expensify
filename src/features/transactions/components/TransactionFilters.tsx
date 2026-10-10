@@ -35,8 +35,8 @@ export const TransactionFilters = ({ filter, currency, sheet }: TransactionFilte
   const categories = categoriesData ?? []
 
   const [type, setType] = useState<TypeChoice>(filter.type ?? ALL)
-  const [accountIds, setAccountIds] = useState<number[]>([...filter.accountIds])
-  const [categoryIds, setCategoryIds] = useState<number[]>([...filter.categoryIds])
+  const [accountIds, setAccountIds] = useState<string[]>([...filter.accountIds])
+  const [categoryIds, setCategoryIds] = useState<string[]>([...filter.categoryIds])
   const [min, setMin] = useState<number | null>(filter.minAmount)
   const [max, setMax] = useState<number | null>(filter.maxAmount)
   // The amount fields are uncontrolled, so "Clear all" remounts them to empty them.
@@ -122,7 +122,7 @@ export const TransactionFilters = ({ filter, currency, sheet }: TransactionFilte
           multiple
           searchable={accountItems.length > 8}
           value={accountIds}
-          onChange={(value) => setAccountIds(value as number[])}
+          onChange={(value) => setAccountIds(value as string[])}
         />
 
         {categoryItems.length > 0 && (
@@ -136,7 +136,7 @@ export const TransactionFilters = ({ filter, currency, sheet }: TransactionFilte
             multiple
             searchable
             value={categoryIds}
-            onChange={(value) => setCategoryIds(value as number[])}
+            onChange={(value) => setCategoryIds(value as string[])}
           />
         )}
 

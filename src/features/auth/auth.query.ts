@@ -1,24 +1,29 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
-import {
-  changePassword,
-  deleteAccount,
-  getProfile,
-  login,
-  register,
-  updatePreferences,
-  updateProfile,
-} from './auth.api'
-import type { IPreferencesBody, IProfile, RegisterConflictField } from './auth.types'
+import { isAppError } from '@/lib/errors'
+import type {
+  IChangeEmailBody,
+  IChangePasswordBody,
+  ILoginBody,
+  IPreferencesBody,
+  IProfile,
+  IProfileBody,
+  IRegisterBody,
+  RegisterConflictField,
+} from './auth.types'
 
-export const useLogin = () => useMutation({ mutationFn: login })
+// Loaded on first use, and the Firestore SDK with it, so the login page starts
+// without it (src/lib/firestore.ts).
+const api = () => import('./auth.api')
 
-export const useRegister = () => useMutation({ mutationFn: register })
+export const useLogin = () =>
+  useMutation({ mutationFn: async (body: ILoginBody) => (await api()).login(body) })
+
+export const useRegister = () =>
+  useMutation({ mutationFn: async (body: IRegisterBody) => (await api()).register(body) })
 
 /** The field a signup was refused over because it's taken, if that's why. */
 export function registerConflictField(error: unknown): RegisterConflictField | undefined {
-  if (!isAxiosError<{ field?: RegisterConflictField }>(error)) return undefined
-  return error.response?.status === 409 ? error.response.data?.field : undefined
+  return isAppError(error, 'taken') ? (error.field as RegisterConflictField) : undefined
 }
 
 // Query keys in one place so invalidation never drifts out of sync.
@@ -29,7 +34,8 @@ export const profileKeys = {
 }
 
 /** The signed-in user's profile and preferences. */
-export const useProfile = () => useQuery({ queryKey: profileKeys.me, queryFn: getProfile })
+export const useProfile = () =>
+  useQuery({ queryKey: profileKeys.me, queryFn: async () => (await api()).getProfile() })
 
 /**
  * The signed-in user's preferences, or `undefined` until the profile loads,
@@ -37,19 +43,27 @@ export const useProfile = () => useQuery({ queryKey: profileKeys.me, queryFn: ge
  */
 export const usePreferences = () => useProfile().data?.preferences
 
-/** Whether the server refused a request because the password didn't match. */
-export const isWrongPassword = (error: unknown) =>
-  isAxiosError(error) && error.response?.status === 401
+/** Whether a change was refused because the password didn't match. */
+export const isWrongPassword = (error: unknown) => isAppError(error, 'wrong-password')
 
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: updateProfile,
+    mutationFn: async (body: IProfileBody) => (await api()).updateProfile(body),
     onSuccess: (profile) => queryClient.setQueryData(profileKeys.me, profile),
   })
 }
 
-/** The profile with `body`'s preferences merged in, as the server merges them. */
+/** Sends the new email its verification link; the profile shows it as pending until then. */
+export const useChangeEmail = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (body: IChangeEmailBody) => (await api()).changeEmail(body),
+    onSuccess: (profile) => queryClient.setQueryData(profileKeys.me, profile),
+  })
+}
+
+/** The profile with `body`'s preferences merged in, as the save merges them. */
 function withPreferences(profile: IProfile, body: IPreferencesBody): IProfile {
   const { preferences } = profile
   return {
@@ -63,13 +77,13 @@ function withPreferences(profile: IProfile, body: IPreferencesBody): IProfile {
 
 /**
  * Saves preferences. The cached profile changes at once, so a theme or a
- * switch moves before the server answers, and goes back if it refuses.
+ * switch moves before Firestore answers, and goes back if it refuses.
  */
 export const useUpdatePreferences = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationKey: profileKeys.savePreferences,
-    mutationFn: updatePreferences,
+    mutationFn: async (body: IPreferencesBody) => (await api()).updatePreferences(body),
     onMutate: async (body) => {
       await queryClient.cancelQueries({ queryKey: profileKeys.me })
       const previous = queryClient.getQueryData<IProfile>(profileKeys.me)
@@ -88,6 +102,10 @@ export const useUpdatePreferences = () => {
   })
 }
 
-export const useChangePassword = () => useMutation({ mutationFn: changePassword })
+export const useChangePassword = () =>
+  useMutation({
+    mutationFn: async (body: IChangePasswordBody) => (await api()).changePassword(body),
+  })
 
-export const useDeleteAccount = () => useMutation({ mutationFn: deleteAccount })
+export const useDeleteAccount = () =>
+  useMutation({ mutationFn: async (password: string) => (await api()).deleteAccount(password) })

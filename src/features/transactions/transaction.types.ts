@@ -3,40 +3,40 @@ export const TX_TYPES = ['expense', 'income', 'transfer'] as const
 export type TxType = (typeof TX_TYPES)[number]
 
 export interface ITransaction {
-  id: number
+  id: string
   type: TxType
   /** Positive; `type` gives the direction. */
   amount: number
   /** ISO 4217 code, the source account's. */
   currency: string
   /** Source account. */
-  accountId: number
+  accountId: string
   /** Transfers only. */
-  toAccountId: number | null
+  toAccountId: string | null
   /** Null for transfers. */
-  categoryId: number | null
+  categoryId: string | null
   /** The user's local date, `YYYY-MM-DD`. */
   date: string
   note: string | null
-  /** The recurring rule that added it; missing on entries written before rules existed. */
-  recurringRuleId?: number | null
+  /** The recurring rule that added it; null for an entry added by hand. */
+  recurringRuleId?: string | null
   createdAt: string
   updatedAt: string
 }
 
-// What the client sends when creating/updating - the server owns the id,
+// What a form saves when creating/updating - transactions.api.ts sets the id,
 // the currency (the account's), the rule that added it and the timestamps.
 export type ITransactionBody = Omit<
   ITransaction,
   'id' | 'currency' | 'recurringRuleId' | 'createdAt' | 'updatedAt'
 >
 
-/** How the list is narrowed on the server: a date range, an account, a rule, or several. */
+/** How the list is narrowed in the Firestore query: a date range, an account, or a rule. */
 export interface TransactionQuery {
   from?: string
   to?: string
   /** Entries touching the account, on either side of a transfer. */
-  accountId?: number
+  accountId?: string
   /** Entries a recurring rule added. */
-  recurringRuleId?: number
+  recurringRuleId?: string
 }

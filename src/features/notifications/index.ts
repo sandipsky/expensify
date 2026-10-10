@@ -11,3 +11,4 @@ export {
   type NotificationPermissionState,
 } from './browser-notifications'
 export { clearNotificationState } from './device-state'
+export { claimNotifications } from './notification.store'

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { LUIButton, LUIPasswordInput, LUITextInput, type ModalRef } from '@lumen-ui/react'
 import { isWrongPassword, useDeleteAccount } from '@/features/auth/auth.query'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { DELETE_PHRASE } from '../settings.labels'
 
 interface DeleteAccountDialogProps {
@@ -72,7 +72,7 @@ export const DeleteAccountDialog = ({ modalRef }: DeleteAccountDialogProps) => {
         />
 
         {error && !wrongPassword && (
-          <div className="alert error">{getApiErrorMessage(error)}</div>
+          <div className="alert error">{getErrorMessage(error)}</div>
         )}
       </div>
 

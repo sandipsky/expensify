@@ -5,7 +5,7 @@ import { LUIButton, LUIPasswordInput, useLUINotification } from '@lumen-ui/react
 import { isWrongPassword, useChangePassword } from '@/features/auth/auth.query'
 import { MIN_PASSWORD_LENGTH } from '@/features/auth/auth.types'
 import type { SheetHandle } from '@/components/sheet'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 
 interface PasswordFormProps {
   /** The sheet this form opened in; closed with `true` once the password changed. */
@@ -83,7 +83,7 @@ export const PasswordForm = ({ sheet }: PasswordFormProps) => {
           {...register('newPassword')}
         />
 
-        {saveError && <div className="alert error">{getApiErrorMessage(saveError)}</div>}
+        {saveError && <div className="alert error">{getErrorMessage(saveError)}</div>}
       </div>
 
       <div className="sheet-form__actions">

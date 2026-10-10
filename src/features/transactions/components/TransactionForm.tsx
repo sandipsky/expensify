@@ -18,7 +18,7 @@ import { useAccounts } from '@/features/accounts/account.query'
 import { useAddDefaultCategories, useCategories } from '@/features/categories/category.query'
 import type { CategoryType } from '@/features/categories/category.types'
 import { useRecurringRules } from '@/features/recurring/recurring.query'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import {
   DEFAULT_CURRENCY,
   addDays,
@@ -52,11 +52,11 @@ import './TransactionForm.scss'
  * writes a draft.
  */
 export type TransactionFormResult =
-  | { action: 'saved'; id: number }
+  | { action: 'saved'; id: string }
   | { action: 'duplicate'; transaction: ITransaction }
   | { action: 'delete'; transaction: ITransaction }
   | { action: 'recurring'; transaction: ITransaction }
-  | { action: 'rule'; ruleId: number }
+  | { action: 'rule'; ruleId: string }
   | { action: 'draft'; body: ITransactionBody }
 
 interface TransactionFormProps {
@@ -78,9 +78,9 @@ const transactionSchema = z
   .object({
     type: z.enum(TX_TYPES),
     amount: z.number({ error: 'Enter an amount' }).positive('Enter an amount above zero'),
-    accountId: z.number().nullable(),
-    toAccountId: z.number().nullable(),
-    categoryId: z.number().nullable(),
+    accountId: z.string().nullable(),
+    toAccountId: z.string().nullable(),
+    categoryId: z.string().nullable(),
     date: z.date({ error: 'Pick a date' }),
     note: z.string().trim().max(MAX_NOTE_LENGTH, `Use at most ${MAX_NOTE_LENGTH} characters`),
   })
@@ -170,7 +170,7 @@ export const TransactionForm = ({
   const date = useWatch({ control, name: 'date' })
 
   /** The category of each type the user last had, so switching type and back keeps it. */
-  const categoryByType = useRef<Partial<Record<CategoryType, number | null>>>({})
+  const categoryByType = useRef<Partial<Record<CategoryType, string | null>>>({})
 
   const transfer = type === 'transfer'
   const account = accounts.find((a) => a.id === accountId)
@@ -206,13 +206,13 @@ export const TransactionForm = ({
         if (added.length) notify.success('Default categories added')
         else notify.info('Nothing to add', 'You already have every default category.')
       },
-      onError: (error) => notify.error('Could not add default categories', getApiErrorMessage(error)),
+      onError: (error) => notify.error('Could not add default categories', getErrorMessage(error)),
     })
 
   /** "Rs 250.00 · Food and dining" for the toast. */
   const summary = (body: ITransactionBody) => {
     const amount = formatMoney(body.amount, currency)
-    const name = (id: number | null) => accounts.find((a) => a.id === id)?.name ?? ''
+    const name = (id: string | null) => accounts.find((a) => a.id === id)?.name ?? ''
     const what =
       body.type === 'transfer'
         ? `${name(body.accountId)} → ${name(body.toAccountId)}`
@@ -389,7 +389,7 @@ export const TransactionForm = ({
                   bindValue="value"
                   bindLabel="label"
                   value={field.value}
-                  onChange={(value) => field.onChange(value as number)}
+                  onChange={(value) => field.onChange(value as string)}
                   onBlur={field.onBlur}
                 />
               )}
@@ -406,7 +406,7 @@ export const TransactionForm = ({
                   bindValue="value"
                   bindLabel="label"
                   value={field.value}
-                  onChange={(value) => field.onChange(value as number)}
+                  onChange={(value) => field.onChange(value as string)}
                   onBlur={field.onBlur}
                 />
               )}
@@ -456,7 +456,7 @@ export const TransactionForm = ({
                   bindValue="value"
                   bindLabel="label"
                   value={field.value}
-                  onChange={(value) => field.onChange(value as number)}
+                  onChange={(value) => field.onChange(value as string)}
                   onBlur={field.onBlur}
                 />
               )}
@@ -517,7 +517,7 @@ export const TransactionForm = ({
           {...register('note')}
         />
 
-        {saveError && <div className="alert error">{getApiErrorMessage(saveError)}</div>}
+        {saveError && <div className="alert error">{getErrorMessage(saveError)}</div>}
       </div>
 
       <div className="sheet-form__actions tx-form__actions">

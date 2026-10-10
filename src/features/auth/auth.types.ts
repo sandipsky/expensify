@@ -4,18 +4,7 @@ export interface ILoginBody {
   password: string
 }
 
-export interface IUser {
-  id: number
-  name: string
-  username: string
-}
-
-export interface ILoginResponse {
-  token: string
-  user: IUser
-}
-
-/** A new account; signing up logs straight in, answering an {@link ILoginResponse}. */
+/** A new account; signing up logs straight in. */
 export interface IRegisterBody {
   name: string
   username: string
@@ -23,12 +12,12 @@ export interface IRegisterBody {
   password: string
 }
 
-/** Signup fields the server can refuse as taken, naming which in a 409 answer. */
+/** Signup fields that can be refused as taken; the error names which. */
 export type RegisterConflictField = 'username' | 'email'
 
-// Account rules. Keep in sync with the Auth section of mock-server/server.js.
+// Account rules. Keep in sync with firestore.rules.
 
-/** Fewest characters a new password may have. */
+/** Fewest characters a new password may have. Firebase itself asks for 6. */
 export const MIN_PASSWORD_LENGTH = 8
 
 /** Most characters a name may have. */
@@ -61,22 +50,38 @@ export interface IPreferences {
   notifications: INotificationPrefs
 }
 
-/** The signed-in user. The username can't change; everything else can. */
-export interface IProfile extends IUser {
+/** The logged-in user, from `users/{uid}`. The username can't change; everything else can. */
+export interface IProfile {
+  /** The Firebase Auth uid. */
+  id: string
+  name: string
+  /**
+   * Logs in like the email does. Null only for a login whose signup stopped
+   * before its profile was written; that one logs in with its email.
+   */
+  username: string | null
+  /** The email the login uses. */
   email: string
+  /** A new email waiting for its verification link to be opened, or null. */
+  pendingEmail: string | null
   /** A small JPEG as a data URL, or null to show initials. */
   photoUrl: string | null
   preferences: IPreferences
 }
 
-/** Profile fields to change; the ones left out stay as they are. */
+/** Profile fields to change; the ones left out stay as they are. The email changes apart. */
 export interface IProfileBody {
   name?: string
-  email?: string
   photoUrl?: string | null
 }
 
-/** Preferences to change; the server merges them into the rest. */
+/** A new login email, and the password that proves it's the user asking. */
+export interface IChangeEmailBody {
+  email: string
+  password: string
+}
+
+/** Preferences to change; they're merged into the rest. */
 export interface IPreferencesBody {
   theme?: Theme
   notifications?: Partial<INotificationPrefs>

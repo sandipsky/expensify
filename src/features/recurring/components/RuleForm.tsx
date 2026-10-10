@@ -25,7 +25,7 @@ import {
   categoryOptions,
 } from '@/features/transactions/transaction.labels'
 import { TX_TYPES, type TxType } from '@/features/transactions/transaction.types'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import {
   DEFAULT_CURRENCY,
   currencySymbol,
@@ -88,16 +88,16 @@ interface RuleFormProps {
    */
   fromDate?: string
   /** The sheet this form opened in; closed with the saved rule's id. */
-  sheet: SheetHandle<number>
+  sheet: SheetHandle<string>
 }
 
 const ruleSchema = z
   .object({
     type: z.enum(TX_TYPES),
     amount: z.number({ error: 'Enter an amount' }).positive('Enter an amount above zero'),
-    accountId: z.number().nullable(),
-    toAccountId: z.number().nullable(),
-    categoryId: z.number().nullable(),
+    accountId: z.string().nullable(),
+    toAccountId: z.string().nullable(),
+    categoryId: z.string().nullable(),
     note: z.string().trim().max(MAX_NOTE_LENGTH, `Use at most ${MAX_NOTE_LENGTH} characters`),
     frequency: z.enum(FREQUENCIES),
     interval: z
@@ -215,7 +215,7 @@ export const RuleForm = ({ rule, prefill = {}, fromDate, sheet }: RuleFormProps)
   /** Schedule fields the user has set, so they stop following the start date or the frequency. */
   const picked = useRef({ weekdays: false, dayOfMonth: false, startDate: false })
   /** The category of each type the user last had, so switching type and back keeps it. */
-  const categoryByType = useRef<Partial<Record<CategoryType, number | null>>>({})
+  const categoryByType = useRef<Partial<Record<CategoryType, string | null>>>({})
 
   const {
     register,
@@ -407,7 +407,7 @@ export const RuleForm = ({ rule, prefill = {}, fromDate, sheet }: RuleFormProps)
             bindValue="value"
             bindLabel="label"
             value={field.value}
-            onChange={(value) => field.onChange(value as number)}
+            onChange={(value) => field.onChange(value as string)}
             onBlur={field.onBlur}
           />
         )}
@@ -532,7 +532,7 @@ export const RuleForm = ({ rule, prefill = {}, fromDate, sheet }: RuleFormProps)
                     value={field.value}
                     onChange={(value) => {
                       picked.current.weekdays = true
-                      field.onChange((value as number[] | null) ?? [])
+                      field.onChange((value as string[] | null) ?? [])
                     }}
                     onBlur={field.onBlur}
                   />
@@ -655,7 +655,7 @@ export const RuleForm = ({ rule, prefill = {}, fromDate, sheet }: RuleFormProps)
           </p>
         )}
 
-        {saveError && <div className="alert error">{getApiErrorMessage(saveError)}</div>}
+        {saveError && <div className="alert error">{getErrorMessage(saveError)}</div>}
       </div>
 
       <div className="sheet-form__actions">

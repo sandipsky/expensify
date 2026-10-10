@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { LUIAvatar, LUIIcon, LUIMenu, type LUIMenuRef } from '@lumen-ui/react'
-import { useAuthStore, useProfile } from '@/features/auth'
+import { logout, sessionUser, useProfile } from '@/features/auth'
 import { useSettingsActions } from '@/features/settings'
 import './account-menu.scss'
 
@@ -13,9 +13,7 @@ export function AccountMenu() {
   const menu = useRef<LUIMenuRef>(null)
   // The profile once it loads, so a new name or photo shows at once; the login's user until then.
   const profile = useProfile().data
-  const loginUser = useAuthStore((s) => s.user)
-  const user = profile ?? loginUser
-  const logout = useAuthStore((s) => s.logout)
+  const user = profile ?? sessionUser()
   const { changePassword } = useSettingsActions()
 
   if (!user) return null
@@ -28,7 +26,7 @@ export function AccountMenu() {
 
   const onLogout = () => {
     menu.current?.close()
-    logout()
+    void logout()
   }
 
   const trigger = (

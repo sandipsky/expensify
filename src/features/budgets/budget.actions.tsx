@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 import { LUIConfirmDialog, useLUIModal, useLUINotification } from '@lumen-ui/react'
 import { useSheet } from '@/components/sheet'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { BudgetForm } from './components/BudgetForm'
 import { useDeleteBudget, useSetBudgetActive } from './budget.query'
 import type { IBudget } from './budget.types'
@@ -31,16 +31,16 @@ export function useBudgetActions() {
     try {
       return await action()
     } catch (error) {
-      notify.error(failure, getApiErrorMessage(error))
+      notify.error(failure, getErrorMessage(error))
       throw error
     }
   }
 
   /** Opens the add form. Resolves to the new budget's id, or `undefined` if cancelled. */
-  const create = () => sheet.open<number>((handle) => <BudgetForm sheet={handle} />)
+  const create = () => sheet.open<string>((handle) => <BudgetForm sheet={handle} />)
 
   const edit = (budget: IBudget) =>
-    sheet.open<number>((handle) => <BudgetForm budget={budget} sheet={handle} />)
+    sheet.open<string>((handle) => <BudgetForm budget={budget} sheet={handle} />)
 
   /** Pausing keeps the budget's settings; it just stops tracking and alerting. */
   const pause = async (budget: IBudget) => {
@@ -48,7 +48,7 @@ export function useBudgetActions() {
       await setActive.mutateAsync({ id: budget.id, active: false })
       notify.success('Budget paused', budget.name)
     } catch (error) {
-      notify.error('Could not pause budget', getApiErrorMessage(error))
+      notify.error('Could not pause budget', getErrorMessage(error))
     }
   }
 
@@ -57,7 +57,7 @@ export function useBudgetActions() {
       await setActive.mutateAsync({ id: budget.id, active: true })
       notify.success('Budget resumed', budget.name)
     } catch (error) {
-      notify.error('Could not resume budget', getApiErrorMessage(error))
+      notify.error('Could not resume budget', getErrorMessage(error))
     }
   }
 

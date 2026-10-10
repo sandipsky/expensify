@@ -12,7 +12,7 @@ export interface BudgetAlert {
 }
 
 export interface IBudget {
-  id: number
+  id: string
   /** 1–40 characters; shown on the card. */
   name: string
   /** Limit per period, in the accounts' currency. */
@@ -20,7 +20,7 @@ export interface IBudget {
   /** Weeks run Monday to Sunday; months and years follow the calendar. */
   period: BudgetPeriod
   /** Expense categories it counts; empty means every expense. */
-  categoryIds: number[]
+  categoryIds: string[]
   /** Carry the previous period's unspent or overspent amount into this one. */
   rollover: boolean
   /** Percent-used levels that alert once per period: [80, 100], or empty for none. */
@@ -32,6 +32,6 @@ export interface IBudget {
   updatedAt: string
 }
 
-// What the client sends when creating/updating - the server owns the id,
+// What a form saves when creating/updating - budgets.api.ts sets the id,
 // the alert record, the paused flag and the timestamps.
 export type IBudgetBody = Omit<IBudget, 'id' | 'lastAlert' | 'active' | 'createdAt' | 'updatedAt'>

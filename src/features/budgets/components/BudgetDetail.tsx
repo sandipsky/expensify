@@ -13,7 +13,7 @@ import { useTransactionActions } from '@/features/transactions/transaction.actio
 import { compareNewestFirst } from '@/features/transactions/transaction.domain'
 import { type TxLookups, type TxRow, toRow } from '@/features/transactions/transaction.labels'
 import type { ITransactionBody } from '@/features/transactions/transaction.types'
-import { getApiErrorMessage, useToday } from '@/lib'
+import { getErrorMessage, useToday } from '@/lib'
 import { DEFAULT_CURRENCY, formatMoney, formatPeriod, fractionDigits, inRange } from '@/utils'
 import { useBudgetActions } from '../budget.actions'
 import {
@@ -59,8 +59,7 @@ type BudgetDetailProps = {
  * periods, and the transactions behind whichever period is selected. One
  * query covers every period shown.
  */
-export const BudgetDetail = ({ budgetId }: BudgetDetailProps) => {
-  const id = Number(budgetId)
+export const BudgetDetail = ({ budgetId: id }: BudgetDetailProps) => {
   const navigate = useNavigate()
   const budgetsQuery = useBudgets()
   const accountsQuery = useAccounts()
@@ -85,7 +84,7 @@ export const BudgetDetail = ({ budgetId }: BudgetDetailProps) => {
           title="Budget not found"
           message={
             budgetsQuery.isError
-              ? getApiErrorMessage(budgetsQuery.error)
+              ? getErrorMessage(budgetsQuery.error)
               : 'It may have been deleted, perhaps in another tab.'
           }
         >
@@ -259,7 +258,7 @@ const BudgetPage = ({ budget, accounts, categories }: BudgetPageProps) => {
         </p>
       )}
 
-      {spending.isError && <div className="alert error">{getApiErrorMessage(spending.error)}</div>}
+      {spending.isError && <div className="alert error">{getErrorMessage(spending.error)}</div>}
 
       <LUICard padding="lg">
         {current ? (

@@ -78,7 +78,7 @@ const BUDGET_ICON = { icon: 'donut_large' as LUIIconName, color: 'var(--accent)'
 /** A single-category budget wears its category's icon; others a generic one. */
 export function iconOf(
   budget: Pick<IBudget, 'categoryIds'>,
-  categoriesById: ReadonlyMap<number, ICategory>,
+  categoriesById: ReadonlyMap<string, ICategory>,
 ): { icon: LUIIconName; color: string } {
   const only = budget.categoryIds.length === 1 ? categoriesById.get(budget.categoryIds[0]) : null
   return only ? { icon: only.icon, color: only.color } : BUDGET_ICON
@@ -87,7 +87,7 @@ export function iconOf(
 /** What the budget counts: "All expenses", or its categories as "Food and dining, Transport". */
 export function scopeOf(
   budget: Pick<IBudget, 'categoryIds'>,
-  categoriesById: ReadonlyMap<number, ICategory>,
+  categoriesById: ReadonlyMap<string, ICategory>,
 ): string {
   if (!budget.categoryIds.length) return 'All expenses'
   const names = budget.categoryIds

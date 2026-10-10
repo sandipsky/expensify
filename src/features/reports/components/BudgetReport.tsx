@@ -45,7 +45,7 @@ import { ReportTiles } from './ReportTiles'
 import './BudgetReport.scss'
 
 /** The "All budgets" item of the budget select. */
-const ALL = 0
+const ALL = ''
 
 const LIMIT_SERIES: readonly ChartSeries[] = [
   { key: 'limit', label: 'Limit', color: 'var(--text-quaternary)' },
@@ -165,7 +165,7 @@ export const BudgetReport = ({ search }: { search: BudgetReportSearch }) => {
           bindLabel="label"
           searchable={budgetItems.length > 8}
           value={selected?.id ?? ALL}
-          onChange={(value) => set({ budget: (value as number) || undefined })}
+          onChange={(value) => set({ budget: (value as string) || undefined })}
         />
       </div>
       <div className="report-field report-field--period">

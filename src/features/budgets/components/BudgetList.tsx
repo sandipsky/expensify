@@ -12,7 +12,7 @@ import {
 import { EmptyState } from '@/components/empty-state'
 import { useAccounts } from '@/features/accounts/account.query'
 import { useCategories } from '@/features/categories/category.query'
-import { getApiErrorMessage, useToday } from '@/lib'
+import { getErrorMessage, useToday } from '@/lib'
 import { DEFAULT_CURRENCY, fractionDigits, spanOf } from '@/utils'
 import { useBudgetActions } from '../budget.actions'
 import { budgetProgress, compareBudgets, neededRange } from '../budget.domain'
@@ -57,7 +57,7 @@ export const BudgetList = () => {
     return (
       <div className="budgets-page">
         <LUIBreadcrumb title="Budgets" />
-        <div className="alert error">{getApiErrorMessage(budgetsQuery.error)}</div>
+        <div className="alert error">{getErrorMessage(budgetsQuery.error)}</div>
       </div>
     )
   }
@@ -118,7 +118,7 @@ export const BudgetList = () => {
       ) : (
         <>
           {spending.isError && (
-            <div className="alert error">{getApiErrorMessage(spending.error)}</div>
+            <div className="alert error">{getErrorMessage(spending.error)}</div>
           )}
 
           {active.length > 0 ? (

@@ -15,7 +15,7 @@ import type { SheetHandle } from '@/components/sheet'
 import { useAccounts } from '@/features/accounts/account.query'
 import { compareCategories } from '@/features/categories/category.domain'
 import { useCategories } from '@/features/categories/category.query'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { DEFAULT_CURRENCY, currencySymbol, formatPeriod, fractionDigits, localDate } from '@/utils'
 import { DEFAULT_ALERT_THRESHOLDS, MAX_BUDGET_NAME, budgetPeriodRange } from '../budget.domain'
 import {
@@ -31,13 +31,13 @@ interface BudgetFormProps {
   /** The budget to edit; omit to add one. */
   budget?: IBudget
   /** The sheet this form opened in; closed with the saved budget's id. */
-  sheet: SheetHandle<number>
+  sheet: SheetHandle<string>
 }
 
 const budgetSchema = z.object({
   period: z.enum(BUDGET_PERIODS),
   amount: z.number({ error: 'Enter an amount' }).positive('Enter an amount above zero'),
-  categoryIds: z.array(z.number()),
+  categoryIds: z.array(z.string()),
   name: z
     .string()
     .trim()
@@ -101,7 +101,7 @@ export const BudgetForm = ({ budget, sheet }: BudgetFormProps) => {
   const period = useWatch({ control, name: 'period' })
   const range = budgetPeriodRange(period, localDate())
 
-  const changeCategories = (ids: number[]) => {
+  const changeCategories = (ids: string[]) => {
     setValue('categoryIds', ids, { shouldDirty: true })
     if (nameEdited) return
     const names = ids
@@ -197,7 +197,7 @@ export const BudgetForm = ({ budget, sheet }: BudgetFormProps) => {
                 multiple
                 searchable
                 value={field.value}
-                onChange={(value) => changeCategories((value as number[] | null) ?? [])}
+                onChange={(value) => changeCategories((value as string[] | null) ?? [])}
                 onBlur={field.onBlur}
               />
             )}
@@ -224,7 +224,7 @@ export const BudgetForm = ({ budget, sheet }: BudgetFormProps) => {
           <p className="sheet-form__hint">Once each, every period.</p>
         </div>
 
-        {saveError && <div className="alert error">{getApiErrorMessage(saveError)}</div>}
+        {saveError && <div className="alert error">{getErrorMessage(saveError)}</div>}
       </div>
 
       <div className="sheet-form__actions">

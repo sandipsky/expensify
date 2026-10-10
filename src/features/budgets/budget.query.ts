@@ -1,15 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTransactions } from '@/features/transactions/transaction.query'
 import type { DateRange } from '@/utils'
-import {
-  createBudget,
-  deleteBudget,
-  getBudgets,
-  recordBudgetAlert,
-  setBudgetActive,
-  updateBudget,
-} from './budgets.api'
 import type { BudgetAlert, IBudgetBody } from './budget.types'
+
+// Loaded on first use, and the Firestore SDK with it, so the login page starts
+// without it (src/lib/firestore.ts).
+const api = () => import('./budgets.api')
 
 // Query keys in one place so invalidation never drifts out of sync.
 export const budgetKeys = {
@@ -17,7 +13,8 @@ export const budgetKeys = {
 }
 
 /** Every budget, paused ones too. A handful at most, so one query serves the app. */
-export const useBudgets = () => useQuery({ queryKey: budgetKeys.all, queryFn: getBudgets })
+export const useBudgets = () =>
+  useQuery({ queryKey: budgetKeys.all, queryFn: async () => (await api()).getBudgets() })
 
 /**
  * The transactions budget figures read, over one range. The pages and the
@@ -35,7 +32,7 @@ const useInvalidateBudgets = () => {
 export const useCreateBudget = () => {
   const invalidate = useInvalidateBudgets()
   return useMutation({
-    mutationFn: (body: IBudgetBody) => createBudget(body),
+    mutationFn: async (body: IBudgetBody) => (await api()).createBudget(body),
     onSuccess: invalidate,
   })
 }
@@ -43,7 +40,8 @@ export const useCreateBudget = () => {
 export const useUpdateBudget = () => {
   const invalidate = useInvalidateBudgets()
   return useMutation({
-    mutationFn: ({ id, body }: { id: number; body: IBudgetBody }) => updateBudget(id, body),
+    mutationFn: async ({ id, body }: { id: string; body: IBudgetBody }) =>
+      (await api()).updateBudget(id, body),
     onSuccess: invalidate,
   })
 }
@@ -51,7 +49,8 @@ export const useUpdateBudget = () => {
 export const useSetBudgetActive = () => {
   const invalidate = useInvalidateBudgets()
   return useMutation({
-    mutationFn: ({ id, active }: { id: number; active: boolean }) => setBudgetActive(id, active),
+    mutationFn: async ({ id, active }: { id: string; active: boolean }) =>
+      (await api()).setBudgetActive(id, active),
     onSuccess: invalidate,
   })
 }
@@ -59,7 +58,8 @@ export const useSetBudgetActive = () => {
 export const useRecordBudgetAlert = () => {
   const invalidate = useInvalidateBudgets()
   return useMutation({
-    mutationFn: ({ id, alert }: { id: number; alert: BudgetAlert }) => recordBudgetAlert(id, alert),
+    mutationFn: async ({ id, alert }: { id: string; alert: BudgetAlert }) =>
+      (await api()).recordBudgetAlert(id, alert),
     onSuccess: invalidate,
   })
 }
@@ -67,7 +67,7 @@ export const useRecordBudgetAlert = () => {
 export const useDeleteBudget = () => {
   const invalidate = useInvalidateBudgets()
   return useMutation({
-    mutationFn: (id: number) => deleteBudget(id),
+    mutationFn: async (id: string) => (await api()).deleteBudget(id),
     onSuccess: invalidate,
   })
 }

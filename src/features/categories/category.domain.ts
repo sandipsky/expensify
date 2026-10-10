@@ -83,6 +83,46 @@ export const CATEGORY_ICONS = [
 /** A new category's icon until the user picks one. */
 export const DEFAULT_CATEGORY_ICON: LUIIconName = 'category'
 
+/**
+ * The categories a new account starts with, and what "Add default
+ * categories" adds back, in each type's list order.
+ */
+export const DEFAULT_CATEGORIES: readonly Pick<ICategory, 'type' | 'name' | 'icon' | 'color'>[] = [
+  { type: 'expense', name: 'Food and dining', icon: 'category', color: '#EA580C' },
+  { type: 'expense', name: 'Groceries', icon: 'cart', color: '#15803D' },
+  { type: 'expense', name: 'Transport', icon: 'train', color: '#2456E6' },
+  { type: 'expense', name: 'Housing and rent', icon: 'home', color: '#8D6E63' },
+  { type: 'expense', name: 'Utilities', icon: 'bolt', color: '#B45309' },
+  { type: 'expense', name: 'Phone and internet', icon: 'wifi', color: '#0284C7' },
+  { type: 'expense', name: 'Shopping', icon: 'bag', color: '#DB2777' },
+  { type: 'expense', name: 'Health', icon: 'hospital', color: '#DC2626' },
+  { type: 'expense', name: 'Education', icon: 'education', color: '#4F46E5' },
+  { type: 'expense', name: 'Entertainment', icon: 'controller', color: '#9333EA' },
+  { type: 'expense', name: 'Subscriptions', icon: 'refresh', color: '#0D9488' },
+  { type: 'expense', name: 'Travel', icon: 'flight', color: '#0284C7' },
+  { type: 'expense', name: 'Personal care', icon: 'heart', color: '#DB2777' },
+  { type: 'expense', name: 'Gifts and donations', icon: 'hand', color: '#DC2626' },
+  { type: 'expense', name: 'Family and kids', icon: 'family', color: '#B45309' },
+  { type: 'expense', name: 'Insurance', icon: 'shield', color: '#0D9488' },
+  { type: 'expense', name: 'Fees and charges', icon: 'receipt', color: '#64748B' },
+  { type: 'income', name: 'Salary', icon: 'money', color: '#15803D' },
+  { type: 'income', name: 'Business and freelance', icon: 'work', color: '#2456E6' },
+  { type: 'income', name: 'Bonus', icon: 'star', color: '#B45309' },
+  { type: 'income', name: 'Interest and dividends', icon: 'savings', color: '#0D9488' },
+  { type: 'income', name: 'Rental income', icon: 'building', color: '#8D6E63' },
+  { type: 'income', name: 'Gifts received', icon: 'heart', color: '#DB2777' },
+  { type: 'income', name: 'Refunds', icon: 'undo', color: '#0284C7' },
+  { type: 'income', name: 'Other income', icon: 'add', color: '#4F46E5' },
+]
+
+/** The next place in a type's list: after its last category. */
+export function nextSortOrder(
+  categories: readonly Pick<ICategory, 'type' | 'sortOrder'>[],
+  type: CategoryType,
+): number {
+  return Math.max(-1, ...categories.filter((c) => c.type === type).map((c) => c.sortOrder)) + 1
+}
+
 type Named = Pick<ICategory, 'id' | 'name' | 'type'>
 
 /** How names compare for uniqueness: trimmed and ignoring case. */
@@ -97,7 +137,7 @@ export function nameKey(name: string): string {
  */
 export function isNameTaken(
   categories: readonly Named[],
-  candidate: Omit<Named, 'id'> & { id?: number },
+  candidate: Omit<Named, 'id'> & { id?: string },
 ): boolean {
   const key = nameKey(candidate.name)
   return categories.some(

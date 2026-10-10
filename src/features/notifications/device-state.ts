@@ -2,8 +2,9 @@
  * What this browser remembers about notifications: the recent alerts behind
  * the header's bell, and which reminders it already showed. It isn't synced:
  * each device shows its own, as each phone keeps its own notification
- * history. Reads and writes never throw, so blocked storage only costs the
- * memory.
+ * history. It belongs to one user at a time (`owner`), since one browser
+ * may be shared. Reads and writes never throw, so blocked storage only costs
+ * the memory.
  */
 
 /** Keys under which the notification features keep their state. */
@@ -11,6 +12,8 @@ export const NOTIFICATION_KEYS = {
   alerts: 'expensify.alerts.v1',
   dailyReminder: 'expensify.daily-reminder.v1',
   billReminders: 'expensify.bill-reminders.v1',
+  /** The uid the rest belongs to. */
+  owner: 'expensify.notifications-owner.v1',
 } as const
 
 export function readState<T>(key: string, fallback: T): T {

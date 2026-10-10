@@ -6,7 +6,7 @@ import {
   type TransactionFormResult,
 } from '@/features/transactions/components/TransactionForm'
 import type { ITransaction, ITransactionBody, TxType } from '@/features/transactions/transaction.types'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { formatDate, formatMoney, localDate } from '@/utils'
 import { RuleForm } from './components/RuleForm'
 import {
@@ -65,7 +65,7 @@ export function useRecurringActions() {
     try {
       return await action()
     } catch (error) {
-      notify.error(failure, getApiErrorMessage(error))
+      notify.error(failure, getErrorMessage(error))
       throw error
     }
   }
@@ -75,19 +75,19 @@ export function useRecurringActions() {
     if (isAlreadyHandled(error)) {
       notify.info('Already handled', 'This entry was confirmed or skipped in another tab.')
     } else {
-      notify.error(failure, getApiErrorMessage(error))
+      notify.error(failure, getErrorMessage(error))
     }
   }
 
   /** Opens the add form. Resolves to the new rule's id, or `undefined` if cancelled. */
-  const create = () => sheet.open<number>((handle) => <RuleForm sheet={handle} />, FORM_OPTIONS)
+  const create = () => sheet.open<string>((handle) => <RuleForm sheet={handle} />, FORM_OPTIONS)
 
   /**
    * "Make recurring": a rule with the entry's fields, repeating monthly from
    * one period after it, so the entry itself isn't added again.
    */
   const createFrom = (tx: ITransaction) =>
-    sheet.open<number>(
+    sheet.open<string>(
       (handle) => (
         <RuleForm
           prefill={{ template: templateOf(tx), ...scheduleAfter(tx.date, 'monthly') }}
@@ -99,7 +99,7 @@ export function useRecurringActions() {
     )
 
   const edit = (rule: IRecurringRule) =>
-    sheet.open<number>((handle) => <RuleForm rule={rule} sheet={handle} />, FORM_OPTIONS)
+    sheet.open<string>((handle) => <RuleForm rule={rule} sheet={handle} />, FORM_OPTIONS)
 
   /** No new entries while paused. */
   const pause = async (view: RuleView) => {
@@ -107,7 +107,7 @@ export function useRecurringActions() {
       await setActive.mutateAsync({ id: view.id, active: false })
       notify.success('Recurring rule paused', view.name)
     } catch (error) {
-      notify.error('Could not pause rule', getApiErrorMessage(error))
+      notify.error('Could not pause rule', getErrorMessage(error))
     }
   }
 
@@ -118,7 +118,7 @@ export function useRecurringActions() {
       await setActive.mutateAsync({ id: view.id, active: true, nextDueDate })
       notify.success('Recurring rule resumed', view.name)
     } catch (error) {
-      notify.error('Could not resume rule', getApiErrorMessage(error))
+      notify.error('Could not resume rule', getErrorMessage(error))
     }
   }
 

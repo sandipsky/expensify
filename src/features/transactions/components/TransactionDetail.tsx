@@ -12,7 +12,7 @@ import { EmptyState } from '@/components/empty-state'
 import { useAccounts } from '@/features/accounts/account.query'
 import { useCategories } from '@/features/categories/category.query'
 import { useRecurringRules } from '@/features/recurring/recurring.query'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { formatDateTime, formatMoney, localDate } from '@/utils'
 import { useTransactionActions } from '../transaction.actions'
 import { TX_TYPE_LABELS, type TxLookups, type TxRow, accountName, toRow } from '../transaction.labels'
@@ -33,8 +33,7 @@ const TYPE_CHIP: Readonly<Record<TxType, ChipVariant>> = {
 }
 
 /** `/transactions/$transactionId`: one entry in full, with edit, duplicate and delete. */
-export const TransactionDetail = ({ transactionId }: TransactionDetailProps) => {
-  const id = Number(transactionId)
+export const TransactionDetail = ({ transactionId: id }: TransactionDetailProps) => {
   const navigate = useNavigate()
   const transaction = useTransaction(id)
   const accountsQuery = useAccounts()
@@ -61,7 +60,7 @@ export const TransactionDetail = ({ transactionId }: TransactionDetailProps) => 
           title="Transaction not found"
           message={
             transaction.isError && transaction.error
-              ? getApiErrorMessage(transaction.error)
+              ? getErrorMessage(transaction.error)
               : 'It may have been deleted.'
           }
         >

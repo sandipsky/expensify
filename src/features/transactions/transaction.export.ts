@@ -30,7 +30,7 @@ export function exportFileName(range: DateRange, extension: string): string {
 function statementOrder(rows: readonly TxRow[]): TxRow[] {
   return [...rows].sort(
     (a, b) =>
-      compare(a.date, b.date) || compare(a.tx.createdAt, b.tx.createdAt) || a.id - b.id,
+      compare(a.date, b.date) || compare(a.tx.createdAt, b.tx.createdAt) || compare(a.id, b.id),
   )
 }
 

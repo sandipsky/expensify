@@ -148,7 +148,7 @@ export function spansYears(buckets: readonly DateRange[]): boolean {
 /** How a category reads in a report, with stand-ins for entries without one or a deleted one. */
 export function categoryView(
   lookups: Pick<TxLookups, 'categoriesById'>,
-  categoryId: number | null,
+  categoryId: string | null,
 ): { name: string; icon: LUIIconName; color: string | null; archived: boolean } {
   const category = categoryId !== null ? lookups.categoriesById.get(categoryId) : undefined
   if (category) {
@@ -165,7 +165,7 @@ export function categoryView(
 /** The accounts a filter names, for the export's details: "Cash, Bank", or `none` when empty. */
 export function accountsText(
   lookups: Pick<TxLookups, 'accountsById'>,
-  ids: readonly number[],
+  ids: readonly string[],
   none = 'All accounts',
 ): string {
   if (!ids.length) return none
@@ -175,7 +175,7 @@ export function accountsText(
 /** The categories a filter names: "Food, Transport", or "All categories" when empty. */
 export function categoriesText(
   lookups: Pick<TxLookups, 'categoriesById'>,
-  ids: readonly number[],
+  ids: readonly string[],
 ): string {
   if (!ids.length) return 'All categories'
   return ids.map((id) => categoryView(lookups, id).name).join(', ')

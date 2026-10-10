@@ -4,7 +4,7 @@ import { EmptyState } from '@/components/empty-state'
 import { useAccounts } from '@/features/accounts/account.query'
 import type { IAccount } from '@/features/accounts/account.types'
 import { useCategories } from '@/features/categories/category.query'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { dayLabel, formatMoney, localDate } from '@/utils'
 import { useTransactionActions } from '../transaction.actions'
 import { compareNewestFirst, groupByDay, totalsOf } from '../transaction.domain'
@@ -62,7 +62,7 @@ export const AccountTransactions = ({ account }: AccountTransactionsProps) => {
   if (transactions.isError) {
     return (
       <LUICard title="Transactions">
-        <div className="alert error">{getApiErrorMessage(transactions.error)}</div>
+        <div className="alert error">{getErrorMessage(transactions.error)}</div>
       </LUICard>
     )
   }

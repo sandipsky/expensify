@@ -96,8 +96,8 @@ export function SwitchField<T extends string>({ label, options, value, onChange 
 
 interface AccountsFieldProps {
   accounts: readonly IAccount[]
-  value: readonly number[]
-  onChange: (ids: number[]) => void
+  value: readonly string[]
+  onChange: (ids: string[]) => void
   /** What an empty selection means: "All accounts". */
   placeholder?: string
 }
@@ -125,7 +125,7 @@ export const AccountsField = ({
         clearable
         searchable={items.length > 8}
         value={[...value]}
-        onChange={(next) => onChange((next as number[] | null) ?? [])}
+        onChange={(next) => onChange((next as string[] | null) ?? [])}
       />
     </div>
   )
@@ -134,8 +134,8 @@ export const AccountsField = ({
 interface CategoriesFieldProps {
   categories: readonly ICategory[]
   type: CategoryType
-  value: readonly number[]
-  onChange: (ids: number[]) => void
+  value: readonly string[]
+  onChange: (ids: string[]) => void
 }
 
 /** Categories of one type to narrow the report to; archived ones too. */
@@ -156,7 +156,7 @@ export const CategoriesField = ({ categories, type, value, onChange }: Categorie
         clearable
         searchable
         value={[...value]}
-        onChange={(next) => onChange((next as number[] | null) ?? [])}
+        onChange={(next) => onChange((next as string[] | null) ?? [])}
       />
     </div>
   )

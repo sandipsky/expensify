@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { LUIButton, LUINumberInput, useLUINotification } from '@lumen-ui/react'
 import type { SheetHandle } from '@/components/sheet'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { currencySymbol, formatMoney, fractionDigits } from '@/utils'
 import { flipForLiability, isLiability } from '../account.domain'
 import { balanceView } from '../account.labels'
@@ -46,7 +46,7 @@ export const ReconcileForm = ({ account, sheet }: ReconcileFormProps) => {
           }
           sheet.close(true)
         },
-        onError: (error) => notify.error('Could not reconcile', getApiErrorMessage(error)),
+        onError: (error) => notify.error('Could not reconcile', getErrorMessage(error)),
       },
     )
   }

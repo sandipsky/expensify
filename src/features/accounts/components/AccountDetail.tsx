@@ -32,8 +32,7 @@ const CURRENT_CAPTIONS = {
 } as const
 
 /** `/accounts/$accountId`: the account's figures and, once they exist, its transactions. */
-export const AccountDetail = ({ accountId }: AccountDetailProps) => {
-  const id = Number(accountId)
+export const AccountDetail = ({ accountId: id }: AccountDetailProps) => {
   const navigate = useNavigate()
   const account = useAccount(id)
   const actions = useAccountActions()

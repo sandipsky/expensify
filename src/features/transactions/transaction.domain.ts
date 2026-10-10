@@ -18,7 +18,7 @@ export function compareNewestFirst(
 ): number {
   if (a.date !== b.date) return a.date < b.date ? 1 : -1
   if (a.createdAt !== b.createdAt) return a.createdAt < b.createdAt ? 1 : -1
-  return b.id - a.id
+  return a.id < b.id ? 1 : a.id > b.id ? -1 : 0
 }
 
 /** Dated after today: it already counts in balances and shows as "Upcoming". */
@@ -40,8 +40,39 @@ export function toBody(tx: ITransaction): ITransactionBody {
 }
 
 /** The two accounts a transfer touches, or the one account otherwise. */
-export function accountIdsOf(tx: Pick<ITransaction, 'accountId' | 'toAccountId'>): number[] {
+export function accountIdsOf(tx: Pick<ITransaction, 'accountId' | 'toAccountId'>): string[] {
   return tx.toAccountId !== null ? [tx.accountId, tx.toAccountId] : [tx.accountId]
+}
+
+/** How much an entry moves each account's balance, by account id. */
+export type BalanceEffects = Map<string, number>
+
+/**
+ * What an entry does to each account it touches: income adds to its account,
+ * an expense takes from it, and a transfer moves the amount across. A
+ * `sign` of -1 reverses that, as deleting the entry does.
+ */
+export function balanceEffects(
+  tx: Pick<ITransaction, 'type' | 'amount' | 'accountId' | 'toAccountId'>,
+  sign: 1 | -1 = 1,
+): BalanceEffects {
+  if (tx.type === 'income') return new Map([[tx.accountId, sign * tx.amount]])
+  if (tx.type === 'expense' || tx.toAccountId === null) {
+    return new Map([[tx.accountId, -sign * tx.amount]])
+  }
+  return new Map([
+    [tx.accountId, -sign * tx.amount],
+    [tx.toAccountId, sign * tx.amount],
+  ])
+}
+
+/** Several entries' effects added up per account, as one batch applies them. */
+export function combineEffects(list: readonly BalanceEffects[]): BalanceEffects {
+  const total: BalanceEffects = new Map()
+  for (const effects of list) {
+    for (const [id, delta] of effects) total.set(id, (total.get(id) ?? 0) + delta)
+  }
+  return total
 }
 
 export interface Totals {
@@ -82,9 +113,9 @@ export function groupByDay<T extends { date: string }>(items: readonly T[]): Day
 export interface TransactionFilter {
   type: TxType | null
   /** Entries touching any of these accounts, on either side of a transfer. */
-  accountIds: readonly number[]
+  accountIds: readonly string[]
   /** Entries in any of these categories. */
-  categoryIds: readonly number[]
+  categoryIds: readonly string[]
   /** Inclusive bounds on `amount`. */
   minAmount: number | null
   maxAmount: number | null
@@ -142,16 +173,15 @@ export function filterTransactions<T extends ITransaction>(
 }
 
 /** The account this device last saved an entry on, if storage allows. */
-export function readLastAccountId(): number | null {
+export function readLastAccountId(): string | null {
   try {
-    const value = Number(localStorage.getItem(LAST_ACCOUNT_KEY))
-    return Number.isInteger(value) && value > 0 ? value : null
+    return localStorage.getItem(LAST_ACCOUNT_KEY) || null
   } catch {
     return null
   }
 }
 
-export function writeLastAccountId(id: number): void {
+export function writeLastAccountId(id: string): void {
   try {
     localStorage.setItem(LAST_ACCOUNT_KEY, String(id))
   } catch {
@@ -164,9 +194,9 @@ export function writeLastAccountId(id: number): void {
  * it's still active, otherwise the first active account.
  */
 export function defaultAccountId(
-  accounts: readonly { id: number; archived: boolean }[],
-  last: number | null = readLastAccountId(),
-): number | null {
+  accounts: readonly { id: string; archived: boolean }[],
+  last: string | null = readLastAccountId(),
+): string | null {
   const active = accounts.filter((a) => !a.archived)
   return (active.find((a) => a.id === last) ?? active[0])?.id ?? null
 }

@@ -25,7 +25,7 @@ export interface SheetOptions {
  *
  * ```tsx
  * const sheet = useSheet()
- * const id = await sheet.open<number>((handle) => <AccountForm sheet={handle} />)
+ * const id = await sheet.open<string>((handle) => <AccountForm sheet={handle} />)
  * ```
  */
 export function useSheet() {

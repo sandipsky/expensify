@@ -1,7 +1,7 @@
 import { LUICard, LUISegmentedControl, useLUINotification } from '@lumen-ui/react'
 import { useUpdatePreferences } from '@/features/auth/auth.query'
 import { THEMES, type Theme } from '@/features/auth/auth.types'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { THEME_OPTIONS } from '../settings.labels'
 
 interface AppearanceSettingsProps {
@@ -17,7 +17,7 @@ export const AppearanceSettings = ({ theme }: AppearanceSettingsProps) => {
     if (!THEMES.includes(value as Theme) || value === theme) return
     save.mutate(
       { theme: value as Theme },
-      { onError: (error) => notify.error("Couldn't change the theme", getApiErrorMessage(error)) },
+      { onError: (error) => notify.error("Couldn't change the theme", getErrorMessage(error)) },
     )
   }
 

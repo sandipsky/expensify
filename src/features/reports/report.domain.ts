@@ -1,7 +1,7 @@
 // Report figures: pure functions on plain amounts and `YYYY-MM-DD` strings.
 // Income and expense totals share the dashboard's rules (transfers never
 // count); budget periods come from the budget rules; balances are worked back
-// from each account's current balance, as the server keeps it.
+// from each account's current balance, which every entry write moves.
 import type { IAccount } from '@/features/accounts/account.types'
 import {
   budgetPeriodRange,
@@ -166,7 +166,7 @@ function bucketIndex(buckets: readonly DateRange[], date: string): number {
 /** Entries on any of the accounts, on either side of a transfer; all of them with none given. */
 export function onAccounts<T extends Pick<ITransaction, 'accountId' | 'toAccountId'>>(
   txs: readonly T[],
-  accountIds: readonly number[],
+  accountIds: readonly string[],
 ): T[] {
   if (!accountIds.length) return [...txs]
   const ids = new Set(accountIds)
@@ -218,7 +218,7 @@ export function cashFlow(txs: readonly ReportTx[], buckets: readonly DateRange[]
 /** One category's figures in a period and the one before it. */
 export interface CategoryRow {
   /** Null for entries without a category. */
-  categoryId: number | null
+  categoryId: string | null
   amount: number
   count: number
   /** Whole percent of the period's total; null when the total is zero. */
@@ -274,7 +274,7 @@ export function categoryComparison(
 
 /** One category across the months of the trends table. */
 export interface MatrixRow {
-  categoryId: number | null
+  categoryId: string | null
   /** One amount per month, oldest first. */
   cells: number[]
   total: number
@@ -298,7 +298,7 @@ export function categoryMatrix(
   type: CategoryType,
   months: readonly DateRange[],
 ): CategoryMatrix {
-  const byCategory = new Map<number | null, number[]>()
+  const byCategory = new Map<string | null, number[]>()
   const columns = months.map(() => 0)
   for (const tx of txs) {
     if (tx.type !== type) continue
@@ -322,7 +322,7 @@ export function categoryMatrix(
         average: months.length ? fromMilli(total) / months.length : 0,
       }
     })
-    .sort((a, b) => b.total - a.total || (a.categoryId ?? -1) - (b.categoryId ?? -1))
+    .sort((a, b) => b.total - a.total || (a.categoryId ?? '').localeCompare(b.categoryId ?? ''))
   return {
     rows,
     columnTotals: columns.map(fromMilli),
@@ -333,7 +333,7 @@ export function categoryMatrix(
 // Accounts
 
 /** How an entry moves an account's balance: in for income and transfers in, out otherwise. */
-export function balanceDelta(tx: Omit<BalanceTx, 'date'>, accountId: number): number {
+export function balanceDelta(tx: Omit<BalanceTx, 'date'>, accountId: string): number {
   if (tx.type === 'income') return tx.accountId === accountId ? tx.amount : 0
   if (tx.type === 'expense') return tx.accountId === accountId ? -tx.amount : 0
   let delta = 0
@@ -361,7 +361,7 @@ export function balanceAt(
 
 /** One account's movement over the period. */
 export interface AccountStatement {
-  accountId: number
+  accountId: string
   /** The balance at the end of the day before the period. */
   opening: number
   income: number

@@ -2,12 +2,11 @@ import type { ComponentProps } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { LUIConfirmDialog, useLUIModal, useLUINotification } from '@lumen-ui/react'
 import { useSheet } from '@/components/sheet'
-import { useAuthStore } from '@/features/auth/auth.store'
+import { leave } from '@/features/auth/auth.session'
 import { clearNotificationState } from '@/features/notifications/device-state'
 import { entries } from '@/features/transactions/transaction.labels'
-import { transactionKeys, useDeleteAllTransactions } from '@/features/transactions/transaction.query'
-import { getTransactions } from '@/features/transactions/transactions.api'
-import { getApiErrorMessage } from '@/lib'
+import { transactionsQuery, useDeleteAllTransactions } from '@/features/transactions/transaction.query'
+import { getErrorMessage } from '@/lib'
 import { DeleteAccountDialog } from './components/DeleteAccountDialog'
 import { PasswordForm } from './components/PasswordForm'
 
@@ -27,7 +26,6 @@ export function useSettingsActions() {
   const notify = useLUINotification()
   const queryClient = useQueryClient()
   const deleteAll = useDeleteAllTransactions()
-  const logout = useAuthStore((s) => s.logout)
 
   const confirm = (data: ConfirmData) =>
     modal
@@ -47,13 +45,10 @@ export function useSettingsActions() {
     let count: number
     try {
       // The cached full list when there is one: it's only for the question.
-      const all = await queryClient.fetchQuery({
-        queryKey: transactionKeys.list({}),
-        queryFn: () => getTransactions({}),
-      })
+      const all = await queryClient.fetchQuery(transactionsQuery())
       count = all.length
     } catch (error) {
-      notify.error('Could not count your transactions', getApiErrorMessage(error))
+      notify.error('Could not count your transactions', getErrorMessage(error))
       return false
     }
     if (!count) {
@@ -74,7 +69,7 @@ export function useSettingsActions() {
           deleted = await deleteAll.mutateAsync()
         } catch (error) {
           // Reported and rethrown, so the dialog stays open for another try.
-          notify.error('Could not delete transactions', getApiErrorMessage(error))
+          notify.error('Could not delete transactions', getErrorMessage(error))
           throw error
         }
       },
@@ -86,7 +81,7 @@ export function useSettingsActions() {
 
   /**
    * Deletes the account once the user types DELETE and their password, then
-   * signs out to the login page with a note. Everything they entered goes
+   * goes to the login page with a note; the login is already gone. Everything they entered goes
    * with it, and this browser forgets the reminders it showed.
    */
   const deleteAccount = async () => {
@@ -98,7 +93,7 @@ export function useSettingsActions() {
       .afterClosed()
     if (!deleted) return
     clearNotificationState()
-    logout(DELETED_URL)
+    leave(DELETED_URL)
   }
 
   return { changePassword, deleteAllTransactions, deleteAccount }

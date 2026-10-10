@@ -1,0 +1,238 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // The security rules of docs/requirements.md §9. Everything under
+    // users/{uid} belongs to that logged-in user and nobody else, and every
+    // write is checked field by field, as the forms check it. What needs other
+    // documents (unique names, balances) is the app's job (src/features/*/*.api.ts).
+    // usernames/{username} is the one public read: logging in with a username
+    // needs its email before anyone is logged in.
+    // Keep in step with the *.types.ts files and the *.api.ts writes.
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function isText(v, min, max) {
+      return v is string && v.size() >= min && v.size() <= max;
+    }
+    function optText(v, max) {
+      return v == null || (v is string && v.size() <= max);
+    }
+    function isId(v) {
+      return isText(v, 1, 64);
+    }
+    function isDate(v) {
+      return v is string && v.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}');
+    }
+    function isColor(v) {
+      return v is string && v.matches('#[0-9A-Fa-f]{6}');
+    }
+    function isCurrency(v) {
+      return v is string && v.matches('[A-Z]{3}');
+    }
+    function isWhole(v, min, max) {
+      return v is int && v >= min && v <= max;
+    }
+    // Positive, up to a trillion: every amount an entry or budget holds.
+    function isAmount(v) {
+      return v is number && v > 0 && v <= 1000000000000;
+    }
+    function isStamped(d) {
+      return d.createdAt is timestamp && d.updatedAt is timestamp;
+    }
+
+    // ---------------------------------------------------------------- profile
+
+    function validPreferences(p) {
+      return p is map
+        && p.keys().hasOnly(['theme', 'notifications'])
+        && p.theme in ['light', 'dark', 'system']
+        && p.notifications is map
+        && p.notifications.keys().hasOnly(['dailyReminder', 'reminderTime', 'budgetAlerts', 'billReminders'])
+        && p.notifications.dailyReminder is bool
+        && p.notifications.reminderTime is string
+        && p.notifications.reminderTime.matches('([01][0-9]|2[0-3]):[0-5][0-9]')
+        && p.notifications.budgetAlerts is bool
+        && p.notifications.billReminders is bool;
+    }
+
+    function validProfile(d) {
+      return d.keys().hasOnly(['name', 'username', 'email', 'pendingEmail', 'photoUrl', 'preferences', 'createdAt', 'updatedAt'])
+        && isText(d.name, 1, 60)
+        && (d.username == null || (d.username is string && d.username.matches('[a-z0-9._-]{3,30}')))
+        && isText(d.email, 3, 254)
+        && optText(d.pendingEmail, 254)
+        // A small JPEG, PNG or WebP thumbnail, as a data URL.
+        && (d.photoUrl == null || (d.photoUrl is string && d.photoUrl.size() <= 200000
+          && d.photoUrl.matches('data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*')))
+        && validPreferences(d.preferences)
+        && isStamped(d);
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      // Its username's lookup goes first (or in the same batch). Otherwise a
+      // new profile with another username could claim a second one.
+      allow delete: if isOwner(uid) && (resource.data.username == null
+        || !existsAfter(/databases/$(database)/documents/usernames/$(resource.data.username)));
+      allow create: if isOwner(uid) && validProfile(request.resource.data);
+      // The username logs in, so it never changes.
+      allow update: if isOwner(uid) && validProfile(request.resource.data)
+        && request.resource.data.username == resource.data.username;
+
+      // --------------------------------------------------------------- accounts
+
+      function validAccount(d) {
+        return d.keys().hasOnly(['name', 'type', 'currency', 'openingBalance', 'currentBalance', 'creditLimit', 'icon', 'color', 'includeInTotal', 'archived', 'sortOrder', 'createdAt', 'updatedAt'])
+          && isText(d.name, 1, 40)
+          && d.type in ['cash', 'bank', 'credit_card', 'wallet', 'savings', 'loan', 'other']
+          && isCurrency(d.currency)
+          && d.openingBalance is number
+          && d.currentBalance is number
+          && (d.creditLimit == null || (d.creditLimit is number && d.creditLimit > 0))
+          && isText(d.icon, 1, 40)
+          && isColor(d.color)
+          && d.includeInTotal is bool
+          && d.archived is bool
+          && d.sortOrder is number
+          && isStamped(d);
+      }
+
+      match /accounts/{id} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validAccount(request.resource.data);
+      }
+
+      // ------------------------------------------------------------- categories
+
+      function validCategory(d) {
+        return d.keys().hasOnly(['name', 'type', 'icon', 'color', 'archived', 'sortOrder', 'createdAt', 'updatedAt'])
+          && isText(d.name, 1, 30)
+          && d.type in ['expense', 'income']
+          && isText(d.icon, 1, 40)
+          && isColor(d.color)
+          && d.archived is bool
+          && d.sortOrder is number
+          && isStamped(d);
+      }
+
+      match /categories/{id} {
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid) && validCategory(request.resource.data);
+        // Entries of its type use it, so the type stays.
+        allow update: if isOwner(uid) && validCategory(request.resource.data)
+          && request.resource.data.type == resource.data.type;
+      }
+
+      // ----------------------------------------------------------- transactions
+
+      // An entry's own fields, as a transaction or a recurring rule's template has them.
+      function validEntry(d) {
+        return d.type in ['expense', 'income', 'transfer']
+          && isAmount(d.amount)
+          && isId(d.accountId)
+          && optText(d.note, 500)
+          && ((d.type == 'transfer' && isId(d.toAccountId) && d.toAccountId != d.accountId
+                && d.categoryId == null)
+            || (d.type != 'transfer' && d.toAccountId == null && isId(d.categoryId)));
+      }
+
+      function validTransaction(d) {
+        return d.keys().hasOnly(['type', 'amount', 'currency', 'accountId', 'toAccountId', 'categoryId', 'date', 'note', 'recurringRuleId', 'accountIds', 'createdAt', 'updatedAt'])
+          && validEntry(d)
+          && isCurrency(d.currency)
+          && isDate(d.date)
+          && (d.get('recurringRuleId', null) == null || isId(d.recurringRuleId))
+          // The accounts it touches, so one query finds both sides of a transfer.
+          && d.accountIds == (d.type == 'transfer' ? [d.accountId, d.toAccountId] : [d.accountId])
+          && isStamped(d);
+      }
+
+      match /transactions/{id} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validTransaction(request.resource.data);
+      }
+
+      // ---------------------------------------------------------------- budgets
+
+      function validBudget(d) {
+        return d.keys().hasOnly(['name', 'amount', 'period', 'categoryIds', 'rollover', 'alertThresholds', 'lastAlert', 'active', 'createdAt', 'updatedAt'])
+          && isText(d.name, 1, 40)
+          && isAmount(d.amount)
+          && d.period in ['weekly', 'monthly', 'yearly']
+          && d.categoryIds is list && d.categoryIds.size() <= 100
+          && d.rollover is bool
+          && d.alertThresholds is list && d.alertThresholds.size() <= 10
+          && (d.lastAlert == null || (d.lastAlert is map
+            && d.lastAlert.keys().hasOnly(['periodStart', 'threshold'])
+            && isDate(d.lastAlert.periodStart) && d.lastAlert.threshold is int))
+          && d.active is bool
+          && isStamped(d);
+      }
+
+      match /budgets/{id} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validBudget(request.resource.data);
+      }
+
+      // -------------------------------------------------------- recurring rules
+
+      function validTemplate(t) {
+        return t is map
+          && t.keys().hasOnly(['type', 'amount', 'accountId', 'toAccountId', 'categoryId', 'note'])
+          && validEntry(t);
+      }
+
+      function validRule(d) {
+        return d.keys().hasOnly(['template', 'frequency', 'interval', 'weekdays', 'dayOfMonth', 'startDate', 'endType', 'endDate', 'maxCount', 'mode', 'nextDueDate', 'occurrences', 'active', 'createdAt', 'updatedAt'])
+          && validTemplate(d.template)
+          && d.frequency in ['daily', 'weekly', 'monthly', 'yearly']
+          && isWhole(d.interval, 1, 99)
+          && d.weekdays is list && d.weekdays.size() <= 7
+          && (d.dayOfMonth == null || isWhole(d.dayOfMonth, 1, 31))
+          && isDate(d.startDate)
+          && d.endType in ['never', 'count', 'until']
+          && (d.endDate == null || isDate(d.endDate))
+          && (d.maxCount == null || isWhole(d.maxCount, 1, 999))
+          && d.mode in ['auto', 'confirm']
+          && isDate(d.nextDueDate)
+          && d.occurrences is int && d.occurrences >= 0
+          && d.active is bool
+          && isStamped(d);
+      }
+
+      match /recurringRules/{id} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validRule(request.resource.data);
+      }
+    }
+
+    // -------------------------------------------------------------- usernames
+
+    // Maps a username to its login's email (and a new one waiting on its
+    // verification link), so the username can log in. Anyone can read one
+    // they know the name of; nobody can list them.
+    function validUsername(d) {
+      return d.keys().hasOnly(['uid', 'email', 'pendingEmail'])
+        && d.uid == request.auth.uid
+        // The login's own email, never someone else's.
+        && d.email == request.auth.token.email
+        && optText(d.pendingEmail, 254);
+    }
+
+    match /usernames/{name} {
+      allow get: if true;
+      // Claimed together with the profile that holds the same username, and
+      // that username can't change: one username per login.
+      allow create: if request.auth != null
+        && name.matches('[a-z0-9._-]{3,30}')
+        && validUsername(request.resource.data)
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.username == name;
+      allow update: if request.auth != null && resource.data.uid == request.auth.uid
+        && validUsername(request.resource.data);
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+  }
+}

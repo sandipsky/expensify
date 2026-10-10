@@ -13,7 +13,7 @@ export const ACCOUNT_TYPES = [
 export type AccountType = (typeof ACCOUNT_TYPES)[number]
 
 export interface IAccount {
-  id: number
+  id: string
   /** 1–40 characters. */
   name: string
   type: AccountType
@@ -21,7 +21,7 @@ export interface IAccount {
   currency: string
   /** May be negative (cards, loans, overdrafts). */
   openingBalance: number
-  /** Opening balance plus every transaction's effect; the server owns it. */
+  /** Opening balance plus every transaction's effect; only the writes in accounts.api.ts and transactions.api.ts move it. */
   currentBalance: number
   /** Credit cards only. */
   creditLimit: number | null
@@ -35,7 +35,7 @@ export interface IAccount {
   updatedAt: string
 }
 
-// What the client sends when creating/updating - the server owns the id,
+// What a form saves when creating/updating - accounts.api.ts sets the id,
 // the current balance, the archived flag, the sort order and the timestamps.
 export type IAccountBody = Omit<
   IAccount,

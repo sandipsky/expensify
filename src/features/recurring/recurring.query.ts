@@ -1,17 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import { accountKeys } from '@/features/accounts/account.query'
 import { transactionKeys } from '@/features/transactions/transaction.query'
-import {
-  addOccurrences,
-  createRecurringRule,
-  deleteRecurringRule,
-  getRecurringRules,
-  setRecurringRuleActive,
-  skipOccurrence,
-  updateRecurringRule,
-} from './recurring.api'
+import { isAppError } from '@/lib/errors'
 import type { IRecurringRuleBody, OccurrencesBody } from './recurring.types'
+
+// Loaded on first use, and the Firestore SDK with it, so the login page starts
+// without it (src/lib/firestore.ts).
+const api = () => import('./recurring.api')
 
 // Query keys in one place so invalidation never drifts out of sync.
 export const recurringKeys = {
@@ -20,11 +15,10 @@ export const recurringKeys = {
 
 /** Every rule, paused and ended ones too. A handful at most, so one query serves the app. */
 export const useRecurringRules = () =>
-  useQuery({ queryKey: recurringKeys.all, queryFn: getRecurringRules })
+  useQuery({ queryKey: recurringKeys.all, queryFn: async () => (await api()).getRecurringRules() })
 
 /** Whether a write failed because another tab (or the runner) already handled that date. */
-export const isAlreadyHandled = (error: unknown) =>
-  isAxiosError(error) && error.response?.status === 409
+export const isAlreadyHandled = (error: unknown) => isAppError(error, 'stale')
 
 const useInvalidateRules = () => {
   const queryClient = useQueryClient()
@@ -34,7 +28,7 @@ const useInvalidateRules = () => {
 export const useCreateRecurringRule = () => {
   const invalidate = useInvalidateRules()
   return useMutation({
-    mutationFn: (body: IRecurringRuleBody) => createRecurringRule(body),
+    mutationFn: async (body: IRecurringRuleBody) => (await api()).createRecurringRule(body),
     onSuccess: invalidate,
   })
 }
@@ -42,28 +36,32 @@ export const useCreateRecurringRule = () => {
 export const useUpdateRecurringRule = () => {
   const invalidate = useInvalidateRules()
   return useMutation({
-    mutationFn: ({ id, body }: { id: number; body: IRecurringRuleBody }) =>
-      updateRecurringRule(id, body),
+    mutationFn: async ({ id, body }: { id: string; body: IRecurringRuleBody }) =>
+      (await api()).updateRecurringRule(id, body),
     onSuccess: invalidate,
   })
 }
 
+/** Pausing, or resuming from `nextDueDate`. */
+type ActiveChange = { id: string; active: boolean; nextDueDate?: string }
+
 export const useSetRecurringRuleActive = () => {
   const invalidate = useInvalidateRules()
   return useMutation({
-    mutationFn: ({ id, active, nextDueDate }: { id: number; active: boolean; nextDueDate?: string }) =>
-      setRecurringRuleActive(id, active, nextDueDate),
+    mutationFn: async ({ id, active, nextDueDate }: ActiveChange) =>
+      (await api()).setRecurringRuleActive(id, active, nextDueDate),
     onSuccess: invalidate,
   })
 }
 
 // Adding entries moves balances too, so rules, transactions and accounts all
-// refresh. A stale write (409) refreshes the rules as well, to show where the
+// refresh. A stale write refreshes the rules as well, to show where the
 // other tab left them.
 export const useAddOccurrences = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, body }: { id: number; body: OccurrencesBody }) => addOccurrences(id, body),
+    mutationFn: async ({ id, body }: { id: string; body: OccurrencesBody }) =>
+      (await api()).addOccurrences(id, body),
     onSettled: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: recurringKeys.all }),
@@ -73,11 +71,14 @@ export const useAddOccurrences = () => {
   })
 }
 
+/** Passing over the entry due on `date`, moving the rule on to `nextDueDate`. */
+type Skip = { id: string; date: string; nextDueDate: string }
+
 export const useSkipOccurrence = () => {
   const invalidate = useInvalidateRules()
   return useMutation({
-    mutationFn: ({ id, date, nextDueDate }: { id: number; date: string; nextDueDate: string }) =>
-      skipOccurrence(id, date, nextDueDate),
+    mutationFn: async ({ id, date, nextDueDate }: Skip) =>
+      (await api()).skipOccurrence(id, date, nextDueDate),
     onSettled: invalidate,
   })
 }
@@ -85,7 +86,7 @@ export const useSkipOccurrence = () => {
 export const useDeleteRecurringRule = () => {
   const invalidate = useInvalidateRules()
   return useMutation({
-    mutationFn: (id: number) => deleteRecurringRule(id),
+    mutationFn: async (id: string) => (await api()).deleteRecurringRule(id),
     onSuccess: invalidate,
   })
 }

@@ -1,13 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  addDefaultCategories,
-  createCategory,
-  deleteCategory,
-  getCategories,
-  setCategoryArchived,
-  updateCategory,
-} from './categories.api'
 import type { ICategoryBody } from './category.types'
+
+// Loaded on first use, and the Firestore SDK with it, so the login page starts
+// without it (src/lib/firestore.ts).
+const api = () => import('./categories.api')
 
 // Query keys in one place so invalidation never drifts out of sync.
 export const categoryKeys = {
@@ -15,7 +11,8 @@ export const categoryKeys = {
 }
 
 /** Every category, archived ones too. A few dozen at most, so one query serves the app. */
-export const useCategories = () => useQuery({ queryKey: categoryKeys.all, queryFn: getCategories })
+export const useCategories = () =>
+  useQuery({ queryKey: categoryKeys.all, queryFn: async () => (await api()).getCategories() })
 
 // Every write invalidates the list, so both tabs, the archived section and,
 // later, the pickers all refresh from one place.
@@ -27,7 +24,7 @@ const useInvalidateCategories = () => {
 export const useCreateCategory = () => {
   const invalidate = useInvalidateCategories()
   return useMutation({
-    mutationFn: (body: ICategoryBody) => createCategory(body),
+    mutationFn: async (body: ICategoryBody) => (await api()).createCategory(body),
     onSuccess: invalidate,
   })
 }
@@ -35,7 +32,8 @@ export const useCreateCategory = () => {
 export const useUpdateCategory = () => {
   const invalidate = useInvalidateCategories()
   return useMutation({
-    mutationFn: ({ id, body }: { id: number; body: ICategoryBody }) => updateCategory(id, body),
+    mutationFn: async ({ id, body }: { id: string; body: ICategoryBody }) =>
+      (await api()).updateCategory(id, body),
     onSuccess: invalidate,
   })
 }
@@ -43,8 +41,8 @@ export const useUpdateCategory = () => {
 export const useSetCategoryArchived = () => {
   const invalidate = useInvalidateCategories()
   return useMutation({
-    mutationFn: ({ id, archived }: { id: number; archived: boolean }) =>
-      setCategoryArchived(id, archived),
+    mutationFn: async ({ id, archived }: { id: string; archived: boolean }) =>
+      (await api()).setCategoryArchived(id, archived),
     onSuccess: invalidate,
   })
 }
@@ -52,7 +50,7 @@ export const useSetCategoryArchived = () => {
 export const useDeleteCategory = () => {
   const invalidate = useInvalidateCategories()
   return useMutation({
-    mutationFn: (id: number) => deleteCategory(id),
+    mutationFn: async (id: string) => (await api()).deleteCategory(id),
     onSuccess: invalidate,
   })
 }
@@ -60,7 +58,7 @@ export const useDeleteCategory = () => {
 export const useAddDefaultCategories = () => {
   const invalidate = useInvalidateCategories()
   return useMutation({
-    mutationFn: () => addDefaultCategories(),
+    mutationFn: async () => (await api()).addDefaultCategories(),
     onSuccess: invalidate,
   })
 }

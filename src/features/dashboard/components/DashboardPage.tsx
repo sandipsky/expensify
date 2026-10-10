@@ -11,7 +11,7 @@ import {
 import { EmptyState } from '@/components/empty-state'
 import { useMediaQuery } from '@/components/sheet'
 import { useTransactionActions } from '@/features/transactions/transaction.actions'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { parseYmd, toYmd } from '@/utils'
 import { DASHBOARD_PRESET_OPTIONS, type DashboardCard } from '../dashboard.labels'
 import { DASHBOARD_PRESETS, type DashboardPreset, type DashboardSearch } from '../dashboard.types'
@@ -138,7 +138,7 @@ export const DashboardPage = ({ search }: DashboardPageProps) => {
       <div className="dash">
         {header}
         {period}
-        <div className="alert error">{getApiErrorMessage(dash.error)}</div>
+        <div className="alert error">{getErrorMessage(dash.error)}</div>
       </div>
     )
   }

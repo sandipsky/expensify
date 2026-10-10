@@ -24,7 +24,7 @@ import { GroupedTable, type GroupHeader } from '@/components/grouped-table'
 import { useMediaQuery } from '@/components/sheet'
 import { useAccounts } from '@/features/accounts/account.query'
 import { useCategories } from '@/features/categories/category.query'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import {
   DEFAULT_CURRENCY,
   PERIOD_PRESETS,
@@ -211,7 +211,7 @@ export const TransactionList = ({ start }: TransactionListProps = {}) => {
         notify.info('Nothing to export', `No transactions match in ${periodLabel}.`)
       }
     } catch (err) {
-      notify.error('Could not export', getApiErrorMessage(err))
+      notify.error('Could not export', getErrorMessage(err))
     }
   }
 
@@ -369,7 +369,7 @@ export const TransactionList = ({ start }: TransactionListProps = {}) => {
     return (
       <div className="tx-page">
         {header}
-        <div className="alert error">{getApiErrorMessage(error)}</div>
+        <div className="alert error">{getErrorMessage(error)}</div>
       </div>
     )
   }

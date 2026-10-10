@@ -27,8 +27,9 @@ dist-ssr
 .env
 .env.local
 
-# Mock API data (recreated from the seed on first run)
-mock-server/db.json
+# Firebase: CLI cache, and the emulators' data (`npm run emulators` saves it on exit)
+.firebase/
+.emulator-data/
 
 # TanStack Router plugin scratch folder
 .tanstack/

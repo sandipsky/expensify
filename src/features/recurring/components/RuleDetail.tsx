@@ -16,7 +16,7 @@ import {
   toRow,
 } from '@/features/transactions/transaction.labels'
 import { useTransactions } from '@/features/transactions/transaction.query'
-import { getApiErrorMessage, useToday } from '@/lib'
+import { getErrorMessage, useToday } from '@/lib'
 import { formatDate } from '@/utils'
 import { useRecurringActions } from '../recurring.actions'
 import { pendingDates } from '../recurring.domain'
@@ -37,8 +37,7 @@ type RuleDetailProps = {
  * `/recurring/$ruleId`: the rule's entry and schedule, its next dates, an
  * entry waiting to be confirmed, and the entries it has added, newest first.
  */
-export const RuleDetail = ({ ruleId }: RuleDetailProps) => {
-  const id = Number(ruleId)
+export const RuleDetail = ({ ruleId: id }: RuleDetailProps) => {
   const navigate = useNavigate()
   const today = useToday()
   const rulesQuery = useRecurringRules()
@@ -64,7 +63,7 @@ export const RuleDetail = ({ ruleId }: RuleDetailProps) => {
           title="Rule not found"
           message={
             rulesQuery.isError
-              ? getApiErrorMessage(rulesQuery.error)
+              ? getErrorMessage(rulesQuery.error)
               : 'It may have been deleted, perhaps in another tab.'
           }
         >
@@ -296,7 +295,7 @@ const RulePage = ({ view, lookups }: RulePageProps) => {
           </div>
         ) : history.isError ? (
           <div className="rule-page__skeleton">
-            <div className="alert error">{getApiErrorMessage(history.error)}</div>
+            <div className="alert error">{getErrorMessage(history.error)}</div>
           </div>
         ) : rows.length === 0 ? (
           <EmptyState

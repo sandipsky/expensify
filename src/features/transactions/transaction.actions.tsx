@@ -5,7 +5,7 @@ import { useSheet } from '@/components/sheet'
 import { useAccountActions } from '@/features/accounts/account.actions'
 import { useAccounts } from '@/features/accounts/account.query'
 import { useRecurringActions } from '@/features/recurring/recurring.actions'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { formatMoney, localDate } from '@/utils'
 import { TransactionFilters } from './components/TransactionFilters'
 import { TransactionForm, type TransactionFormResult } from './components/TransactionForm'
@@ -45,7 +45,7 @@ export function useTransactionActions() {
     try {
       return await action()
     } catch (error) {
-      notify.error(failure, getApiErrorMessage(error))
+      notify.error(failure, getErrorMessage(error))
       throw error
     }
   }
@@ -70,7 +70,7 @@ export function useTransactionActions() {
   const makeRecurring = (transaction: ITransaction) => recurringActions.createFrom(transaction)
 
   /** The page of the rule that added an entry. */
-  const openRule = (ruleId: number) =>
+  const openRule = (ruleId: string) =>
     void navigate({ to: '/recurring/$ruleId', params: { ruleId: String(ruleId) } })
 
   /**

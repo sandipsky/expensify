@@ -34,7 +34,7 @@ export function parseDashboardSearch(search: Record<string, unknown>): Dashboard
 export interface SpendingRow {
   key: string
   /** The category IDs the row stands for; "Other" holds several. */
-  categoryIds: number[]
+  categoryIds: string[]
   name: string
   icon: LUIIconName
   color: string | null
@@ -63,5 +63,5 @@ export interface UpcomingRow {
 export interface DrillDown {
   range: DateRange
   type?: TxType
-  categoryIds?: readonly number[]
+  categoryIds?: readonly string[]
 }

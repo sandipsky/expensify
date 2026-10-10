@@ -1,6 +1,6 @@
 import { LUIBreadcrumb, LUISkeleton } from '@lumen-ui/react'
 import { useProfile } from '@/features/auth/auth.query'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { AppearanceSettings } from './AppearanceSettings'
 import { DataSettings } from './DataSettings'
 import { NotificationSettings } from './NotificationSettings'
@@ -30,7 +30,7 @@ export const SettingsPage = () => {
     return (
       <div className="settings-page">
         <LUIBreadcrumb title="Settings" />
-        <div className="alert error">{getApiErrorMessage(error)}</div>
+        <div className="alert error">{getErrorMessage(error)}</div>
       </div>
     )
   }

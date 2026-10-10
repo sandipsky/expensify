@@ -1,6 +1,14 @@
 export { LoginPage } from './components/LoginPage'
 export { SignupPage } from './components/SignupPage'
-export { useAuthStore } from './auth.store'
+export {
+  isLoggedIn,
+  leave,
+  logout,
+  sessionReady,
+  sessionUid,
+  sessionUser,
+  watchSession,
+} from './auth.session'
 export {
   profileKeys,
   isWrongPassword,
@@ -9,6 +17,7 @@ export {
   useProfile,
   usePreferences,
   useUpdateProfile,
+  useChangeEmail,
   useUpdatePreferences,
   useChangePassword,
   useDeleteAccount,
@@ -18,13 +27,12 @@ export {
   THEMES,
   type Theme,
   type ILoginBody,
-  type ILoginResponse,
   type IRegisterBody,
-  type IUser,
   type INotificationPrefs,
   type IPreferences,
   type IProfile,
   type IProfileBody,
+  type IChangeEmailBody,
   type IPreferencesBody,
   type IChangePasswordBody,
 } from './auth.types'

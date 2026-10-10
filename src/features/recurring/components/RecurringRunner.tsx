@@ -3,7 +3,7 @@ import { useLUINotification } from '@lumen-ui/react'
 import { useAccounts } from '@/features/accounts/account.query'
 import { useCategories } from '@/features/categories/category.query'
 import type { TxLookups } from '@/features/transactions/transaction.labels'
-import { getApiErrorMessage, useToday } from '@/lib'
+import { getErrorMessage, useToday } from '@/lib'
 import { formatMoney } from '@/utils'
 import { nextAfter } from '../recurring.domain'
 import { entryCount, toRuleView } from '../recurring.labels'
@@ -12,8 +12,8 @@ import { isAlreadyHandled, useAddOccurrences, useRecurringRules } from '../recur
 /**
  * Adds automatic rules' entries on their due date, and any missed while the
  * app was closed, from whichever page is open. Each write starts at the
- * rule's next due date and the server refuses one that doesn't, so a date is
- * added once however many tabs are open. Ask-first rules only wait here: the
+ * rule's next due date and its Firestore transaction refuses one that doesn't,
+ * so a date is added once however many tabs are open. Ask-first rules only wait here: the
  * Recurring page lists them for Confirm or Skip. Renders nothing; mounted
  * once in the signed-in layout.
  */
@@ -26,7 +26,7 @@ export function RecurringRunner() {
   const categories = useCategories()
 
   /** Rules with a write in flight, so a re-render doesn't start a second one. */
-  const running = useRef(new Set<number>())
+  const running = useRef(new Set<string>())
 
   useEffect(() => {
     if (!rules.data || !accounts.data || !categories.data) return
@@ -67,7 +67,7 @@ export function RecurringRunner() {
         .catch((error: unknown) => {
           // Another tab got there first: nothing to tell.
           if (isAlreadyHandled(error)) return
-          notify.error("Couldn't add recurring entries", `${view.name}: ${getApiErrorMessage(error)}`)
+          notify.error("Couldn't add recurring entries", `${view.name}: ${getErrorMessage(error)}`)
         })
         .finally(() => running.current.delete(rule.id))
     }

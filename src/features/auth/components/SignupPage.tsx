@@ -9,10 +9,9 @@ import {
   LUITextInput,
   LUIUsernameInput,
 } from '@lumen-ui/react'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { safeRedirect } from '../auth.domain'
 import { registerConflictField, useRegister } from '../auth.query'
-import { useAuthStore } from '../auth.store'
 import {
   MAX_NAME_LENGTH,
   MAX_USERNAME_LENGTH,
@@ -60,7 +59,6 @@ type SignupPageProps = {
 export const SignupPage = ({ redirectTo }: SignupPageProps) => {
   const navigate = useNavigate()
   const signup = useRegister()
-  const setAuth = useAuthStore((s) => s.setAuth)
 
   const {
     register,
@@ -74,13 +72,10 @@ export const SignupPage = ({ redirectTo }: SignupPageProps) => {
 
   const onSubmit = (values: SignupFormValues) => {
     signup.mutate(values, {
-      onSuccess: (data) => {
-        setAuth(data.token, data.user)
-        navigate({ href: safeRedirect(redirectTo) })
-      },
+      onSuccess: () => navigate({ href: safeRedirect(redirectTo) }),
       onError: (error) => {
         const field = registerConflictField(error)
-        if (field) setError(field, { message: getApiErrorMessage(error) }, { shouldFocus: true })
+        if (field) setError(field, { message: getErrorMessage(error) }, { shouldFocus: true })
       },
     })
   }
@@ -138,7 +133,7 @@ export const SignupPage = ({ redirectTo }: SignupPageProps) => {
 
         {signupError && (
           <div className="alert error auth-alert" role="alert">
-            {getApiErrorMessage(signupError)}
+            {getErrorMessage(signupError)}
           </div>
         )}
 

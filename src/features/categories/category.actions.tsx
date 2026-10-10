@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 import { LUIConfirmDialog, useLUIModal, useLUINotification } from '@lumen-ui/react'
 import { useSheet } from '@/components/sheet'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import {
   useAddDefaultCategories,
   useDeleteCategory,
@@ -39,7 +39,7 @@ export function useCategoryActions() {
     try {
       return await action()
     } catch (error) {
-      notify.error(failure, getApiErrorMessage(error))
+      notify.error(failure, getErrorMessage(error))
       throw error
     }
   }
@@ -49,12 +49,12 @@ export function useCategoryActions() {
    * id, or `undefined` if cancelled.
    */
   const create = (type: CategoryType) =>
-    sheet.open<number>((handle) => <CategoryForm type={type} sheet={handle} />, {
+    sheet.open<string>((handle) => <CategoryForm type={type} sheet={handle} />, {
       width: FORM_WIDTH,
     })
 
   const edit = (category: ICategory) =>
-    sheet.open<number>((handle) => <CategoryForm category={category} sheet={handle} />, {
+    sheet.open<string>((handle) => <CategoryForm category={category} sheet={handle} />, {
       width: FORM_WIDTH,
     })
 

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { NOTIFICATION_KEYS, readState, writeState } from './device-state'
+import { NOTIFICATION_KEYS, clearNotificationState, readState, writeState } from './device-state'
 import { ALERT_KINDS, ALERT_TONES, type AppAlert } from './notification.types'
 
 /** The list keeps this many alerts, for this long. */
@@ -39,6 +39,17 @@ export const useAlertInbox = create<AlertInboxState>()((set, get) => {
     clear: () => save([]),
   }
 })
+
+/**
+ * Starts this browser's alerts and reminders over when someone other than
+ * the user they were kept for logs in, so nobody sees another's alerts.
+ */
+export function claimNotifications(uid: string): void {
+  if (readState<string | null>(NOTIFICATION_KEYS.owner, null) === uid) return
+  clearNotificationState()
+  useAlertInbox.setState({ alerts: [] })
+  writeState(NOTIFICATION_KEYS.owner, uid)
+}
 
 /** How many alerts nobody has seen yet, for the bell's badge. */
 export const useUnreadAlerts = () => useAlertInbox((s) => s.alerts.filter((a) => !a.read).length)

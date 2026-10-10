@@ -10,7 +10,7 @@ import {
 } from '@lumen-ui/react'
 import { IconPicker, type IconOption } from '@/components/icon-picker'
 import type { SheetHandle } from '@/components/sheet'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import {
   DEFAULT_CATEGORY_ICON,
   MAX_CATEGORY_NAME,
@@ -37,11 +37,11 @@ interface CategoryFormProps {
   /** Adding: the list it goes in. */
   type?: CategoryType
   /** The sheet this form opened in; closed with the saved category's id. */
-  sheet: SheetHandle<number>
+  sheet: SheetHandle<string>
 }
 
 /** Names are unique per type, ignoring case, so the schema needs the other categories. */
-const categorySchema = (categories: readonly ICategory[], exceptId?: number) =>
+const categorySchema = (categories: readonly ICategory[], exceptId?: string) =>
   z
     .object({
       type: z.enum(CATEGORY_TYPES),
@@ -179,7 +179,7 @@ export const CategoryForm = ({ category, type = 'expense', sheet }: CategoryForm
         />
         {errors.icon && <div className="alert error">{errors.icon.message}</div>}
 
-        {saveError && <div className="alert error">{getApiErrorMessage(saveError)}</div>}
+        {saveError && <div className="alert error">{getErrorMessage(saveError)}</div>}
       </div>
 
       <div className="sheet-form__actions">

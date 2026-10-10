@@ -3,7 +3,7 @@ import { useUpdatePreferences } from '@/features/auth/auth.query'
 import type { INotificationPrefs } from '@/features/auth/auth.types'
 import { useNotificationPermission } from '@/features/notifications/browser-notifications'
 import { isTimeOfDay } from '@/features/notifications/notification.domain'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { reminderTimeOptions } from '../settings.labels'
 import './NotificationSettings.scss'
 
@@ -27,7 +27,7 @@ export const NotificationSettings = ({ prefs }: NotificationSettingsProps) => {
   const change = (changes: Partial<INotificationPrefs>) =>
     save.mutate(
       { notifications: changes },
-      { onError: (error) => notify.error("Couldn't save that", getApiErrorMessage(error)) },
+      { onError: (error) => notify.error("Couldn't save that", getErrorMessage(error)) },
     )
 
   const setTime = (value: unknown) => {

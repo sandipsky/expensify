@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 import { LUIConfirmDialog, useLUIModal, useLUINotification } from '@lumen-ui/react'
 import { useSheet } from '@/components/sheet'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { formatMoney } from '@/utils'
 import { balanceView } from './account.labels'
 import { useDeleteAccount, useSetAccountArchived } from './account.query'
@@ -34,16 +34,16 @@ export function useAccountActions() {
     try {
       return await action()
     } catch (error) {
-      notify.error(failure, getApiErrorMessage(error))
+      notify.error(failure, getErrorMessage(error))
       throw error
     }
   }
 
   /** Opens the add form. Resolves to the new account's id, or `undefined` if cancelled. */
-  const create = () => sheet.open<number>((handle) => <AccountForm sheet={handle} />)
+  const create = () => sheet.open<string>((handle) => <AccountForm sheet={handle} />)
 
   const edit = (account: IAccount) =>
-    sheet.open<number>((handle) => <AccountForm account={account} sheet={handle} />)
+    sheet.open<string>((handle) => <AccountForm account={account} sheet={handle} />)
 
   const reconcile = (account: IAccount) =>
     sheet.open<boolean>((handle) => <ReconcileForm account={account} sheet={handle} />)

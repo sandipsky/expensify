@@ -136,7 +136,7 @@ export type RuleStatus = 'active' | 'paused' | 'ended' | 'missing_account'
 
 /** A rule as the recurring screens show it. */
 export interface RuleView {
-  id: number
+  id: string
   rule: IRecurringRule
   /** The note, else the category, else "Transfer": what entries it adds are called. */
   name: string

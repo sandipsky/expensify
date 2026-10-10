@@ -10,7 +10,7 @@ import {
   useLUINotification,
 } from '@lumen-ui/react'
 import type { SheetHandle } from '@/components/sheet'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { DEFAULT_CURRENCY, currencySymbol, fractionDigits } from '@/utils'
 import { flipForLiability, iconAndColorFor, isLiability } from '../account.domain'
 import { ACCOUNT_TYPE_OPTIONS } from '../account.labels'
@@ -21,7 +21,7 @@ interface AccountFormProps {
   /** The account to edit; omit to add one. */
   account?: IAccount
   /** The sheet this form opened in; closed with the saved account's id. */
-  sheet: SheetHandle<number>
+  sheet: SheetHandle<string>
 }
 
 const accountSchema = z.object({
@@ -171,7 +171,7 @@ export const AccountForm = ({ account, sheet }: AccountFormProps) => {
 
         <LUIToggle label="Include in total balance" {...register('includeInTotal')} />
 
-        {saveError && <div className="alert error">{getApiErrorMessage(saveError)}</div>}
+        {saveError && <div className="alert error">{getErrorMessage(saveError)}</div>}
       </div>
 
       <div className="sheet-form__actions">

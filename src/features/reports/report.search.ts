@@ -2,7 +2,7 @@
 // as `undefined` when malformed: the router merges the layout route's raw
 // search underneath, so a key left out would let the raw value through.
 import { CATEGORY_TYPES, type CategoryType } from '@/features/categories/category.types'
-import { parseIdsParam } from '@/features/transactions/transaction.search'
+import { idsOf, parseIdsParam } from '@/features/transactions/transaction.search'
 import { isYmd } from '@/utils'
 import {
   BUDGET_LOOKBACKS,
@@ -71,9 +71,9 @@ export function parseAccountsSearch(search: Raw): AccountsSearch {
 }
 
 export function parseBudgetReportSearch(search: Raw): BudgetReportSearch {
-  const budget = search.budget
+  const [budget, ...others] = idsOf(parseIdsParam(search.budget))
   return {
-    budget: typeof budget === 'number' && Number.isInteger(budget) && budget > 0 ? budget : undefined,
+    budget: others.length ? undefined : budget,
     periods: oneOf<BudgetLookback>(BUDGET_LOOKBACKS, search.periods),
     early: parseFlag(search.early),
     paused: parseFlag(search.paused),

@@ -5,7 +5,7 @@ import './CategoryPicker.scss'
 
 /** One tile: the category it selects, drawn with its icon and color. */
 export interface CategoryOption {
-  value: number
+  value: string
   label: string
   icon: LUIIconName
   color: string
@@ -17,8 +17,8 @@ export interface CategoryPickerProps {
   name: string
   options: readonly CategoryOption[]
   /** The chosen category. */
-  value: number | null
-  onChange: (value: number) => void
+  value: string | null
+  onChange: (value: string) => void
   onBlur?: () => void
   /** Validation message shown under the grid; also applies the error style. */
   error?: string

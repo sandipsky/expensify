@@ -10,35 +10,30 @@ export interface TransactionSearch {
   from?: string
   to?: string
   type?: TxType
-  /**
-   * One id as a number, several as "4,7". The router writes a number-like
-   * string with quotes, so a single id travels as a number to keep the URL
-   * plain: `category=4`.
-   */
-  category?: number | string
+  /** One category id, or several as "id1,id2". */
+  category?: string
   /** Accounts, written like `category`. */
-  account?: number | string
+  account?: string
 }
+
+/** What a document id can be in a link: letters and digits, as Firestore's auto ids are. */
+const ID = /^[A-Za-z0-9]{1,64}$/
 
 /** An id list from the URL as `idsParamOf` wrote it, or undefined when malformed. */
-export function parseIdsParam(value: unknown): number | string | undefined {
-  if (typeof value === 'number') return Number.isInteger(value) && value > 0 ? value : undefined
-  if (typeof value === 'string' && value !== '') return value
-  return undefined
+export function parseIdsParam(value: unknown): string | undefined {
+  // The router reads a value that looks like a number as one.
+  const text = typeof value === 'number' ? String(value) : value
+  return typeof text === 'string' && text !== '' ? text : undefined
 }
 
-/** The ids an id-list param holds; anything that isn't a positive whole number is dropped. */
-export function idsOf(param: number | string | undefined): number[] {
-  return String(param ?? '')
-    .split(',')
-    .map(Number)
-    .filter((id) => Number.isInteger(id) && id > 0)
+/** The ids an id-list param holds; anything that can't be an id is dropped. */
+export function idsOf(param: string | undefined): string[] {
+  return (param ?? '').split(',').filter((id) => ID.test(id))
 }
 
-/** Ids as an id-list param: one as a number, several as "4,7", none as undefined. */
-export function idsParamOf(ids: readonly number[] | undefined): number | string | undefined {
-  if (!ids?.length) return undefined
-  return ids.length === 1 ? ids[0] : ids.join(',')
+/** Ids as an id-list param: "id1,id2", or undefined for none. */
+export function idsParamOf(ids: readonly string[] | undefined): string | undefined {
+  return ids?.length ? ids.join(',') : undefined
 }
 
 /**
@@ -81,8 +76,8 @@ export function listStartOf(search: TransactionSearch): ListStart {
 export function transactionSearchFor(
   range: DateRange,
   type?: TxType,
-  categoryIds?: readonly number[],
-  accountIds?: readonly number[],
+  categoryIds?: readonly string[],
+  accountIds?: readonly string[],
 ): TransactionSearch {
   const search: TransactionSearch = { from: range.start, to: range.end }
   if (type) search.type = type

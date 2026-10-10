@@ -11,7 +11,7 @@ import {
   LUITabs,
 } from '@lumen-ui/react'
 import { EmptyState } from '@/components/empty-state'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { useCategoryActions } from '../category.actions'
 import { categoryLists } from '../category.domain'
 import { CATEGORY_TYPE_LABELS } from '../category.labels'
@@ -46,7 +46,7 @@ export const CategoryList = () => {
     return (
       <div className="categories-page">
         <LUIBreadcrumb title="Categories" />
-        <div className="alert error">{getApiErrorMessage(error)}</div>
+        <div className="alert error">{getErrorMessage(error)}</div>
       </div>
     )
   }

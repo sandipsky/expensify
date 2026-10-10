@@ -3,10 +3,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { LUIButton, LUIPasswordInput, LUIUsernameInput } from '@lumen-ui/react'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { safeRedirect } from '../auth.domain'
 import { useLogin } from '../auth.query'
-import { useAuthStore } from '../auth.store'
 import { AuthCard } from './AuthCard'
 
 const loginSchema = z.object({
@@ -31,7 +30,6 @@ type LoginPageProps = {
 export const LoginPage = ({ redirectTo, deleted }: LoginPageProps) => {
   const navigate = useNavigate()
   const login = useLogin()
-  const setAuth = useAuthStore((s) => s.setAuth)
 
   const {
     register,
@@ -44,10 +42,7 @@ export const LoginPage = ({ redirectTo, deleted }: LoginPageProps) => {
 
   const onSubmit = (values: LoginFormValues) => {
     login.mutate(values, {
-      onSuccess: (data) => {
-        setAuth(data.token, data.user)
-        navigate({ href: safeRedirect(redirectTo) })
-      },
+      onSuccess: () => navigate({ href: safeRedirect(redirectTo) }),
     })
   }
 
@@ -81,7 +76,7 @@ export const LoginPage = ({ redirectTo, deleted }: LoginPageProps) => {
 
         {login.isError && (
           <div className="alert error auth-alert" role="alert">
-            {getApiErrorMessage(login.error)}
+            {getErrorMessage(login.error)}
           </div>
         )}
 
@@ -97,10 +92,6 @@ export const LoginPage = ({ redirectTo, deleted }: LoginPageProps) => {
         <Link className="auth-link" to="/signup" search={{ redirect: redirectTo }}>
           Create an account
         </Link>
-      </p>
-
-      <p className="auth-note">
-        Just trying it out? Log in as <code>admin</code> / <code>admin</code>.
       </p>
     </AuthCard>
   )

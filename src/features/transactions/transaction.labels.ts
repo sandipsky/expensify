@@ -35,7 +35,7 @@ export function entries(count: number): string {
 }
 
 /** Account select items: active accounts, plus an archived one the entry already uses. */
-export function accountItems(accounts: readonly IAccount[], used: readonly (number | null)[]) {
+export function accountItems(accounts: readonly IAccount[], used: readonly (string | null)[]) {
   return accounts
     .filter((a) => !a.archived || used.includes(a.id))
     .map((a) => ({ value: a.id, label: a.archived ? `${a.name} (archived)` : a.name }))
@@ -45,7 +45,7 @@ export function accountItems(accounts: readonly IAccount[], used: readonly (numb
 export function categoryOptions(
   categories: readonly ICategory[],
   type: CategoryType,
-  chosen: number | null,
+  chosen: string | null,
 ): CategoryOption[] {
   return categories
     .filter((c) => c.type === type && (!c.archived || c.id === chosen))
@@ -61,14 +61,14 @@ export const MISSING_CATEGORY_ICON: LUIIconName = 'help'
 
 /** Names the rows need, looked up by id. */
 export interface TxLookups {
-  accountsById: ReadonlyMap<number, IAccount>
-  categoriesById: ReadonlyMap<number, ICategory>
+  accountsById: ReadonlyMap<string, IAccount>
+  categoriesById: ReadonlyMap<string, ICategory>
   today: string
 }
 
 /** One transaction as lists show it. */
 export interface TxRow {
-  id: number
+  id: string
   tx: ITransaction
   date: string
   /** "Sat, 26 Sep 2026". */
@@ -92,7 +92,7 @@ export interface TxRow {
   upcoming: boolean
 }
 
-export function accountName(lookups: TxLookups, id: number | null): string {
+export function accountName(lookups: TxLookups, id: string | null): string {
   return (id !== null && lookups.accountsById.get(id)?.name) || 'Deleted account'
 }
 

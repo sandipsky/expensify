@@ -1,4 +1,4 @@
-import type { ITransaction, ITransactionBody, TxType } from '@/features/transactions/transaction.types'
+import type { ITransactionBody, TxType } from '@/features/transactions/transaction.types'
 
 export const FREQUENCIES = ['daily', 'weekly', 'monthly', 'yearly'] as const
 export type Frequency = (typeof FREQUENCIES)[number]
@@ -17,11 +17,11 @@ export interface RecurringTemplate {
   /** Positive; `type` gives the direction. */
   amount: number
   /** Source account. */
-  accountId: number
+  accountId: string
   /** Transfers only. */
-  toAccountId: number | null
+  toAccountId: string | null
   /** Null for transfers. */
-  categoryId: number | null
+  categoryId: string | null
   note: string | null
 }
 
@@ -48,7 +48,7 @@ export interface RuleEnd {
 }
 
 export interface IRecurringRule extends Schedule, RuleEnd {
-  id: number
+  id: string
   template: RecurringTemplate
   /** Entries added so far; skipped ones don't count. */
   occurrences: number
@@ -61,7 +61,7 @@ export interface IRecurringRule extends Schedule, RuleEnd {
   updatedAt: string
 }
 
-// What the client sends when creating/updating - the server owns the id, the
+// What a form saves when creating/updating - recurring.api.ts sets the id, the
 // count of entries added, the paused flag and the timestamps. The device works
 // out `nextDueDate` from the schedule.
 export type IRecurringRuleBody = Omit<
@@ -76,9 +76,4 @@ export interface OccurrencesBody {
   nextDueDate: string
   /** One date only: the entry as edited before confirming, instead of the template. */
   entry?: ITransactionBody
-}
-
-export interface OccurrencesResult {
-  rule: IRecurringRule
-  transactions: ITransaction[]
 }

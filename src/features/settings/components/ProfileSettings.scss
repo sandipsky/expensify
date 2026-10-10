@@ -11,6 +11,13 @@
   }
 }
 
+// A field with its note under it.
+.profile-email {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 // Half the row, like one of the fields above it, with its note under it.
 .profile-username {
   display: flex;

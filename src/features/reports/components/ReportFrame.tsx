@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { LUIButton, LUIIcon, LUIMenu, LUISkeleton, useLUINotification } from '@lumen-ui/react'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { dataColor } from '@/utils'
 import {
   EXPORT_FORMAT_LABELS,
@@ -65,7 +65,7 @@ export const ReportFrame = ({
         notify.info('Nothing to export', emptyMessage)
       }
     } catch (err) {
-      notify.error('Could not export', getApiErrorMessage(err))
+      notify.error('Could not export', getErrorMessage(err))
     }
   }
 
@@ -132,7 +132,7 @@ export const ReportFrame = ({
       </section>
 
       {error ? (
-        <div className="alert error">{getApiErrorMessage(error)}</div>
+        <div className="alert error">{getErrorMessage(error)}</div>
       ) : loading ? (
         <div className="report-page__skeleton" aria-busy="true">
           <LUISkeleton height="84px" />

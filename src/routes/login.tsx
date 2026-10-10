@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { z } from 'zod'
-import { LoginPage, useAuthStore } from '@/features/auth'
+import { LoginPage, isLoggedIn, sessionReady } from '@/features/auth'
 
 // /login?redirect=/transactions -> after logging in, go back to where the user was heading.
 // /login?deleted=1 -> the account was just deleted, so say so.
@@ -12,8 +12,9 @@ const loginSearchSchema = z.object({
 export const Route = createFileRoute('/login')({
   validateSearch: loginSearchSchema,
   // Already logged in? Skip the login page.
-  beforeLoad: () => {
-    if (useAuthStore.getState().token) {
+  beforeLoad: async () => {
+    await sessionReady()
+    if (isLoggedIn()) {
       throw redirect({ to: '/' })
     }
   },

@@ -1,7 +1,8 @@
 # Netlify builds the web app from this repo and serves dist/ as a static site.
-# The API runs elsewhere (Netlify can't host Django): set VITE_API_BASE_URL in
-# the site's environment variables before the first deploy. Vite bakes it into
-# the build, and without it the app stops at startup (src/config/env.ts).
+# The data lives in Firebase (Auth and Firestore), so there's nothing else to
+# host. Set the VITE_FIREBASE_* variables in the site's environment variables
+# before the first deploy (README, "Deploying the web app"): Vite bakes them into
+# the build, and without them the app stops at startup (src/config/env.ts).
 
 [build]
   command = "npm run build"

@@ -5,7 +5,7 @@ export const CATEGORY_TYPES = ['expense', 'income'] as const
 export type CategoryType = (typeof CATEGORY_TYPES)[number]
 
 export interface ICategory {
-  id: number
+  id: string
   /** 1-30 characters, unique within its type, ignoring case. */
   name: string
   /** Fixed once created, since entries of that type use it. */
@@ -20,7 +20,7 @@ export interface ICategory {
   updatedAt: string
 }
 
-// What the client sends when creating/updating - the server owns the id,
+// What a form saves when creating/updating - categories.api.ts sets the id,
 // the archived flag, the sort order and the timestamps.
 export type ICategoryBody = Omit<
   ICategory,

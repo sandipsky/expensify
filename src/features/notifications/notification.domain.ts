@@ -56,7 +56,7 @@ export function dailyReminderDue(state: DailyReminderState): boolean {
 export type BillReminderKind = 'upcoming' | 'due'
 
 export interface BillReminder {
-  ruleId: number
+  ruleId: string
   kind: BillReminderKind
   /** The entry's date: tomorrow's for `upcoming`, the latest waiting one for `due`. */
   date: string

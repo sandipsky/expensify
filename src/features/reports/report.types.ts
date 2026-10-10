@@ -27,11 +27,8 @@ export interface PeriodSearch {
   to?: string
 }
 
-/**
- * Account and category filters travel as id lists: one id as a number, several
- * as "4,7" (see `idsParamOf`).
- */
-export type IdsParam = number | string
+/** Account and category filters travel as id lists, "id1,id2" (see `idsParamOf`). */
+export type IdsParam = string
 
 /** `/reports/cash-flow`. */
 export interface CashFlowSearch extends PeriodSearch {
@@ -66,7 +63,7 @@ export type BudgetLookback = (typeof BUDGET_LOOKBACKS)[number]
 /** `/reports/budgets`. */
 export interface BudgetReportSearch {
   /** One budget's periods; every budget's summary without it. */
-  budget?: number
+  budget?: string
   periods?: BudgetLookback
   /** Also show periods that ended before the budget was created. */
   early?: boolean

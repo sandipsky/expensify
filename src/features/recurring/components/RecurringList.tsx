@@ -13,7 +13,7 @@ import { useCategories } from '@/features/categories/category.query'
 import { TransactionAmount } from '@/features/transactions/components/TransactionAmount'
 import { TransactionIcon } from '@/features/transactions/components/TransactionIcon'
 import type { TxLookups } from '@/features/transactions/transaction.labels'
-import { getApiErrorMessage, useToday } from '@/lib'
+import { getErrorMessage, useToday } from '@/lib'
 import { useRecurringActions } from '../recurring.actions'
 import { type RuleView, dueCaption, groupRules } from '../recurring.labels'
 import { useRecurringRules } from '../recurring.query'
@@ -45,7 +45,7 @@ export const RecurringList = () => {
     return (
       <div className="recurring-page">
         <LUIBreadcrumb title="Recurring" />
-        <div className="alert error">{getApiErrorMessage(rulesQuery.error)}</div>
+        <div className="alert error">{getErrorMessage(rulesQuery.error)}</div>
       </div>
     )
   }

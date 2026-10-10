@@ -10,7 +10,7 @@ import {
   LUISkeleton,
 } from '@lumen-ui/react'
 import { EmptyState } from '@/components/empty-state'
-import { getApiErrorMessage } from '@/lib'
+import { getErrorMessage } from '@/lib'
 import { DEFAULT_CURRENCY, formatMoney } from '@/utils'
 import { useAccountActions } from '../account.actions'
 import { totalBalance } from '../account.domain'
@@ -44,7 +44,7 @@ export const AccountList = () => {
     return (
       <div className="accounts-page">
         <LUIBreadcrumb title="Accounts" />
-        <div className="alert error">{getApiErrorMessage(error)}</div>
+        <div className="alert error">{getErrorMessage(error)}</div>
       </div>
     )
   }
