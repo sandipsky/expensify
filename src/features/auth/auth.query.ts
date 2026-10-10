@@ -5,12 +5,21 @@ import {
   deleteAccount,
   getProfile,
   login,
+  register,
   updatePreferences,
   updateProfile,
 } from './auth.api'
-import type { IPreferencesBody, IProfile } from './auth.types'
+import type { IPreferencesBody, IProfile, RegisterConflictField } from './auth.types'
 
 export const useLogin = () => useMutation({ mutationFn: login })
+
+export const useRegister = () => useMutation({ mutationFn: register })
+
+/** The field a signup was refused over because it's taken, if that's why. */
+export function registerConflictField(error: unknown): RegisterConflictField | undefined {
+  if (!isAxiosError<{ field?: RegisterConflictField }>(error)) return undefined
+  return error.response?.status === 409 ? error.response.data?.field : undefined
+}
 
 // Query keys in one place so invalidation never drifts out of sync.
 export const profileKeys = {

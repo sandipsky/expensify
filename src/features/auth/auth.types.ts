@@ -1,5 +1,6 @@
 export interface ILoginBody {
-  username: string
+  /** Either one logs in; neither is case-sensitive. */
+  usernameOrEmail: string
   password: string
 }
 
@@ -14,8 +15,29 @@ export interface ILoginResponse {
   user: IUser
 }
 
-/** Fewest characters a new password may have. Keep in sync with mock-server/server.js. */
+/** A new account; signing up logs straight in, answering an {@link ILoginResponse}. */
+export interface IRegisterBody {
+  name: string
+  username: string
+  email: string
+  password: string
+}
+
+/** Signup fields the server can refuse as taken, naming which in a 409 answer. */
+export type RegisterConflictField = 'username' | 'email'
+
+// Account rules. Keep in sync with the Auth section of mock-server/server.js.
+
+/** Fewest characters a new password may have. */
 export const MIN_PASSWORD_LENGTH = 8
+
+/** Most characters a name may have. */
+export const MAX_NAME_LENGTH = 60
+
+/** Usernames are 3 to 30 of these, kept lowercase. */
+export const USERNAME_PATTERN = /^[a-z0-9._-]+$/
+export const MIN_USERNAME_LENGTH = 3
+export const MAX_USERNAME_LENGTH = 30
 
 /** Light, dark, or following the device's setting. */
 export const THEMES = ['light', 'dark', 'system'] as const

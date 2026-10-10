@@ -79,9 +79,10 @@ on startup in `src/config/env.ts`; the app refuses to boot with a bad value.
 
 ## Mock API
 
-| Method | Path            | Auth | Notes                                         |
-| ------ | --------------- | ---- | --------------------------------------------- |
-| POST   | `/auth/login`   | no   | `{ username, password }` -> `{ token, user }` |
+| Method | Path             | Auth | Notes                                                                 |
+| ------ | ---------------- | ---- | --------------------------------------------------------------------- |
+| POST   | `/auth/login`    | no   | `{ usernameOrEmail, password }` -> `{ token, user }`                  |
+| POST   | `/auth/register` | no   | `{ name, username, email, password }` -> `{ token, user }`; 409 taken |
 
 "Auth: yes" means the request needs `Authorization: Bearer <token>` using the token
 from the login response. Without it the server answers **403**.

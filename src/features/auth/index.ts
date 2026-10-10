@@ -1,9 +1,11 @@
 export { LoginPage } from './components/LoginPage'
+export { SignupPage } from './components/SignupPage'
 export { useAuthStore } from './auth.store'
 export {
   profileKeys,
   isWrongPassword,
   useLogin,
+  useRegister,
   useProfile,
   usePreferences,
   useUpdateProfile,
@@ -17,6 +19,7 @@ export {
   type Theme,
   type ILoginBody,
   type ILoginResponse,
+  type IRegisterBody,
   type IUser,
   type INotificationPrefs,
   type IPreferences,

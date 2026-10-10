@@ -1,14 +1,17 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { LUIButton, LUIPasswordInput, LUIUsernameInput } from '@lumen-ui/react'
 import { getApiErrorMessage } from '@/lib'
+import { safeRedirect } from '../auth.domain'
 import { useLogin } from '../auth.query'
 import { useAuthStore } from '../auth.store'
+import { AuthCard } from './AuthCard'
 
 const loginSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
-  password: z.string().min(1, 'Password is required'),
+  usernameOrEmail: z.string().trim().min(1, 'Enter your username or email'),
+  password: z.string().min(1, 'Enter your password'),
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
@@ -20,6 +23,11 @@ type LoginPageProps = {
   deleted?: boolean
 }
 
+/**
+ * `/login`: username or email, and password, with a link to sign up.
+ * Afterwards the user goes on to the page they were heading for, or the
+ * dashboard.
+ */
 export const LoginPage = ({ redirectTo, deleted }: LoginPageProps) => {
   const navigate = useNavigate()
   const login = useLogin()
@@ -31,57 +39,69 @@ export const LoginPage = ({ redirectTo, deleted }: LoginPageProps) => {
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { username: '', password: '' },
+    defaultValues: { usernameOrEmail: '', password: '' },
   })
 
   const onSubmit = (values: LoginFormValues) => {
     login.mutate(values, {
       onSuccess: (data) => {
         setAuth(data.token, data.user)
-        // Only follow same-site paths, never an external URL smuggled into the query string.
-        const target = redirectTo?.startsWith('/') ? redirectTo : '/'
-        navigate({ href: target })
+        navigate({ href: safeRedirect(redirectTo) })
       },
     })
   }
 
   return (
-    <div className="login-page">
-      <div className="card">
-        <h1>Login</h1>
-        <p className="muted">
-          Mock credentials: <code>admin</code> / <code>admin</code>
-        </p>
+    <AuthCard title="Log in" subtitle="Welcome back. Your money is where you left it.">
+      {deleted && (
+        <div className="alert success auth-alert" role="status">
+          Your account and everything in it were deleted.
+        </div>
+      )}
 
-        {deleted && (
-          <div className="alert success">Your account and everything in it were deleted.</div>
+      <form className="auth-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <LUIUsernameInput
+          label="Username or email"
+          placeholder="Your username or email"
+          autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
+          autoFocus
+          error={errors.usernameOrEmail?.message}
+          {...register('usernameOrEmail')}
+        />
+
+        <LUIPasswordInput
+          label="Password"
+          placeholder="Your password"
+          autoComplete="current-password"
+          error={errors.password?.message}
+          {...register('password')}
+        />
+
+        {login.isError && (
+          <div className="alert error auth-alert" role="alert">
+            {getApiErrorMessage(login.error)}
+          </div>
         )}
 
-        <form className="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div className="field">
-            <label htmlFor="username">Username</label>
-            <input id="username" type="text" autoComplete="username" {...register('username')} />
-            {errors.username && <span className="error">{errors.username.message}</span>}
-          </div>
+        <div className="auth-form__actions">
+          <LUIButton type="submit" size="lg" width="full" disabled={login.isPending}>
+            {login.isPending ? 'Logging in...' : 'Log in'}
+          </LUIButton>
+        </div>
+      </form>
 
-          <div className="field">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              {...register('password')}
-            />
-            {errors.password && <span className="error">{errors.password.message}</span>}
-          </div>
+      <p className="auth-links">
+        New here?{' '}
+        <Link className="auth-link" to="/signup" search={{ redirect: redirectTo }}>
+          Create an account
+        </Link>
+      </p>
 
-          {login.isError && <div className="alert">{getApiErrorMessage(login.error)}</div>}
-
-          <button className="btn" type="submit" disabled={login.isPending}>
-            {login.isPending ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-      </div>
-    </div>
+      <p className="auth-note">
+        Just trying it out? Log in as <code>admin</code> / <code>admin</code>.
+      </p>
+    </AuthCard>
   )
 }

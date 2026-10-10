@@ -6,10 +6,17 @@ import type {
   IPreferencesBody,
   IProfile,
   IProfileBody,
+  IRegisterBody,
 } from './auth.types'
 
 export const login = async (body: ILoginBody) => {
   const res = await apiClient.post<ILoginResponse>('/auth/login', body)
+  return res.data
+}
+
+/** Creates the account and logs in. Answers 409 when the username or email is taken. */
+export const register = async (body: IRegisterBody) => {
+  const res = await apiClient.post<ILoginResponse>('/auth/register', body)
   return res.data
 }
 

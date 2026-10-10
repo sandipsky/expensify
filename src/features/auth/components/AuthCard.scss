@@ -1,0 +1,102 @@
+// The card the login and signup pages sit in, and the pieces both share.
+
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 16px;
+  background: var(--bg-light);
+}
+
+.auth-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px 24px;
+  border: 1px solid var(--separator-light);
+  border-radius: 12px;
+  background: var(--bg-lightest);
+}
+
+.auth-card__brand {
+  color: var(--accent-dark);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.auth-card__title {
+  color: var(--text-primary);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+.auth-card__subtitle {
+  margin-top: -8px;
+  color: var(--text-secondary);
+  line-height: 20px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-form__actions {
+  margin-top: 4px;
+}
+
+// A field with a note under it, 6px apart like a lumen label and its input.
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth-hint,
+.auth-note {
+  color: var(--text-tertiary);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.auth-note code {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.auth-links {
+  color: var(--text-secondary);
+  line-height: 20px;
+}
+
+.auth-link {
+  color: var(--accent-dark);
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+// Page-level notices (a failed login, a deleted account): a little larger
+// than a field's inline error. Doubled with .alert to outrank lumen's padding.
+.alert.auth-alert {
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 18px;
+}

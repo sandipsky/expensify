@@ -196,30 +196,89 @@ const requireAuth = (req, res, next) => {
 }
 
 // ---------------------------------------------------------------------------
-// Auth
+// Auth: log in, or sign up as a new user. Both answer a token and the profile.
+// Keep these rules in sync with auth.types.ts.
 // ---------------------------------------------------------------------------
+const MAX_USER_NAME = 60
+const MIN_PASSWORD_LENGTH = 8
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+// Usernames are kept lowercase, so "Admin" and "admin" are one login. They
+// end up in tokens, so only characters that are safe in a header.
+const USERNAME = /^[a-z0-9._-]{3,30}$/
+
+const normalizeUsername = (username) => String(username ?? '').trim().toLowerCase()
+const normalizeEmail = (email) => String(email ?? '').trim().toLowerCase()
+
+// Whether a user other than `exceptId` already has this email.
+const emailTaken = (db, email, exceptId) =>
+  db.users.some((u) => u.id !== exceptId && normalizeEmail(u.email) === normalizeEmail(email))
+
+// A taken username or email answers 409 and names the field, so the form can
+// show the message on it.
+const conflict = (res, field, message) => res.status(409).json({ message, field })
+
+// Logs in with the username or the email. Usernames can't hold "@" and emails
+// are unique, so a value matches one user at most.
 app.post('/auth/login', (req, res) => {
-  const { username, password } = req.body ?? {}
-  if (!username || !password) {
-    return res.status(400).json({ message: 'username and password are required' })
+  const { usernameOrEmail, password } = req.body ?? {}
+  if (!usernameOrEmail || !password) {
+    return res.status(400).json({ message: 'usernameOrEmail and password are required' })
   }
 
   const db = readDb()
-  const user = db.users.find((u) => u.username === username && u.password === password)
+  const login = String(usernameOrEmail).trim().toLowerCase()
+  const user = db.users.find(
+    (u) =>
+      (u.username.toLowerCase() === login || normalizeEmail(u.email) === login) &&
+      u.password === password,
+  )
   if (!user) {
-    return res.status(401).json({ message: 'Invalid username or password' })
+    return res.status(401).json({ message: 'Wrong username, email or password.' })
   }
 
   res.json({ token: tokenFor(user), user: toProfile(user) })
+})
+
+// Creates the user and logs them in. Every login shares the mock's one set of
+// data (see DELETE /me), so a new user sees what's already there.
+app.post('/auth/register', (req, res) => {
+  const { name, username, email, password } = req.body ?? {}
+  const error =
+    validateProfile({ name: name ?? '', email: email ?? '' }) ??
+    (USERNAME.test(normalizeUsername(username))
+      ? null
+      : 'username must be 3 to 30 letters, numbers, dots, dashes or underscores') ??
+    (typeof password === 'string' && password.length >= MIN_PASSWORD_LENGTH
+      ? null
+      : `password must be at least ${MIN_PASSWORD_LENGTH} characters`)
+  if (error) return res.status(400).json({ message: error })
+
+  const db = readDb()
+  if (db.users.some((u) => u.username.toLowerCase() === normalizeUsername(username))) {
+    return conflict(res, 'username', 'That username is taken. Try another one.')
+  }
+  if (emailTaken(db, email)) {
+    return conflict(res, 'email', "There's already an account with this email. Log in instead.")
+  }
+
+  const user = {
+    id: nextId(db.users),
+    name: name.trim(),
+    username: normalizeUsername(username),
+    email: email.trim(),
+    password,
+    photoUrl: null,
+    preferences: structuredClone(DEFAULT_PREFERENCES),
+  }
+  db.users.push(user)
+  writeDb(db)
+  res.status(201).json({ token: tokenFor(user), user: toProfile(user) })
 })
 
 // ---------------------------------------------------------------------------
 // Profile (protected): the signed-in user, their preferences and password.
 // A wrong password answers 401, which the frontend doesn't treat as signed out.
 // ---------------------------------------------------------------------------
-const MAX_USER_NAME = 60
-const MIN_PASSWORD_LENGTH = 8
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 // The device scales a photo down before sending it, as a data URL.
 const PHOTO = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/
 const MAX_PHOTO_LENGTH = 200_000
@@ -290,6 +349,9 @@ app.patch('/me', requireAuth, (req, res) => {
   if (error) return res.status(400).json({ message: error })
 
   const db = readDb()
+  if (body.email !== undefined && emailTaken(db, body.email, req.userId)) {
+    return conflict(res, 'email', 'That email belongs to another account.')
+  }
   res.json(toProfile(saveUser(db, { ...findMe(db, req), ...profileFields(body) })))
 })
 
