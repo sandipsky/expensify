@@ -1,16 +1,20 @@
-/** The currency new accounts start in until settings exist. */
+/** The currency new accounts start in. */
 export const DEFAULT_CURRENCY = 'NPR'
 
-/** The browser's language, which amounts are formatted for. */
-const locale = () => navigator.language || 'en-US'
+/**
+ * Amounts are always written the Nepali way, whatever the browser's language:
+ * lakh and crore grouping with Latin digits, "Rs 12,34,567.50". `en-IN` is
+ * the locale that writes it so; `ne-NP` would use Devanagari digits.
+ */
+const MONEY_LOCALE = 'en-IN'
 
 const formatters = new Map<string, Intl.NumberFormat>()
 
 function formatter(options: Intl.NumberFormatOptions): Intl.NumberFormat {
-  const key = `${locale()}|${JSON.stringify(options)}`
+  const key = JSON.stringify(options)
   let result = formatters.get(key)
   if (!result) {
-    result = new Intl.NumberFormat(locale(), options)
+    result = new Intl.NumberFormat(MONEY_LOCALE, options)
     formatters.set(key, result)
   }
   return result
@@ -33,7 +37,7 @@ export function currencySymbol(currency: string): string {
 
 /**
  * Formats an amount as currency with the short symbol, so rupees read
- * "Rs 1,234.50" rather than "NPR 1,234.50". `signDisplay: 'exceptZero'`
+ * "Rs 1,23,456.50" rather than "NPR 1,23,456.50". `signDisplay: 'exceptZero'`
  * gives the +/− that income and expense need alongside color.
  */
 export function formatMoney(

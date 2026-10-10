@@ -1,8 +1,21 @@
+// Design tokens, which lumen-ui reads too. Light is the default; dark redefines
+// the same variables, so components only ever use var(--…) and need no dark
+// override of their own.
+//
+// The theme setting puts data-theme="light" | "dark" on <html>, or removes it to
+// follow the device. So dark applies for data-theme="dark", and with no attribute
+// when the device prefers dark; data-theme="light" stays light either way.
+
 :root {
+  color-scheme: light;
+
   /* A deep blue; the lighter and darker shades follow it. */
   --accent: #2456E6;
   --accent-bg: color-mix(in srgb, var(--accent) 9%, var(--bg-lightest));
+  /* Accent text on tints (active tab, selected option) and lumen's hover fill. */
   --accent-dark: color-mix(in srgb, var(--accent) 78%, black);
+  /* Hover fill under white text, such as a primary button's. */
+  --accent-hover: var(--accent-dark);
 
   --success: #36B37E;
   --success-bg: #EBF7F2;
@@ -36,4 +49,73 @@
   --bg-light: #F7F7F7;
   --bg-semi-light: #F6F7F5;
   --bg-dark: #EBEDEB;
+
+  /* ================= Data colors ================= */
+  /* How far user-picked colors (category and account icons) mix toward white:
+     none here, more in dark mode so dark hues stay visible. See dataColor(). */
+  --data-color-lift: 0%;
+}
+
+// Neutral dark grays, never pure black. Surfaces (--bg-lightest: cards, sidebar,
+// dialogs) sit a step above the page (--bg-light), as in light mode. --accent is
+// a fill that keeps white text readable; --accent-dark is the lighter blue that
+// reads as text, so fills under white text use --accent-hover instead.
+@mixin dark-tokens {
+  color-scheme: dark;
+
+  --accent: #3A68E9;
+  --accent-bg: #1A2340;
+  --accent-dark: #93ADF5;
+  --accent-hover: #2A58DC;
+
+  --success: #3FBF87;
+  --success-bg: #13291F;
+
+  --error: #FF6B5C;
+  --error-bg: #3A1C19;
+
+  --warn: #F5B53D;
+  --warn-bg: #2E2513;
+
+  --info: #2EC4DF;
+  --info-bg: #11282D;
+
+  --premium: #DD70DB;
+  --premium-bg: #361A36;
+
+  /* ================= Text Colors ================= */
+  --text-primary: #E9EBEE;
+  --text-secondary: #B6B9BE;
+  --text-tertiary: #9B9EA4;
+  --text-quaternary: #75787E;
+  /* Text and icons on accent, success and error fills: stays light. */
+  --text-white: #F9FAFB;
+
+  /* ================= Separators ================= */
+  --separator: #2F3135;
+  --separator-light: #26282B;
+  --separator-dark: #3C3F44;
+
+  /* ================= Backgrounds ================= */
+  --bg-lightest: #1B1C1F;
+  --bg-light: #131416;
+  --bg-semi-light: #17181B;
+  --bg-dark: #2A2C30;
+
+  /* ================= Data colors ================= */
+  --data-color-lift: 35%;
+}
+
+// Screen only: printing always uses the light palette, so a dark theme never
+// prints light text on white paper.
+@media screen {
+  :root[data-theme='dark'] {
+    @include dark-tokens;
+  }
+}
+
+@media screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include dark-tokens;
+  }
 }

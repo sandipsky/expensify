@@ -49,8 +49,33 @@ const DEFAULT_CATEGORIES = [
   { type: 'income', name: 'Other income', icon: 'add', color: '#4F46E5' },
 ]
 
+// What a profile's preferences start as: the device's theme, and alerts for
+// what the user set up themselves. The daily reminder is opt-in.
+const THEMES = ['light', 'dark', 'system']
+const NOTIFICATION_PREFS = ['dailyReminder', 'reminderTime', 'budgetAlerts', 'billReminders']
+
+const DEFAULT_PREFERENCES = {
+  theme: 'system',
+  notifications: {
+    dailyReminder: false,
+    reminderTime: '20:00',
+    budgetAlerts: true,
+    billReminders: true,
+  },
+}
+
 const SEED = {
-  users: [{ id: 1, name: 'Admin', username: 'admin', password: 'admin' }],
+  users: [
+    {
+      id: 1,
+      name: 'Admin',
+      username: 'admin',
+      email: 'admin@example.com',
+      password: 'admin',
+      photoUrl: null,
+      preferences: DEFAULT_PREFERENCES,
+    },
+  ],
   products: [
     { id: 1, name: 'Keyboard', price: 2500, description: 'Mechanical keyboard' },
     { id: 2, name: 'Mouse', price: 1200, description: 'Wireless mouse' },
@@ -127,9 +152,10 @@ const readDb = () => {
   if (!existsSync(DB_PATH)) writeDb(SEED)
   const db = JSON.parse(readFileSync(DB_PATH, 'utf-8'))
   // A db.json written before a collection existed gets that collection's seed.
+  // A copy, so later writes to the collection never change the seed itself.
   for (const key of Object.keys(SEED)) {
     if (!db[key]) {
-      db[key] = SEED[key]
+      db[key] = structuredClone(SEED[key])
       writeDb(db)
     }
   }
@@ -139,11 +165,24 @@ const readDb = () => {
 // Next id = highest existing id + 1 (starts at 1 when the list is empty)
 const nextId = (items) => items.reduce((max, item) => Math.max(max, item.id), 0) + 1
 
-// Never send passwords back to the client
-const toPublicUser = ({ password: _password, ...user }) => user
+// What the client sees of a user: never the password. A user written before
+// a field existed reads as its default.
+const toProfile = ({ password: _password, ...user }) => ({
+  ...user,
+  email: user.email ?? '',
+  photoUrl: user.photoUrl ?? null,
+  preferences: {
+    ...DEFAULT_PREFERENCES,
+    ...user.preferences,
+    notifications: { ...DEFAULT_PREFERENCES.notifications, ...user.preferences?.notifications },
+  },
+})
 
-// A real server would sign a JWT. For a mock, one fixed token is enough.
-const DUMMY_TOKEN = 'mock-token-admin'
+// A real server would sign a JWT. For a mock, the token just names the user,
+// "mock-token-admin". Usernames never change, so a token works until its
+// user is deleted.
+const TOKEN_PREFIX = 'mock-token-'
+const tokenFor = (user) => `${TOKEN_PREFIX}${user.username}`
 
 // ---------------------------------------------------------------------------
 // Auth middleware: protected routes need "Authorization: Bearer <token>".
@@ -152,10 +191,12 @@ const DUMMY_TOKEN = 'mock-token-admin'
 // ---------------------------------------------------------------------------
 const requireAuth = (req, res, next) => {
   const header = req.headers.authorization ?? ''
-  const token = header.startsWith('Bearer ') ? header.slice('Bearer '.length) : null
-  if (token !== DUMMY_TOKEN) {
+  const token = header.startsWith('Bearer ') ? header.slice('Bearer '.length) : ''
+  const user = token && readDb().users.find((u) => tokenFor(u) === token)
+  if (!user) {
     return res.status(403).json({ message: 'Forbidden: missing or invalid token' })
   }
+  req.userId = user.id
   next()
 }
 
@@ -174,7 +215,150 @@ app.post('/auth/login', (req, res) => {
     return res.status(401).json({ message: 'Invalid username or password' })
   }
 
-  res.json({ token: DUMMY_TOKEN, user: toPublicUser(user) })
+  res.json({ token: tokenFor(user), user: toProfile(user) })
+})
+
+// ---------------------------------------------------------------------------
+// Profile (protected): the signed-in user, their preferences and password.
+// A wrong password answers 401, which the frontend doesn't treat as signed out.
+// ---------------------------------------------------------------------------
+const MAX_USER_NAME = 60
+const MIN_PASSWORD_LENGTH = 8
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+// The device scales a photo down before sending it, as a data URL.
+const PHOTO = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/
+const MAX_PHOTO_LENGTH = 200_000
+const TIME_OF_DAY = /^([01]\d|2[0-3]):[0-5]\d$/
+
+const findMe = (db, req) => db.users.find((u) => u.id === req.userId)
+
+const saveUser = (db, updated) => {
+  db.users = db.users.map((u) => (u.id === updated.id ? updated : u))
+  writeDb(db)
+  return updated
+}
+
+const wrongPassword = (res) => res.status(401).json({ message: "That password isn't right" })
+
+const validateProfile = ({ name, email, photoUrl }) => {
+  if (name !== undefined) {
+    if (typeof name !== 'string' || !name.trim()) return 'name is required'
+    if (name.trim().length > MAX_USER_NAME) {
+      return `name must be at most ${MAX_USER_NAME} characters`
+    }
+  }
+  if (email !== undefined && (typeof email !== 'string' || !EMAIL.test(email.trim()))) {
+    return 'email must be an email address'
+  }
+  if (photoUrl != null) {
+    if (typeof photoUrl !== 'string' || !PHOTO.test(photoUrl)) {
+      return 'photoUrl must be a JPEG, PNG or WebP data URL, or null'
+    }
+    if (photoUrl.length > MAX_PHOTO_LENGTH) return 'photoUrl is too large'
+  }
+  return null
+}
+
+// Only the fields sent change. The username never does: tokens are made from it.
+const profileFields = ({ name, email, photoUrl }) => ({
+  ...(name !== undefined && { name: name.trim() }),
+  ...(email !== undefined && { email: email.trim() }),
+  ...(photoUrl !== undefined && { photoUrl }),
+})
+
+const validatePreferences = ({ theme, notifications }) => {
+  if (theme !== undefined && !THEMES.includes(theme)) {
+    return `theme must be one of ${THEMES.join(', ')}`
+  }
+  if (notifications === undefined) return null
+  if (!notifications || typeof notifications !== 'object') return 'notifications must be an object'
+  for (const key of ['dailyReminder', 'budgetAlerts', 'billReminders']) {
+    const value = notifications[key]
+    if (value !== undefined && typeof value !== 'boolean') {
+      return `notifications.${key} must be a boolean`
+    }
+  }
+  const { reminderTime } = notifications
+  if (reminderTime !== undefined && !TIME_OF_DAY.test(String(reminderTime))) {
+    return 'notifications.reminderTime must be a 24-hour time written as HH:mm'
+  }
+  return null
+}
+
+app.get('/me', requireAuth, (req, res) => {
+  res.json(toProfile(findMe(readDb(), req)))
+})
+
+app.patch('/me', requireAuth, (req, res) => {
+  const body = req.body ?? {}
+  const error = validateProfile(body)
+  if (error) return res.status(400).json({ message: error })
+
+  const db = readDb()
+  res.json(toProfile(saveUser(db, { ...findMe(db, req), ...profileFields(body) })))
+})
+
+// Merges what was sent, so changing one preference leaves the others alone.
+app.patch('/me/preferences', requireAuth, (req, res) => {
+  const body = req.body ?? {}
+  const error = validatePreferences(body)
+  if (error) return res.status(400).json({ message: error })
+
+  const db = readDb()
+  const me = findMe(db, req)
+  const current = toProfile(me).preferences
+  const notifications = { ...current.notifications }
+  for (const key of NOTIFICATION_PREFS) {
+    if (body.notifications?.[key] !== undefined) notifications[key] = body.notifications[key]
+  }
+  const preferences = { theme: body.theme ?? current.theme, notifications }
+  res.json(toProfile(saveUser(db, { ...me, preferences })))
+})
+
+// Takes the current password too, as a real server would before changing it.
+app.post('/me/password', requireAuth, (req, res) => {
+  const { currentPassword, newPassword } = req.body ?? {}
+  if (typeof currentPassword !== 'string' || !currentPassword) {
+    return res.status(400).json({ message: 'currentPassword is required' })
+  }
+  if (typeof newPassword !== 'string' || newPassword.length < MIN_PASSWORD_LENGTH) {
+    return res
+      .status(400)
+      .json({ message: `newPassword must be at least ${MIN_PASSWORD_LENGTH} characters` })
+  }
+
+  const db = readDb()
+  const me = findMe(db, req)
+  if (me.password !== currentPassword) return wrongPassword(res)
+  saveUser(db, { ...me, password: newPassword })
+  res.status(204).end()
+})
+
+// Deletes the user and everything they entered, once their password proves
+// it's them. Every login shares the mock's one set of data, so all of it goes.
+// With no user left the mock starts over from the seed, so admin / admin signs
+// in again to a fresh account.
+app.delete('/me', requireAuth, (req, res) => {
+  const { password } = req.body ?? {}
+  const db = readDb()
+  const me = findMe(db, req)
+  if (typeof password !== 'string' || me.password !== password) return wrongPassword(res)
+
+  const users = db.users.filter((u) => u.id !== me.id)
+  if (!users.length) {
+    writeDb(SEED)
+  } else {
+    writeDb({
+      ...db,
+      users,
+      accounts: [],
+      categories: [],
+      transactions: [],
+      budgets: [],
+      recurringRules: [],
+    })
+  }
+  res.status(204).end()
 })
 
 // ---------------------------------------------------------------------------
@@ -702,6 +886,17 @@ app.put('/transactions/:id', requireAuth, (req, res) => {
   db.transactions = db.transactions.map((t) => (t.id === updated.id ? updated : t))
   writeDb(db)
   res.json(updated)
+})
+
+// Deletes every entry, undoing what each did to its accounts as a single
+// delete does. Accounts, categories, budgets and recurring rules stay.
+app.delete('/transactions', requireAuth, (req, res) => {
+  const db = readDb()
+  for (const transaction of db.transactions) applyEffects(db, transaction, -1)
+  const deleted = db.transactions.length
+  db.transactions = []
+  writeDb(db)
+  res.json({ deleted })
 })
 
 app.delete('/transactions/:id', requireAuth, (req, res) => {

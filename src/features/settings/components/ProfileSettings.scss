@@ -1,0 +1,32 @@
+.profile-identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+// Half the row, like one of the fields above it, with its note under it.
+.profile-username {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: calc(50% - 8px);
+
+  @media (max-width: 599.98px) {
+    max-width: none;
+  }
+
+  // lumen draws a disabled text field like an editable one; mute it the way
+  // it mutes a disabled date field, so it reads as fixed.
+  input:disabled {
+    background: var(--bg-light);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+  }
+}

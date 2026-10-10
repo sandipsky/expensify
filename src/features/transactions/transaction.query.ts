@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { accountKeys } from '@/features/accounts/account.query'
 import {
   createTransaction,
+  deleteAllTransactions,
   deleteTransaction,
   getTransaction,
   getTransactions,
@@ -64,6 +65,14 @@ export const useDeleteTransaction = () => {
   const invalidate = useInvalidateTransactions()
   return useMutation({
     mutationFn: (id: number) => deleteTransaction(id),
+    onSuccess: invalidate,
+  })
+}
+
+export const useDeleteAllTransactions = () => {
+  const invalidate = useInvalidateTransactions()
+  return useMutation({
+    mutationFn: deleteAllTransactions,
     onSuccess: invalidate,
   })
 }

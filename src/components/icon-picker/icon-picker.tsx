@@ -1,5 +1,6 @@
 import { useId, type CSSProperties } from 'react'
 import { LUIIcon, type LUIIconName } from '@lumen-ui/react'
+import { dataColor } from '@/utils'
 import './icon-picker.scss'
 
 /** An icon tile: the icon it draws is the value it selects. */
@@ -42,7 +43,7 @@ export function IconPicker({
   disabled,
 }: IconPickerProps) {
   const labelId = useId()
-  const style = { '--pick-color': color } as CSSProperties
+  const style = { '--pick-color': dataColor(color) } as CSSProperties
 
   return (
     <div className="form-group icon-picker" style={style}>

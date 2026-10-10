@@ -10,6 +10,23 @@
   }
 }
 
+// lumen fills a hovered primary button and a hovered selected day with
+// --accent-dark, which is also its accent text color. In dark mode that is a
+// light blue no white text reads on, so those fills take --accent-hover.
+// Disabled buttons keep lumen's gray border.
+.btn-primary:not(:disabled) {
+  border-bottom-color: var(--accent-hover);
+
+  &:hover {
+    background: var(--accent-hover);
+    border-bottom-color: var(--accent-hover);
+  }
+}
+
+.l-date-input__cell.is-selected.is-selected:hover {
+  background: var(--accent-hover);
+}
+
 // The segmented control ships with Ant Design's fixed colors and system font
 // stack. expensify-web draws it from the theme tokens and the page font, so it
 // matches the labels around it. The doubled class outranks lumen's own rule

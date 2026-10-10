@@ -1,5 +1,6 @@
 import { useRef, type ReactNode } from 'react'
-import { useAuthStore } from '@/features/auth'
+import { LUIAvatar } from '@lumen-ui/react'
+import { useAuthStore, useProfile } from '@/features/auth'
 import { Header } from './header/header'
 import { Sidebar, type SidebarHandle } from './sidebar/sidebar'
 import { SIDEBAR_ITEMS } from './sidebar/sidebar.data'
@@ -13,7 +14,10 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, badges }: AppLayoutProps) {
   const sidebarRef = useRef<SidebarHandle>(null)
-  const user = useAuthStore((s) => s.user)
+  // The profile once it loads, so a new name or photo shows at once; the login's user until then.
+  const profile = useProfile().data
+  const loginUser = useAuthStore((s) => s.user)
+  const user = profile ?? loginUser
   const logout = useAuthStore((s) => s.logout)
 
   return (
@@ -23,7 +27,12 @@ export function AppLayout({ children, badges }: AppLayoutProps) {
       <div className="app-layout__main">
         <Header onMenuToggle={() => sidebarRef.current?.toggle()}>
           <span className="app-header__spacer" />
-          {user && <span className="app-header__user">{user.name}</span>}
+          {user && (
+            <span className="app-header__user">
+              <LUIAvatar imageUrl={profile?.photoUrl} name={user.name} size="24px" />
+              {user.name}
+            </span>
+          )}
           <button className="btn btn-secondary btn-sm" type="button" onClick={() => logout()}>
             Logout
           </button>

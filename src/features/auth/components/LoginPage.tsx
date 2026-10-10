@@ -16,9 +16,11 @@ type LoginFormValues = z.infer<typeof loginSchema>
 type LoginPageProps = {
   /** Where to go after a successful login (comes from `?redirect=...`). */
   redirectTo?: string
+  /** The account was just deleted from Settings. */
+  deleted?: boolean
 }
 
-export const LoginPage = ({ redirectTo }: LoginPageProps) => {
+export const LoginPage = ({ redirectTo, deleted }: LoginPageProps) => {
   const navigate = useNavigate()
   const login = useLogin()
   const setAuth = useAuthStore((s) => s.setAuth)
@@ -50,6 +52,10 @@ export const LoginPage = ({ redirectTo }: LoginPageProps) => {
         <p className="muted">
           Mock credentials: <code>admin</code> / <code>admin</code>
         </p>
+
+        {deleted && (
+          <div className="alert success">Your account and everything in it were deleted.</div>
+        )}
 
         <form className="form" onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="field">

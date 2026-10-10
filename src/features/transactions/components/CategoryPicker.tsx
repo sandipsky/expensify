@@ -1,5 +1,6 @@
 import { useId, useState, type CSSProperties } from 'react'
 import { LUIButton, LUIIcon, type LUIIconName } from '@lumen-ui/react'
+import { dataColor } from '@/utils'
 import './CategoryPicker.scss'
 
 /** One tile: the category it selects, drawn with its icon and color. */
@@ -75,7 +76,7 @@ export function CategoryPicker({
       >
         {visible.map((option) => {
           const checked = option.value === value
-          const style = { '--pick-color': option.color } as CSSProperties
+          const style = { '--pick-color': dataColor(option.color) } as CSSProperties
           return (
             <label
               key={option.value}

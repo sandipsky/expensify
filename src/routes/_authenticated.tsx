@@ -2,7 +2,9 @@ import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { AppLayout } from '@/components/layout'
 import { useAuthStore } from '@/features/auth'
 import { BudgetAlerts } from '@/features/budgets'
+import { DailyReminder, RecurringReminders } from '@/features/notifications'
 import { RecurringRunner, useWaitingCount } from '@/features/recurring'
+import { ThemeSync } from '@/features/settings'
 
 // Layout route: everything inside src/routes/_authenticated/ requires a login.
 // `beforeLoad` runs before any child route renders - think of it as a bouncer.
@@ -23,9 +25,12 @@ function AuthenticatedLayout() {
   const waiting = useWaitingCount()
   return (
     <AppLayout badges={{ '/recurring': waiting }}>
-      {/* Work that runs whichever page is open: due recurring entries and budget alerts. */}
+      {/* Work that runs whichever page is open: the theme, due recurring entries, alerts and reminders. */}
+      <ThemeSync />
       <RecurringRunner />
       <BudgetAlerts />
+      <RecurringReminders />
+      <DailyReminder />
       <Outlet />
     </AppLayout>
   )

@@ -1,4 +1,5 @@
 export { DEFAULT_CURRENCY, currencySymbol, formatMoney, fractionDigits } from './amount'
+export { dataColor } from './color'
 export {
   PERIOD_PRESETS,
   type DateRange,
@@ -10,6 +11,7 @@ export {
   formatDate,
   formatDateTime,
   formatPeriod,
+  formatTimeOfDay,
   inRange,
   isYmd,
   isoWeekday,

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { useLUINotification } from '@lumen-ui/react'
 import { useAccounts } from '@/features/accounts/account.query'
+import { usePreferences } from '@/features/auth/auth.query'
+import { useNotifier } from '@/features/notifications/useNotifier'
 import { useToday } from '@/lib'
 import { DEFAULT_CURRENCY, formatMoney, fractionDigits, spanOf } from '@/utils'
 import { alertDue, budgetProgress, neededRange } from '../budget.domain'
@@ -9,13 +10,15 @@ import { useBudgets, useRecordBudgetAlert, useSpending } from '../budget.query'
 
 /**
  * Budget alerts, from whichever page is open: a toast when a budget reaches
- * 80% or 100% of its limit, once per threshold per period. The budget's
- * `lastAlert` records what was shown, so another tab or a reload doesn't
- * show it again. Renders nothing; mounted once in the signed-in layout.
+ * 80% or 100% of its limit, once per threshold per period, unless turned off
+ * in Settings. The budget's `lastAlert` records what was shown, so another
+ * tab or a reload doesn't show it again. Renders nothing; mounted once in the
+ * signed-in layout.
  */
 export function BudgetAlerts() {
   const today = useToday()
-  const notify = useLUINotification()
+  const deliver = useNotifier()
+  const enabled = usePreferences()?.notifications.budgetAlerts ?? false
   const { mutate: recordAlert } = useRecordBudgetAlert()
   const budgets = useBudgets()
   const accounts = useAccounts()
@@ -28,7 +31,7 @@ export function BudgetAlerts() {
   const shown = useRef(new Set<string>())
 
   useEffect(() => {
-    if (!budgets.data || !accounts.data || !spending.data) return
+    if (!enabled || !budgets.data || !accounts.data || !spending.data) return
     // Accounts share one currency until multi-currency exists, and budgets use it.
     const currency = accounts.data[0]?.currency ?? DEFAULT_CURRENCY
     const money = (amount: number) => formatMoney(amount, currency)
@@ -44,21 +47,27 @@ export function BudgetAlerts() {
 
       recordAlert({ id: budget.id, alert: { periodStart: progress.range.start, threshold } })
       const left = daysLeftLabel(progress.daysLeft)
+      const alert = { id: `budget|${key}`, link: `/budgets/${budget.id}` }
       if (progress.state === 'over') {
-        notify.error(
-          `${budget.name}: over budget`,
-          progress.remaining < 0
-            ? `${money(-progress.remaining)} over · ${left}`
-            : `Nothing left to spend · ${left}`,
-        )
+        deliver({
+          ...alert,
+          tone: 'error',
+          title: `${budget.name}: over budget`,
+          message:
+            progress.remaining < 0
+              ? `${money(-progress.remaining)} over · ${left}`
+              : `Nothing left to spend · ${left}`,
+        })
       } else {
-        notify.warn(
-          `${budget.name}: ${progress.percent ?? threshold}% used`,
-          `${money(progress.remaining)} left · ${left}`,
-        )
+        deliver({
+          ...alert,
+          tone: 'warn',
+          title: `${budget.name}: ${progress.percent ?? threshold}% used`,
+          message: `${money(progress.remaining)} left · ${left}`,
+        })
       }
     }
-  }, [budgets.data, accounts.data, spending.data, today, notify, recordAlert])
+  }, [enabled, budgets.data, accounts.data, spending.data, today, deliver, recordAlert])
 
   return null
 }

@@ -26,3 +26,9 @@ export const updateTransaction = async (id: number, body: ITransactionBody) => {
 export const deleteTransaction = async (id: number) => {
   await apiClient.delete(`/transactions/${id}`)
 }
+
+/** Deletes every transaction, undoing each one's effect on balances. Resolves to how many went. */
+export const deleteAllTransactions = async () => {
+  const res = await apiClient.delete<{ deleted: number }>('/transactions')
+  return res.data.deleted
+}

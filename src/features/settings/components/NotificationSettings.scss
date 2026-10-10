@@ -1,0 +1,24 @@
+.notification-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  // Lines up under the toggle's label: the 36px switch plus its 8px gap.
+  &__hint {
+    padding-left: 44px;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  &__time {
+    max-width: 200px;
+    margin: 8px 0 0 44px;
+  }
+}
+
+.notification-permission {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}

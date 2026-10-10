@@ -1,0 +1,6 @@
+export { SettingsPage } from './components/SettingsPage'
+export { ThemeSync } from './components/ThemeSync'
+export { PasswordForm } from './components/PasswordForm'
+export { DeleteAccountDialog } from './components/DeleteAccountDialog'
+export { useSettingsActions } from './settings.actions'
+export { THEME_KEY, applyTheme } from './theme'

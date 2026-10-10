@@ -163,6 +163,14 @@ export function formatDate(ymd: string): string {
   }).format(parseYmd(ymd))
 }
 
+/** "8:00 PM", or "20:00" where the locale uses a 24-hour clock, for a `HH:mm` time. */
+export function formatTimeOfDay(time: string): string {
+  const [hours, minutes] = time.split(':').map(Number)
+  return new Intl.DateTimeFormat(locale(), { hour: 'numeric', minute: '2-digit' }).format(
+    new Date(2000, 0, 1, hours, minutes),
+  )
+}
+
 /** "26 Sep 2026, 14:05" for an ISO timestamp, as audit fields read. */
 export function formatDateTime(iso: string): string {
   return new Intl.DateTimeFormat(locale(), {

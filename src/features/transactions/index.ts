@@ -15,6 +15,7 @@ export {
   useCreateTransaction,
   useUpdateTransaction,
   useDeleteTransaction,
+  useDeleteAllTransactions,
 } from './transaction.query'
 export {
   TX_TYPES,

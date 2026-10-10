@@ -18,6 +18,7 @@ import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
 import { Route as AuthenticatedProductsAddRouteImport } from './routes/_authenticated/products/add'
 import { Route as AuthenticatedRecurringIndexRouteImport } from './routes/_authenticated/recurring/index'
+import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedTransactionsIndexRouteImport } from './routes/_authenticated/transactions/index'
 import { Route as AuthenticatedAccountsAccountIdIndexRouteImport } from './routes/_authenticated/accounts/$accountId/index'
 import { Route as AuthenticatedBudgetsBudgetIdIndexRouteImport } from './routes/_authenticated/budgets/$budgetId/index'
@@ -76,6 +77,12 @@ const AuthenticatedRecurringIndexRoute =
     path: '/recurring/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedSettingsIndexRoute =
+  AuthenticatedSettingsIndexRouteImport.update({
+    id: '/settings/',
+    path: '/settings/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedTransactionsIndexRoute =
   AuthenticatedTransactionsIndexRouteImport.update({
     id: '/transactions/',
@@ -128,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/products/': typeof AuthenticatedProductsIndexRoute
   '/recurring/': typeof AuthenticatedRecurringIndexRoute
+  '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/transactions/': typeof AuthenticatedTransactionsIndexRoute
   '/products/$productId/edit': typeof AuthenticatedProductsProductIdEditRoute
   '/accounts/$accountId/': typeof AuthenticatedAccountsAccountIdIndexRoute
@@ -145,6 +153,7 @@ export interface FileRoutesByTo {
   '/categories': typeof AuthenticatedCategoriesIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
   '/recurring': typeof AuthenticatedRecurringIndexRoute
+  '/settings': typeof AuthenticatedSettingsIndexRoute
   '/transactions': typeof AuthenticatedTransactionsIndexRoute
   '/products/$productId/edit': typeof AuthenticatedProductsProductIdEditRoute
   '/accounts/$accountId': typeof AuthenticatedAccountsAccountIdIndexRoute
@@ -164,6 +173,7 @@ export interface FileRoutesById {
   '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
   '/_authenticated/recurring/': typeof AuthenticatedRecurringIndexRoute
+  '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/transactions/': typeof AuthenticatedTransactionsIndexRoute
   '/_authenticated/products/$productId/edit': typeof AuthenticatedProductsProductIdEditRoute
   '/_authenticated/accounts/$accountId/': typeof AuthenticatedAccountsAccountIdIndexRoute
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/categories/'
     | '/products/'
     | '/recurring/'
+    | '/settings/'
     | '/transactions/'
     | '/products/$productId/edit'
     | '/accounts/$accountId/'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/products'
     | '/recurring'
+    | '/settings'
     | '/transactions'
     | '/products/$productId/edit'
     | '/accounts/$accountId'
@@ -218,6 +230,7 @@ export interface FileRouteTypes {
     | '/_authenticated/categories/'
     | '/_authenticated/products/'
     | '/_authenticated/recurring/'
+    | '/_authenticated/settings/'
     | '/_authenticated/transactions/'
     | '/_authenticated/products/$productId/edit'
     | '/_authenticated/accounts/$accountId/'
@@ -297,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRecurringIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/settings/': {
+      id: '/_authenticated/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/transactions/': {
       id: '/_authenticated/transactions/'
       path: '/transactions'
@@ -357,6 +377,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
   AuthenticatedRecurringIndexRoute: typeof AuthenticatedRecurringIndexRoute
+  AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
   AuthenticatedTransactionsIndexRoute: typeof AuthenticatedTransactionsIndexRoute
   AuthenticatedProductsProductIdEditRoute: typeof AuthenticatedProductsProductIdEditRoute
   AuthenticatedAccountsAccountIdIndexRoute: typeof AuthenticatedAccountsAccountIdIndexRoute
@@ -374,6 +395,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,
   AuthenticatedRecurringIndexRoute: AuthenticatedRecurringIndexRoute,
+  AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   AuthenticatedTransactionsIndexRoute: AuthenticatedTransactionsIndexRoute,
   AuthenticatedProductsProductIdEditRoute:
     AuthenticatedProductsProductIdEditRoute,
