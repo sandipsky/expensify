@@ -25,6 +25,8 @@ export interface SidebarProps {
   className?: string
   /** Rendered above the nav, e.g. a brand or search box. */
   children?: ReactNode
+  /** Counts shown beside nav links, by the link's `to`; 0 shows none. */
+  badges?: Readonly<Record<string, number>>
   ref?: Ref<SidebarHandle>
 }
 
@@ -43,6 +45,7 @@ export function Sidebar({
   onMobileOpenChange,
   className,
   children,
+  badges,
   ref,
 }: SidebarProps) {
   const [collapsedState, setCollapsedState] = useState(false)
@@ -120,6 +123,7 @@ export function Sidebar({
         {children}
         <SidebarNav
           items={items}
+          badges={badges}
           // The drawer is always full width, so items never render in rail mode on mobile.
           collapsed={isCollapsed && !isMobile}
           onNavigate={() => {
@@ -134,6 +138,7 @@ export function Sidebar({
 
 interface SidebarNavProps {
   items: SidebarNavItem[]
+  badges?: Readonly<Record<string, number>>
   collapsed: boolean
   onNavigate: () => void
 }
@@ -148,7 +153,7 @@ interface OpenGroups {
   open: Record<string, boolean>
 }
 
-function SidebarNav({ items, collapsed, onNavigate }: SidebarNavProps) {
+function SidebarNav({ items, badges, collapsed, onNavigate }: SidebarNavProps) {
   const matchRoute = useMatchRoute()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const [openGroups, setOpenGroups] = useState<OpenGroups | null>(null)
@@ -167,6 +172,7 @@ function SidebarNav({ items, collapsed, onNavigate }: SidebarNavProps) {
       icon={leaf.icon}
       exact={leaf.exact}
       label={leaf.label}
+      badge={badges?.[leaf.to]}
       collapsed={collapsed}
       onClick={onNavigate}
     />

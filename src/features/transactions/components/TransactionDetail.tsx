@@ -11,6 +11,7 @@ import {
 import { EmptyState } from '@/components/empty-state'
 import { useAccounts } from '@/features/accounts/account.query'
 import { useCategories } from '@/features/categories/category.query'
+import { useRecurringRules } from '@/features/recurring/recurring.query'
 import { getApiErrorMessage } from '@/lib'
 import { formatDateTime, formatMoney, localDate } from '@/utils'
 import { useTransactionActions } from '../transaction.actions'
@@ -88,8 +89,12 @@ interface TransactionPageProps {
 
 const TransactionPage = ({ row, lookups, actions }: TransactionPageProps) => {
   const navigate = useNavigate()
+  const { data: rules } = useRecurringRules()
   const { tx } = row
   const transfer = tx.type === 'transfer'
+  // The rule that added this entry, while it still exists.
+  const rule =
+    tx.recurringRuleId != null ? rules?.find((r) => r.id === tx.recurringRuleId) : undefined
 
   const remove = async () => {
     if (await actions.delete(tx)) navigate({ to: '/transactions' })
@@ -147,6 +152,7 @@ const TransactionPage = ({ row, lookups, actions }: TransactionPageProps) => {
                 Upcoming
               </LUIChip>
             )}
+            {rule && <LUIChip size="sm">Recurring</LUIChip>}
           </div>
         </div>
 
@@ -164,6 +170,25 @@ const TransactionPage = ({ row, lookups, actions }: TransactionPageProps) => {
               <LUIIcon name="content_copy" size={18} />
               Duplicate
             </button>
+            {rule ? (
+              <button
+                type="button"
+                className="dropdown-item tx-detail__item"
+                onClick={() => actions.openRule(rule.id)}
+              >
+                <LUIIcon name="event_repeat" size={18} />
+                Open recurring rule
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="dropdown-item tx-detail__item"
+                onClick={() => actions.makeRecurring(tx)}
+              >
+                <LUIIcon name="event_repeat" size={18} />
+                Make recurring
+              </button>
+            )}
             <button
               type="button"
               className="dropdown-item tx-detail__item tx-detail__item--danger"

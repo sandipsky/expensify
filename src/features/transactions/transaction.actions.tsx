@@ -1,8 +1,10 @@
 import type { ComponentProps } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { LUIConfirmDialog, useLUIModal, useLUINotification } from '@lumen-ui/react'
 import { useSheet } from '@/components/sheet'
 import { useAccountActions } from '@/features/accounts/account.actions'
 import { useAccounts } from '@/features/accounts/account.query'
+import { useRecurringActions } from '@/features/recurring/recurring.actions'
 import { getApiErrorMessage } from '@/lib'
 import { formatMoney, localDate } from '@/utils'
 import { TransactionFilters } from './components/TransactionFilters'
@@ -18,16 +20,19 @@ const FORM_OPTIONS = { width: '560px', phoneHeight: '94dvh' }
 
 /**
  * The transaction flows every screen shares: add (prefilled when asked),
- * edit, duplicate, delete, and the filters sheet. The list, the detail page
- * and the account page share it, so every entry point behaves the same.
+ * edit, duplicate, delete, "Make recurring", and the filters sheet. The list,
+ * the detail page, the account page, budgets and recurring rules share it,
+ * so every entry point behaves the same.
  */
 export function useTransactionActions() {
+  const navigate = useNavigate()
   const sheet = useSheet()
   const modal = useLUIModal()
   const notify = useLUINotification()
   const remove = useDeleteTransaction()
   const { data: accounts } = useAccounts()
   const accountActions = useAccountActions()
+  const recurringActions = useRecurringActions()
 
   const confirm = (data: ConfirmData) =>
     modal
@@ -53,11 +58,20 @@ export function useTransactionActions() {
       (handle) => <TransactionForm {...props} sheet={handle} />,
       FORM_OPTIONS,
     )
-    // Duplicate and delete close the form first, then run here.
+    // Duplicate, delete and the recurring items close the form first, then run here.
     if (result?.action === 'duplicate') void duplicate(result.transaction)
     if (result?.action === 'delete') void deleteTransaction(result.transaction)
+    if (result?.action === 'recurring') void makeRecurring(result.transaction)
+    if (result?.action === 'rule') openRule(result.ruleId)
     return result
   }
+
+  /** A rule that repeats the entry, starting one period after it. */
+  const makeRecurring = (transaction: ITransaction) => recurringActions.createFrom(transaction)
+
+  /** The page of the rule that added an entry. */
+  const openRule = (ruleId: number) =>
+    void navigate({ to: '/recurring/$ruleId', params: { ruleId: String(ruleId) } })
 
   /**
    * Opens the add form, prefilled when given. With no active account yet,
@@ -108,5 +122,13 @@ export function useTransactionActions() {
       <TransactionFilters filter={filter} currency={currency} sheet={handle} />
     ))
 
-  return { create, edit, duplicate, delete: deleteTransaction, openFilters }
+  return {
+    create,
+    edit,
+    duplicate,
+    delete: deleteTransaction,
+    makeRecurring,
+    openRule,
+    openFilters,
+  }
 }

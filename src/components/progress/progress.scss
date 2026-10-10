@@ -7,6 +7,10 @@
   border-radius: 3px;
   background: var(--bg-dark);
 
+  &--success {
+    --progress-color: var(--success);
+  }
+
   &--warn {
     --progress-color: var(--warn);
   }

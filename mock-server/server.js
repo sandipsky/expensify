@@ -71,6 +71,10 @@ const SEED = {
   categories: seedCategories(),
   // Entries start empty; every one written moves its account balances.
   transactions: [],
+  // Spending limits per week, month or year; figures are worked out on the device.
+  budgets: [],
+  // Templates plus schedules; the device works out the dates and posts the entries.
+  recurringRules: [],
 }
 
 function account(id, name, type, openingBalance, { icon, color, creditLimit = null }) {
@@ -550,8 +554,10 @@ const isYmd = (value) => {
   return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d
 }
 
-const validateTransaction = (body, db) => {
-  const { type, amount, accountId, toAccountId, categoryId, date, note } = body
+// What an entry is, without its date: shared by transactions and the
+// templates of recurring rules.
+const validateEntry = (body, db) => {
+  const { type, amount, accountId, toAccountId, categoryId, note } = body
   if (!TX_TYPES.includes(type)) return `type must be one of ${TX_TYPES.join(', ')}`
   if (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0) {
     return 'amount must be a positive number'
@@ -567,11 +573,17 @@ const validateTransaction = (body, db) => {
     if (!category) return 'categoryId must be an existing category'
     if (category.type !== type) return `categoryId must be an ${type} category`
   }
-  if (!isYmd(date)) return 'date must be a calendar date written as YYYY-MM-DD'
   if (note != null && typeof note !== 'string') return 'note must be a string'
   if (note && note.trim().length > MAX_NOTE_LENGTH) {
     return `note must be at most ${MAX_NOTE_LENGTH} characters`
   }
+  return null
+}
+
+const validateTransaction = (body, db) => {
+  const error = validateEntry(body, db)
+  if (error) return error
+  if (!isYmd(body.date)) return 'date must be a calendar date written as YYYY-MM-DD'
   return null
 }
 
@@ -619,9 +631,10 @@ const newestFirst = (a, b) =>
   b.id - a.id
 
 // ?from=YYYY-MM-DD&to=YYYY-MM-DD narrows to a period; ?accountId= to entries
-// touching an account, on either side of a transfer. Without any, every entry.
+// touching an account, on either side of a transfer; ?recurringRuleId= to the
+// entries a rule added. Without any, every entry.
 app.get('/transactions', requireAuth, (req, res) => {
-  const { from, to, accountId } = req.query
+  const { from, to, accountId, recurringRuleId } = req.query
   if ((from && !isYmd(from)) || (to && !isYmd(to))) {
     return res.status(400).json({ message: 'from and to must be dates written as YYYY-MM-DD' })
   }
@@ -629,11 +642,16 @@ app.get('/transactions', requireAuth, (req, res) => {
   if (account !== null && !Number.isInteger(account)) {
     return res.status(400).json({ message: 'accountId must be a number' })
   }
+  const rule = recurringRuleId === undefined ? null : Number(recurringRuleId)
+  if (rule !== null && !Number.isInteger(rule)) {
+    return res.status(400).json({ message: 'recurringRuleId must be a number' })
+  }
   const list = readDb().transactions.filter(
     (t) =>
       (!from || t.date >= from) &&
       (!to || t.date <= to) &&
-      (account === null || t.accountId === account || t.toAccountId === account),
+      (account === null || t.accountId === account || t.toAccountId === account) &&
+      (rule === null || t.recurringRuleId === rule),
   )
   res.json(list.sort(newestFirst))
 })
@@ -654,6 +672,7 @@ app.post('/transactions', requireAuth, (req, res) => {
   const transaction = {
     id: nextId(db.transactions),
     ...transactionFields(body, db),
+    recurringRuleId: null,
     createdAt: now,
     updatedAt: now,
   }
@@ -691,6 +710,396 @@ app.delete('/transactions/:id', requireAuth, (req, res) => {
   if (!existing) return res.status(404).json({ message: 'Transaction not found' })
   applyEffects(db, existing, -1)
   db.transactions = db.transactions.filter((t) => t.id !== existing.id)
+  writeDb(db)
+  res.status(204).end()
+})
+
+// ---------------------------------------------------------------------------
+// Budgets (protected)
+// ---------------------------------------------------------------------------
+const BUDGET_PERIODS = ['weekly', 'monthly', 'yearly']
+const MAX_BUDGET_NAME = 40
+
+const validateBudget = (body, db) => {
+  const { name, amount, period, categoryIds, rollover, alertThresholds } = body
+  if (typeof name !== 'string' || !name.trim()) return 'name is required'
+  if (name.trim().length > MAX_BUDGET_NAME) {
+    return `name must be at most ${MAX_BUDGET_NAME} characters`
+  }
+  if (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0) {
+    return 'amount must be a positive number'
+  }
+  if (!BUDGET_PERIODS.includes(period)) return `period must be one of ${BUDGET_PERIODS.join(', ')}`
+  if (!Array.isArray(categoryIds)) return 'categoryIds must be a list'
+  for (const id of categoryIds) {
+    const category = findCategory(db, id)
+    if (!category) return 'categoryIds must be existing categories'
+    if (category.type !== 'expense') return 'categoryIds must be expense categories'
+  }
+  if (typeof rollover !== 'boolean') return 'rollover must be a boolean'
+  if (
+    !Array.isArray(alertThresholds) ||
+    alertThresholds.some((t) => !Number.isInteger(t) || t < 1 || t > 1000)
+  ) {
+    return 'alertThresholds must be whole percentages'
+  }
+  return null
+}
+
+// The fields a client may set; the alert record, the paused flag and the
+// timestamps belong to the server. An empty category list means every expense.
+const budgetFields = (body) => ({
+  name: body.name.trim(),
+  amount: body.amount,
+  period: body.period,
+  categoryIds: [...new Set(body.categoryIds.map(Number))],
+  rollover: body.rollover,
+  alertThresholds: [...new Set(body.alertThresholds)].sort((a, b) => a - b),
+})
+
+const findBudget = (db, id) => db.budgets.find((b) => b.id === Number(id))
+
+const saveBudget = (db, updated) => {
+  db.budgets = db.budgets.map((b) => (b.id === updated.id ? updated : b))
+  writeDb(db)
+  return updated
+}
+
+app.get('/budgets', requireAuth, (req, res) => {
+  res.json(readDb().budgets)
+})
+
+app.get('/budgets/:id', requireAuth, (req, res) => {
+  const budget = findBudget(readDb(), req.params.id)
+  if (!budget) return res.status(404).json({ message: 'Budget not found' })
+  res.json(budget)
+})
+
+app.post('/budgets', requireAuth, (req, res) => {
+  const body = req.body ?? {}
+  const db = readDb()
+  const error = validateBudget(body, db)
+  if (error) return res.status(400).json({ message: error })
+
+  const now = new Date().toISOString()
+  const budget = {
+    id: nextId(db.budgets),
+    ...budgetFields(body),
+    lastAlert: null,
+    active: true,
+    createdAt: now,
+    updatedAt: now,
+  }
+  db.budgets.push(budget)
+  writeDb(db)
+  res.status(201).json(budget)
+})
+
+app.put('/budgets/:id', requireAuth, (req, res) => {
+  const db = readDb()
+  const existing = findBudget(db, req.params.id)
+  if (!existing) return res.status(404).json({ message: 'Budget not found' })
+
+  const body = req.body ?? {}
+  const error = validateBudget(body, db)
+  if (error) return res.status(400).json({ message: error })
+
+  res.json(
+    saveBudget(db, { ...existing, ...budgetFields(body), updatedAt: new Date().toISOString() }),
+  )
+})
+
+// Paused budgets keep their settings but show no progress and send no alerts.
+app.patch('/budgets/:id/active', requireAuth, (req, res) => {
+  const db = readDb()
+  const existing = findBudget(db, req.params.id)
+  if (!existing) return res.status(404).json({ message: 'Budget not found' })
+
+  const { active } = req.body ?? {}
+  if (typeof active !== 'boolean') return res.status(400).json({ message: 'active must be a boolean' })
+
+  res.json(saveBudget(db, { ...existing, active, updatedAt: new Date().toISOString() }))
+})
+
+// The highest threshold already alerted in the period starting on periodStart,
+// so each threshold alerts once per period, whichever tab shows it.
+app.patch('/budgets/:id/alert', requireAuth, (req, res) => {
+  const db = readDb()
+  const existing = findBudget(db, req.params.id)
+  if (!existing) return res.status(404).json({ message: 'Budget not found' })
+
+  const { periodStart, threshold } = req.body ?? {}
+  if (!isYmd(periodStart)) {
+    return res.status(400).json({ message: 'periodStart must be a date written as YYYY-MM-DD' })
+  }
+  if (!Number.isInteger(threshold) || threshold < 1) {
+    return res.status(400).json({ message: 'threshold must be a whole percentage' })
+  }
+
+  // Never lower what a period already alerted, should two tabs race.
+  const last = existing.lastAlert
+  if (last && last.periodStart === periodStart && last.threshold >= threshold) {
+    return res.json(existing)
+  }
+  res.json(saveBudget(db, { ...existing, lastAlert: { periodStart, threshold } }))
+})
+
+// Transactions aren't touched.
+app.delete('/budgets/:id', requireAuth, (req, res) => {
+  const db = readDb()
+  if (!findBudget(db, req.params.id)) return res.status(404).json({ message: 'Budget not found' })
+  db.budgets = db.budgets.filter((b) => b.id !== Number(req.params.id))
+  writeDb(db)
+  res.status(204).end()
+})
+
+// ---------------------------------------------------------------------------
+// Recurring rules (protected)
+// ---------------------------------------------------------------------------
+const FREQUENCIES = ['daily', 'weekly', 'monthly', 'yearly']
+const END_TYPES = ['never', 'count', 'until']
+const RULE_MODES = ['auto', 'confirm']
+const MAX_INTERVAL = 99
+const MAX_OCCURRENCES = 999
+// Most entries one request may add, when catching up on missed dates.
+const CATCH_UP_LIMIT = 100
+
+const isWhole = (value, min, max) => Number.isInteger(value) && value >= min && value <= max
+
+const validateRule = (body, db) => {
+  const { template, frequency, interval, weekdays, dayOfMonth, startDate } = body
+  const { endType, endDate, maxCount, mode, nextDueDate } = body
+  if (!template || typeof template !== 'object') return 'template is required'
+  const entryError = validateEntry(template, db)
+  if (entryError) return `template: ${entryError}`
+  if (!FREQUENCIES.includes(frequency)) return `frequency must be one of ${FREQUENCIES.join(', ')}`
+  if (!isWhole(interval, 1, MAX_INTERVAL)) {
+    return `interval must be a whole number from 1 to ${MAX_INTERVAL}`
+  }
+  if (!Array.isArray(weekdays) || weekdays.some((d) => !isWhole(d, 1, 7))) {
+    return 'weekdays must be ISO weekdays, 1 to 7'
+  }
+  if (frequency === 'weekly' && !weekdays.length) return 'a weekly rule needs at least one weekday'
+  if (frequency === 'monthly' && !isWhole(dayOfMonth, 1, 31)) {
+    return 'dayOfMonth must be a whole number from 1 to 31'
+  }
+  if (!isYmd(startDate)) return 'startDate must be a calendar date written as YYYY-MM-DD'
+  if (!END_TYPES.includes(endType)) return `endType must be one of ${END_TYPES.join(', ')}`
+  if (endType === 'count' && !isWhole(maxCount, 1, MAX_OCCURRENCES)) {
+    return `maxCount must be a whole number from 1 to ${MAX_OCCURRENCES}`
+  }
+  if (endType === 'until') {
+    if (!isYmd(endDate)) return 'endDate must be a calendar date written as YYYY-MM-DD'
+    if (endDate < startDate) return 'endDate must be on or after startDate'
+  }
+  if (!RULE_MODES.includes(mode)) return `mode must be one of ${RULE_MODES.join(', ')}`
+  if (!isYmd(nextDueDate)) return 'nextDueDate must be a calendar date written as YYYY-MM-DD'
+  return null
+}
+
+// The fields a client may set, with the ones other frequencies and ends don't
+// use cleared. The count of entries added, the paused flag and the timestamps
+// belong to the server. The device works out `nextDueDate` from the schedule.
+const ruleFields = (body) => {
+  const { template } = body
+  const transfer = template.type === 'transfer'
+  return {
+    template: {
+      type: template.type,
+      amount: template.amount,
+      accountId: Number(template.accountId),
+      toAccountId: transfer ? Number(template.toAccountId) : null,
+      categoryId: transfer ? null : Number(template.categoryId),
+      note: template.note?.trim() || null,
+    },
+    frequency: body.frequency,
+    interval: body.interval,
+    weekdays: body.frequency === 'weekly' ? [...new Set(body.weekdays)].sort((a, b) => a - b) : [],
+    dayOfMonth: body.frequency === 'monthly' ? body.dayOfMonth : null,
+    startDate: body.startDate,
+    endType: body.endType,
+    endDate: body.endType === 'until' ? body.endDate : null,
+    maxCount: body.endType === 'count' ? body.maxCount : null,
+    mode: body.mode,
+    nextDueDate: body.nextDueDate,
+  }
+}
+
+const findRule = (db, id) => db.recurringRules.find((r) => r.id === Number(id))
+
+const saveRule = (db, updated) => {
+  db.recurringRules = db.recurringRules.map((r) => (r.id === updated.id ? updated : r))
+  writeDb(db)
+  return updated
+}
+
+// Occurrences are handled oldest first, so a request must start at the rule's
+// next due date. Anything else was confirmed, skipped or added already, in
+// another tab or by the runner: 409, and nothing is written twice.
+const isStale = (rule, date) => !rule.active || rule.nextDueDate !== date
+
+app.get('/recurring', requireAuth, (req, res) => {
+  res.json(readDb().recurringRules)
+})
+
+app.get('/recurring/:id', requireAuth, (req, res) => {
+  const rule = findRule(readDb(), req.params.id)
+  if (!rule) return res.status(404).json({ message: 'Recurring rule not found' })
+  res.json(rule)
+})
+
+app.post('/recurring', requireAuth, (req, res) => {
+  const body = req.body ?? {}
+  const db = readDb()
+  const error = validateRule(body, db)
+  if (error) return res.status(400).json({ message: error })
+
+  const now = new Date().toISOString()
+  const rule = {
+    id: nextId(db.recurringRules),
+    ...ruleFields(body),
+    occurrences: 0,
+    active: true,
+    createdAt: now,
+    updatedAt: now,
+  }
+  db.recurringRules.push(rule)
+  writeDb(db)
+  res.status(201).json(rule)
+})
+
+// Edits reach future entries only: the ones already added stay as they are.
+app.put('/recurring/:id', requireAuth, (req, res) => {
+  const db = readDb()
+  const existing = findRule(db, req.params.id)
+  if (!existing) return res.status(404).json({ message: 'Recurring rule not found' })
+
+  const body = req.body ?? {}
+  const error = validateRule(body, db)
+  if (error) return res.status(400).json({ message: error })
+
+  res.json(saveRule(db, { ...existing, ...ruleFields(body), updatedAt: new Date().toISOString() }))
+})
+
+// Pausing stops new entries. Resuming sends the next due date to pick up from,
+// so dates that passed while paused are left out.
+app.patch('/recurring/:id/active', requireAuth, (req, res) => {
+  const db = readDb()
+  const existing = findRule(db, req.params.id)
+  if (!existing) return res.status(404).json({ message: 'Recurring rule not found' })
+
+  const { active, nextDueDate } = req.body ?? {}
+  if (typeof active !== 'boolean') return res.status(400).json({ message: 'active must be a boolean' })
+  if (nextDueDate !== undefined && !isYmd(nextDueDate)) {
+    return res.status(400).json({ message: 'nextDueDate must be a date written as YYYY-MM-DD' })
+  }
+
+  res.json(
+    saveRule(db, {
+      ...existing,
+      active,
+      nextDueDate: nextDueDate ?? existing.nextDueDate,
+      updatedAt: new Date().toISOString(),
+    }),
+  )
+})
+
+// Adds the entries due on `dates` (oldest first, starting at the rule's next
+// due date) and moves the rule on to `nextDueDate`, in one write. An `entry`
+// replaces the template for a single date, as edited before confirming. Every
+// entry moves its account balances, like any other.
+app.post('/recurring/:id/occurrences', requireAuth, (req, res) => {
+  const db = readDb()
+  const rule = findRule(db, req.params.id)
+  if (!rule) return res.status(404).json({ message: 'Recurring rule not found' })
+
+  const { dates, nextDueDate, entry } = req.body ?? {}
+  if (!Array.isArray(dates) || !dates.length || dates.length > CATCH_UP_LIMIT) {
+    return res.status(400).json({ message: `dates must list 1 to ${CATCH_UP_LIMIT} dates` })
+  }
+  if (dates.some((d, i) => !isYmd(d) || (i > 0 && d <= dates[i - 1]))) {
+    return res.status(400).json({ message: 'dates must be YYYY-MM-DD dates, oldest first' })
+  }
+  if (!isYmd(nextDueDate) || nextDueDate <= dates[dates.length - 1]) {
+    return res.status(400).json({ message: 'nextDueDate must be a date after the last one added' })
+  }
+  if (entry !== undefined) {
+    if (dates.length !== 1) {
+      return res.status(400).json({ message: 'an edited entry stands for one date only' })
+    }
+    const error = validateTransaction(entry, db)
+    if (error) return res.status(400).json({ message: error })
+  }
+  if (isStale(rule, dates[0])) {
+    return res.status(409).json({ message: 'Already handled, perhaps in another tab' })
+  }
+
+  // The template's category may have been deleted since; the entries keep it,
+  // as other entries of a deleted category do. Their accounts must exist.
+  const source = entry ?? rule.template
+  const transfer = source.type === 'transfer'
+  const from = findAccount(db, source.accountId)
+  if (!from || (transfer && !findAccount(db, source.toAccountId))) {
+    return res.status(400).json({
+      message: 'An account this rule uses was deleted. Edit the rule to pick another one.',
+    })
+  }
+
+  const now = new Date().toISOString()
+  const added = dates.map((date) => {
+    const transaction = {
+      id: nextId(db.transactions),
+      type: source.type,
+      amount: source.amount,
+      currency: from.currency,
+      accountId: Number(source.accountId),
+      toAccountId: transfer ? Number(source.toAccountId) : null,
+      categoryId: transfer ? null : Number(source.categoryId),
+      // An edited entry may move its own date; the schedule date still counts as handled.
+      date: entry ? entry.date : date,
+      note: source.note?.trim() || null,
+      recurringRuleId: rule.id,
+      createdAt: now,
+      updatedAt: now,
+    }
+    db.transactions.push(transaction)
+    applyEffects(db, transaction, 1)
+    return transaction
+  })
+
+  const updated = saveRule(db, {
+    ...rule,
+    occurrences: rule.occurrences + dates.length,
+    nextDueDate,
+    updatedAt: now,
+  })
+  res.status(201).json({ rule: updated, transactions: added })
+})
+
+// Passes over the entry due on `date` without adding anything.
+app.post('/recurring/:id/skip', requireAuth, (req, res) => {
+  const db = readDb()
+  const rule = findRule(db, req.params.id)
+  if (!rule) return res.status(404).json({ message: 'Recurring rule not found' })
+
+  const { date, nextDueDate } = req.body ?? {}
+  if (!isYmd(date) || !isYmd(nextDueDate) || nextDueDate <= date) {
+    return res.status(400).json({ message: 'date and a later nextDueDate are required' })
+  }
+  if (isStale(rule, date)) {
+    return res.status(409).json({ message: 'Already handled, perhaps in another tab' })
+  }
+
+  res.json(saveRule(db, { ...rule, nextDueDate, updatedAt: new Date().toISOString() }))
+})
+
+// The entries it already added stay, since they really happened.
+app.delete('/recurring/:id', requireAuth, (req, res) => {
+  const db = readDb()
+  if (!findRule(db, req.params.id)) {
+    return res.status(404).json({ message: 'Recurring rule not found' })
+  }
+  db.recurringRules = db.recurringRules.filter((r) => r.id !== Number(req.params.id))
   writeDb(db)
   res.status(204).end()
 })

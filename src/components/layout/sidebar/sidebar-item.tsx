@@ -17,6 +17,8 @@ export interface SidebarItemProps {
   expanded?: boolean
   /** Rail mode: icon only, with the label in a tooltip. */
   collapsed?: boolean
+  /** A count beside the label, such as entries waiting; none when 0. A dot on the icon in the rail. */
+  badge?: number
   onClick?: () => void
   /** Child items. Giving any turns the item into a group trigger. */
   children?: ReactNode
@@ -37,6 +39,7 @@ export function SidebarItem({
   active = false,
   expanded = false,
   collapsed = false,
+  badge = 0,
   onClick,
   children,
 }: SidebarItemProps) {
@@ -60,6 +63,12 @@ export function SidebarItem({
         </span>
       )}
       <span className="l-sidebar-item__label">{label}</span>
+      {badge > 0 && (
+        <span className="l-sidebar-item__badge">
+          {badge > 99 ? '99+' : badge}
+          <span className="visually-hidden"> waiting</span>
+        </span>
+      )}
       {/* Points right; the stylesheet rotates it down while the group is expanded. */}
       {isGroup && (
         <LUIIcon

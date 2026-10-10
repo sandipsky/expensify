@@ -1,7 +1,9 @@
 import type { LUIIconName } from '@lumen-ui/react'
 import type { IAccount } from '@/features/accounts/account.types'
-import type { ICategory } from '@/features/categories/category.types'
+import { compareCategories } from '@/features/categories/category.domain'
+import type { CategoryType, ICategory } from '@/features/categories/category.types'
 import { PERIOD_PRESETS, type PeriodPreset, formatDate } from '@/utils'
+import type { CategoryOption } from './components/CategoryPicker'
 import { isUpcoming } from './transaction.domain'
 import { TX_TYPES, type ITransaction, type TxType } from './transaction.types'
 
@@ -30,6 +32,25 @@ export const PERIOD_OPTIONS = PERIOD_PRESETS.map((value) => ({
 /** "1 transaction", "12 transactions". */
 export function entries(count: number): string {
   return `${count} ${count === 1 ? 'transaction' : 'transactions'}`
+}
+
+/** Account select items: active accounts, plus an archived one the entry already uses. */
+export function accountItems(accounts: readonly IAccount[], used: readonly (number | null)[]) {
+  return accounts
+    .filter((a) => !a.archived || used.includes(a.id))
+    .map((a) => ({ value: a.id, label: a.archived ? `${a.name} (archived)` : a.name }))
+}
+
+/** Category picker tiles: the type's active categories in list order, plus the chosen one when it's archived. */
+export function categoryOptions(
+  categories: readonly ICategory[],
+  type: CategoryType,
+  chosen: number | null,
+): CategoryOption[] {
+  return categories
+    .filter((c) => c.type === type && (!c.archived || c.id === chosen))
+    .sort(compareCategories)
+    .map((c) => ({ value: c.id, label: c.name, icon: c.icon, color: c.color }))
 }
 
 /** What a transfer's badge draws, since a transfer has no category. */

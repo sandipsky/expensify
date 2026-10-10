@@ -15,10 +15,9 @@ import {
 } from '@lumen-ui/react'
 import type { SheetHandle } from '@/components/sheet'
 import { useAccounts } from '@/features/accounts/account.query'
-import type { IAccount } from '@/features/accounts/account.types'
-import { compareCategories } from '@/features/categories/category.domain'
 import { useAddDefaultCategories, useCategories } from '@/features/categories/category.query'
-import type { CategoryType, ICategory } from '@/features/categories/category.types'
+import type { CategoryType } from '@/features/categories/category.types'
+import { useRecurringRules } from '@/features/recurring/recurring.query'
 import { getApiErrorMessage } from '@/lib'
 import {
   DEFAULT_CURRENCY,
@@ -31,7 +30,12 @@ import {
   toYmd,
 } from '@/utils'
 import { MAX_NOTE_LENGTH, defaultAccountId, writeLastAccountId } from '../transaction.domain'
-import { TX_TYPE_LABELS, TX_TYPE_OPTIONS } from '../transaction.labels'
+import {
+  TX_TYPE_LABELS,
+  TX_TYPE_OPTIONS,
+  accountItems,
+  categoryOptions,
+} from '../transaction.labels'
 import { useCreateTransaction, useUpdateTransaction } from '../transaction.query'
 import {
   TX_TYPES,
@@ -39,20 +43,33 @@ import {
   type ITransactionBody,
   type TxType,
 } from '../transaction.types'
-import { CategoryPicker, type CategoryOption } from './CategoryPicker'
+import { CategoryPicker } from './CategoryPicker'
 import './TransactionForm.scss'
 
-/** How the form closed, beyond a plain Cancel. The opener carries out duplicate and delete. */
+/**
+ * How the form closed, beyond a plain Cancel. The opener carries out
+ * duplicate, delete, "Make recurring" and opening the entry's rule, and
+ * writes a draft.
+ */
 export type TransactionFormResult =
   | { action: 'saved'; id: number }
   | { action: 'duplicate'; transaction: ITransaction }
   | { action: 'delete'; transaction: ITransaction }
+  | { action: 'recurring'; transaction: ITransaction }
+  | { action: 'rule'; ruleId: number }
+  | { action: 'draft'; body: ITransactionBody }
 
 interface TransactionFormProps {
   /** The transaction to edit; omit to add one. */
   transaction?: ITransaction
   /** Adding: start from these fields, as a duplicate does. */
   prefill?: Partial<ITransactionBody>
+  /**
+   * Fill in an entry without saving it: the form closes with a `draft` result
+   * under this title and save label. Confirming a recurring entry uses it,
+   * since the rule writes the entry.
+   */
+  draft?: { title: string; saveLabel: string }
   /** The sheet this form opened in; closed with how the form ended. */
   sheet: SheetHandle<TransactionFormResult>
 }
@@ -92,37 +109,29 @@ type TransactionFormValues = z.infer<typeof transactionSchema>
 const asNumber = (value: unknown) =>
   value === '' || value === null || value === undefined ? null : Number(value)
 
-/** Active accounts, plus an archived one the entry already uses. */
-function accountItems(accounts: readonly IAccount[], used: readonly (number | null)[]) {
-  return accounts
-    .filter((a) => !a.archived || used.includes(a.id))
-    .map((a) => ({ value: a.id, label: a.archived ? `${a.name} (archived)` : a.name }))
-}
-
-/** The type's active categories in list order, plus the chosen one when it's archived. */
-function categoryOptions(
-  categories: readonly ICategory[],
-  type: CategoryType,
-  chosen: number | null,
-): CategoryOption[] {
-  return categories
-    .filter((c) => c.type === type && (!c.archived || c.id === chosen))
-    .sort(compareCategories)
-    .map((c) => ({ value: c.id, label: c.name, icon: c.icon, color: c.color }))
-}
-
 /**
  * Add or edit a transaction, in a sheet: type, amount, a category grid or the
  * two accounts of a transfer, account, date with Today and Yesterday, and a
  * note. New entries start as an expense, today, on the last-used account.
  * Ctrl/⌘+Enter saves, and with Shift saves and starts another.
  */
-export const TransactionForm = ({ transaction, prefill = {}, sheet }: TransactionFormProps) => {
+export const TransactionForm = ({
+  transaction,
+  prefill = {},
+  draft,
+  sheet,
+}: TransactionFormProps) => {
   const notify = useLUINotification()
   const { data: accountsData } = useAccounts()
   const { data: categoriesData } = useCategories()
+  const { data: rules } = useRecurringRules()
   const accounts = accountsData ?? []
   const categories = categoriesData ?? []
+  // The rule that added this entry, while it still exists.
+  const rule =
+    transaction?.recurringRuleId != null
+      ? rules?.find((r) => r.id === transaction.recurringRuleId)
+      : undefined
   // Not `useCategoryActions`: it opens sheets, and this form already renders
   // inside one, where the drawer context isn't available.
   const addDefaultCategories = useAddDefaultCategories()
@@ -230,6 +239,12 @@ export const TransactionForm = ({ transaction, prefill = {}, sheet }: Transactio
       note: values.note.trim() || null,
     }
 
+    // The opener writes a draft; nothing is saved here.
+    if (draft) {
+      sheet.close({ action: 'draft', body })
+      return
+    }
+
     if (transaction) {
       updateTransaction.mutate(
         { id: transaction.id, body },
@@ -261,7 +276,7 @@ export const TransactionForm = ({ transaction, prefill = {}, sheet }: Transactio
   const onKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
     if (event.key !== 'Enter' || !(event.ctrlKey || event.metaKey)) return
     event.preventDefault()
-    if (event.shiftKey && !transaction) saveAndAddAnother()
+    if (event.shiftKey && !transaction && !draft) saveAndAddAnother()
     else void handleSubmit(onSubmit)()
   }
 
@@ -284,7 +299,9 @@ export const TransactionForm = ({ transaction, prefill = {}, sheet }: Transactio
       noValidate
     >
       <div className="tx-form__header">
-        <h2 className="sheet-form__title">{transaction ? 'Edit transaction' : 'Add transaction'}</h2>
+        <h2 className="sheet-form__title">
+          {draft?.title ?? (transaction ? 'Edit transaction' : 'Add transaction')}
+        </h2>
         {transaction && (
           <LUIMenu mode="right" closeOnItemClick appendBody dropdownDisplay={menuTrigger}>
             <button
@@ -295,6 +312,25 @@ export const TransactionForm = ({ transaction, prefill = {}, sheet }: Transactio
               <LUIIcon name="content_copy" size={18} />
               Duplicate
             </button>
+            {rule ? (
+              <button
+                type="button"
+                className="dropdown-item tx-form__item"
+                onClick={() => sheet.close({ action: 'rule', ruleId: rule.id })}
+              >
+                <LUIIcon name="event_repeat" size={18} />
+                Open recurring rule
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="dropdown-item tx-form__item"
+                onClick={() => sheet.close({ action: 'recurring', transaction })}
+              >
+                <LUIIcon name="event_repeat" size={18} />
+                Make recurring
+              </button>
+            )}
             <button
               type="button"
               className="dropdown-item tx-form__item tx-form__item--danger"
@@ -488,7 +524,7 @@ export const TransactionForm = ({ transaction, prefill = {}, sheet }: Transactio
         <LUIButton variant="outlined" size="lg" onClick={() => sheet.close()}>
           Cancel
         </LUIButton>
-        {!transaction && (
+        {!transaction && !draft && (
           <LUIButton
             variant="outlined-primary"
             size="lg"
@@ -499,7 +535,7 @@ export const TransactionForm = ({ transaction, prefill = {}, sheet }: Transactio
           </LUIButton>
         )}
         <LUIButton size="lg" type="submit" disabled={saving}>
-          {saving ? 'Saving...' : 'Save'}
+          {saving ? 'Saving...' : (draft?.saveLabel ?? 'Save')}
         </LUIButton>
       </div>
     </form>

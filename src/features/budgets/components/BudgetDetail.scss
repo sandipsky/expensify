@@ -1,0 +1,164 @@
+.budget-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__title {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 160px;
+
+    h1 {
+      color: var(--text-primary);
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 28px;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  // A menu row is a button, so it needs the native chrome removed.
+  &__item {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+
+    &--danger {
+      color: var(--error);
+    }
+  }
+
+  &__skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+  }
+
+  &__transactions {
+    list-style: none;
+
+    li + li {
+      border-top: 1px solid var(--separator-light);
+    }
+  }
+
+  &__more {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.period-list {
+  list-style: none;
+
+  li + li {
+    border-top: 1px solid var(--separator-light);
+  }
+}
+
+// A whole row is the button that picks the period.
+.period-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--bg-light);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+
+  &.is-selected {
+    background: var(--accent-bg);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+
+  &__head,
+  &__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 8px;
+  }
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  &__amounts {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  &__of {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  &__foot {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  &__state {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  &__percent {
+    font-variant-numeric: tabular-nums;
+  }
+}

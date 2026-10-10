@@ -106,6 +106,34 @@
     display: none;
   }
 
+  &__badge {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--text-white);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  // The rail has no room for the number: a dot on the icon says something waits.
+  &--collapsed &__badge {
+    position: absolute;
+    top: 8px;
+    right: 18px;
+    min-width: 0;
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    font-size: 0;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     &__chevron,
     &__children,

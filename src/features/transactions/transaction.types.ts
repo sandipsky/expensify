@@ -18,18 +18,25 @@ export interface ITransaction {
   /** The user's local date, `YYYY-MM-DD`. */
   date: string
   note: string | null
+  /** The recurring rule that added it; missing on entries written before rules existed. */
+  recurringRuleId?: number | null
   createdAt: string
   updatedAt: string
 }
 
 // What the client sends when creating/updating - the server owns the id,
-// the currency (the account's) and the timestamps.
-export type ITransactionBody = Omit<ITransaction, 'id' | 'currency' | 'createdAt' | 'updatedAt'>
+// the currency (the account's), the rule that added it and the timestamps.
+export type ITransactionBody = Omit<
+  ITransaction,
+  'id' | 'currency' | 'recurringRuleId' | 'createdAt' | 'updatedAt'
+>
 
-/** How the list is narrowed on the server: a date range, an account, or both. */
+/** How the list is narrowed on the server: a date range, an account, a rule, or several. */
 export interface TransactionQuery {
   from?: string
   to?: string
   /** Entries touching the account, on either side of a transfer. */
   accountId?: number
+  /** Entries a recurring rule added. */
+  recurringRuleId?: number
 }

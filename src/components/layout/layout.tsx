@@ -7,16 +7,18 @@ import './layout.scss'
 
 interface AppLayoutProps {
   children: ReactNode
+  /** Counts beside sidebar links, by the link's `to`, such as entries waiting on /recurring. */
+  badges?: Readonly<Record<string, number>>
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout({ children, badges }: AppLayoutProps) {
   const sidebarRef = useRef<SidebarHandle>(null)
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
 
   return (
     <div className="app-layout">
-      <Sidebar ref={sidebarRef} items={SIDEBAR_ITEMS} />
+      <Sidebar ref={sidebarRef} items={SIDEBAR_ITEMS} badges={badges} />
 
       <div className="app-layout__main">
         <Header onMenuToggle={() => sidebarRef.current?.toggle()}>

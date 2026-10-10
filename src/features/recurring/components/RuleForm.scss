@@ -1,0 +1,51 @@
+.rule-form {
+  &__section {
+    margin-top: 4px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  // Matches the labels of the inputs around it.
+  &__label {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  // "Every N weeks" beside the weekdays or the day of the month; stacked when narrow.
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  &__interval {
+    flex: 0 1 160px;
+    min-width: 120px;
+  }
+
+  &__grow {
+    display: flex;
+    flex: 1 1 200px;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  // Sits under the row it explains, closer than the usual field gap.
+  &__tight {
+    margin-top: -10px;
+  }
+
+  &__preview {
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--bg-light);
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 18px;
+  }
+}

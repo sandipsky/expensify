@@ -13,13 +13,17 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedAccountsIndexRouteImport } from './routes/_authenticated/accounts/index'
+import { Route as AuthenticatedBudgetsIndexRouteImport } from './routes/_authenticated/budgets/index'
 import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_authenticated/categories/index'
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
 import { Route as AuthenticatedProductsAddRouteImport } from './routes/_authenticated/products/add'
+import { Route as AuthenticatedRecurringIndexRouteImport } from './routes/_authenticated/recurring/index'
 import { Route as AuthenticatedTransactionsIndexRouteImport } from './routes/_authenticated/transactions/index'
 import { Route as AuthenticatedAccountsAccountIdIndexRouteImport } from './routes/_authenticated/accounts/$accountId/index'
+import { Route as AuthenticatedBudgetsBudgetIdIndexRouteImport } from './routes/_authenticated/budgets/$budgetId/index'
 import { Route as AuthenticatedProductsProductIdIndexRouteImport } from './routes/_authenticated/products/$productId/index'
 import { Route as AuthenticatedProductsProductIdEditRouteImport } from './routes/_authenticated/products/$productId/edit'
+import { Route as AuthenticatedRecurringRuleIdIndexRouteImport } from './routes/_authenticated/recurring/$ruleId/index'
 import { Route as AuthenticatedTransactionsTransactionIdIndexRouteImport } from './routes/_authenticated/transactions/$transactionId/index'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -42,6 +46,12 @@ const AuthenticatedAccountsIndexRoute =
     path: '/accounts/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedBudgetsIndexRoute =
+  AuthenticatedBudgetsIndexRouteImport.update({
+    id: '/budgets/',
+    path: '/budgets/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCategoriesIndexRoute =
   AuthenticatedCategoriesIndexRouteImport.update({
     id: '/categories/',
@@ -60,6 +70,12 @@ const AuthenticatedProductsAddRoute =
     path: '/products/add',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedRecurringIndexRoute =
+  AuthenticatedRecurringIndexRouteImport.update({
+    id: '/recurring/',
+    path: '/recurring/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedTransactionsIndexRoute =
   AuthenticatedTransactionsIndexRouteImport.update({
     id: '/transactions/',
@@ -70,6 +86,12 @@ const AuthenticatedAccountsAccountIdIndexRoute =
   AuthenticatedAccountsAccountIdIndexRouteImport.update({
     id: '/accounts/$accountId/',
     path: '/accounts/$accountId/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedBudgetsBudgetIdIndexRoute =
+  AuthenticatedBudgetsBudgetIdIndexRouteImport.update({
+    id: '/budgets/$budgetId/',
+    path: '/budgets/$budgetId/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedProductsProductIdIndexRoute =
@@ -84,6 +106,12 @@ const AuthenticatedProductsProductIdEditRoute =
     path: '/products/$productId/edit',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedRecurringRuleIdIndexRoute =
+  AuthenticatedRecurringRuleIdIndexRouteImport.update({
+    id: '/recurring/$ruleId/',
+    path: '/recurring/$ruleId/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedTransactionsTransactionIdIndexRoute =
   AuthenticatedTransactionsTransactionIdIndexRouteImport.update({
     id: '/transactions/$transactionId/',
@@ -96,12 +124,16 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/products/add': typeof AuthenticatedProductsAddRoute
   '/accounts/': typeof AuthenticatedAccountsIndexRoute
+  '/budgets/': typeof AuthenticatedBudgetsIndexRoute
   '/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/products/': typeof AuthenticatedProductsIndexRoute
+  '/recurring/': typeof AuthenticatedRecurringIndexRoute
   '/transactions/': typeof AuthenticatedTransactionsIndexRoute
   '/products/$productId/edit': typeof AuthenticatedProductsProductIdEditRoute
   '/accounts/$accountId/': typeof AuthenticatedAccountsAccountIdIndexRoute
+  '/budgets/$budgetId/': typeof AuthenticatedBudgetsBudgetIdIndexRoute
   '/products/$productId/': typeof AuthenticatedProductsProductIdIndexRoute
+  '/recurring/$ruleId/': typeof AuthenticatedRecurringRuleIdIndexRoute
   '/transactions/$transactionId/': typeof AuthenticatedTransactionsTransactionIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -109,12 +141,16 @@ export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/products/add': typeof AuthenticatedProductsAddRoute
   '/accounts': typeof AuthenticatedAccountsIndexRoute
+  '/budgets': typeof AuthenticatedBudgetsIndexRoute
   '/categories': typeof AuthenticatedCategoriesIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
+  '/recurring': typeof AuthenticatedRecurringIndexRoute
   '/transactions': typeof AuthenticatedTransactionsIndexRoute
   '/products/$productId/edit': typeof AuthenticatedProductsProductIdEditRoute
   '/accounts/$accountId': typeof AuthenticatedAccountsAccountIdIndexRoute
+  '/budgets/$budgetId': typeof AuthenticatedBudgetsBudgetIdIndexRoute
   '/products/$productId': typeof AuthenticatedProductsProductIdIndexRoute
+  '/recurring/$ruleId': typeof AuthenticatedRecurringRuleIdIndexRoute
   '/transactions/$transactionId': typeof AuthenticatedTransactionsTransactionIdIndexRoute
 }
 export interface FileRoutesById {
@@ -124,12 +160,16 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/products/add': typeof AuthenticatedProductsAddRoute
   '/_authenticated/accounts/': typeof AuthenticatedAccountsIndexRoute
+  '/_authenticated/budgets/': typeof AuthenticatedBudgetsIndexRoute
   '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
+  '/_authenticated/recurring/': typeof AuthenticatedRecurringIndexRoute
   '/_authenticated/transactions/': typeof AuthenticatedTransactionsIndexRoute
   '/_authenticated/products/$productId/edit': typeof AuthenticatedProductsProductIdEditRoute
   '/_authenticated/accounts/$accountId/': typeof AuthenticatedAccountsAccountIdIndexRoute
+  '/_authenticated/budgets/$budgetId/': typeof AuthenticatedBudgetsBudgetIdIndexRoute
   '/_authenticated/products/$productId/': typeof AuthenticatedProductsProductIdIndexRoute
+  '/_authenticated/recurring/$ruleId/': typeof AuthenticatedRecurringRuleIdIndexRoute
   '/_authenticated/transactions/$transactionId/': typeof AuthenticatedTransactionsTransactionIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -139,12 +179,16 @@ export interface FileRouteTypes {
     | '/login'
     | '/products/add'
     | '/accounts/'
+    | '/budgets/'
     | '/categories/'
     | '/products/'
+    | '/recurring/'
     | '/transactions/'
     | '/products/$productId/edit'
     | '/accounts/$accountId/'
+    | '/budgets/$budgetId/'
     | '/products/$productId/'
+    | '/recurring/$ruleId/'
     | '/transactions/$transactionId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -152,12 +196,16 @@ export interface FileRouteTypes {
     | '/'
     | '/products/add'
     | '/accounts'
+    | '/budgets'
     | '/categories'
     | '/products'
+    | '/recurring'
     | '/transactions'
     | '/products/$productId/edit'
     | '/accounts/$accountId'
+    | '/budgets/$budgetId'
     | '/products/$productId'
+    | '/recurring/$ruleId'
     | '/transactions/$transactionId'
   id:
     | '__root__'
@@ -166,12 +214,16 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/_authenticated/products/add'
     | '/_authenticated/accounts/'
+    | '/_authenticated/budgets/'
     | '/_authenticated/categories/'
     | '/_authenticated/products/'
+    | '/_authenticated/recurring/'
     | '/_authenticated/transactions/'
     | '/_authenticated/products/$productId/edit'
     | '/_authenticated/accounts/$accountId/'
+    | '/_authenticated/budgets/$budgetId/'
     | '/_authenticated/products/$productId/'
+    | '/_authenticated/recurring/$ruleId/'
     | '/_authenticated/transactions/$transactionId/'
   fileRoutesById: FileRoutesById
 }
@@ -210,6 +262,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/budgets/': {
+      id: '/_authenticated/budgets/'
+      path: '/budgets'
+      fullPath: '/budgets/'
+      preLoaderRoute: typeof AuthenticatedBudgetsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/categories/': {
       id: '/_authenticated/categories/'
       path: '/categories'
@@ -231,6 +290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProductsAddRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/recurring/': {
+      id: '/_authenticated/recurring/'
+      path: '/recurring'
+      fullPath: '/recurring/'
+      preLoaderRoute: typeof AuthenticatedRecurringIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/transactions/': {
       id: '/_authenticated/transactions/'
       path: '/transactions'
@@ -243,6 +309,13 @@ declare module '@tanstack/react-router' {
       path: '/accounts/$accountId'
       fullPath: '/accounts/$accountId/'
       preLoaderRoute: typeof AuthenticatedAccountsAccountIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/budgets/$budgetId/': {
+      id: '/_authenticated/budgets/$budgetId/'
+      path: '/budgets/$budgetId'
+      fullPath: '/budgets/$budgetId/'
+      preLoaderRoute: typeof AuthenticatedBudgetsBudgetIdIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/products/$productId/': {
@@ -259,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProductsProductIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/recurring/$ruleId/': {
+      id: '/_authenticated/recurring/$ruleId/'
+      path: '/recurring/$ruleId'
+      fullPath: '/recurring/$ruleId/'
+      preLoaderRoute: typeof AuthenticatedRecurringRuleIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/transactions/$transactionId/': {
       id: '/_authenticated/transactions/$transactionId/'
       path: '/transactions/$transactionId'
@@ -273,12 +353,16 @@ interface AuthenticatedRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedProductsAddRoute: typeof AuthenticatedProductsAddRoute
   AuthenticatedAccountsIndexRoute: typeof AuthenticatedAccountsIndexRoute
+  AuthenticatedBudgetsIndexRoute: typeof AuthenticatedBudgetsIndexRoute
   AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
+  AuthenticatedRecurringIndexRoute: typeof AuthenticatedRecurringIndexRoute
   AuthenticatedTransactionsIndexRoute: typeof AuthenticatedTransactionsIndexRoute
   AuthenticatedProductsProductIdEditRoute: typeof AuthenticatedProductsProductIdEditRoute
   AuthenticatedAccountsAccountIdIndexRoute: typeof AuthenticatedAccountsAccountIdIndexRoute
+  AuthenticatedBudgetsBudgetIdIndexRoute: typeof AuthenticatedBudgetsBudgetIdIndexRoute
   AuthenticatedProductsProductIdIndexRoute: typeof AuthenticatedProductsProductIdIndexRoute
+  AuthenticatedRecurringRuleIdIndexRoute: typeof AuthenticatedRecurringRuleIdIndexRoute
   AuthenticatedTransactionsTransactionIdIndexRoute: typeof AuthenticatedTransactionsTransactionIdIndexRoute
 }
 
@@ -286,15 +370,21 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedProductsAddRoute: AuthenticatedProductsAddRoute,
   AuthenticatedAccountsIndexRoute: AuthenticatedAccountsIndexRoute,
+  AuthenticatedBudgetsIndexRoute: AuthenticatedBudgetsIndexRoute,
   AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,
+  AuthenticatedRecurringIndexRoute: AuthenticatedRecurringIndexRoute,
   AuthenticatedTransactionsIndexRoute: AuthenticatedTransactionsIndexRoute,
   AuthenticatedProductsProductIdEditRoute:
     AuthenticatedProductsProductIdEditRoute,
   AuthenticatedAccountsAccountIdIndexRoute:
     AuthenticatedAccountsAccountIdIndexRoute,
+  AuthenticatedBudgetsBudgetIdIndexRoute:
+    AuthenticatedBudgetsBudgetIdIndexRoute,
   AuthenticatedProductsProductIdIndexRoute:
     AuthenticatedProductsProductIdIndexRoute,
+  AuthenticatedRecurringRuleIdIndexRoute:
+    AuthenticatedRecurringRuleIdIndexRoute,
   AuthenticatedTransactionsTransactionIdIndexRoute:
     AuthenticatedTransactionsTransactionIdIndexRoute,
 }

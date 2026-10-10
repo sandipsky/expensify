@@ -47,6 +47,31 @@ export function addDays(ymd: string, days: number): string {
   return toYmd(date)
 }
 
+/** Calendar days from `a` to `b`; negative when `b` comes first. Daylight saving never moves it. */
+export function daysBetween(a: string, b: string): number {
+  const utc = (ymd: string) => {
+    const [y, m, d] = ymd.split('-').map(Number)
+    return Date.UTC(y, m - 1, d)
+  }
+  return Math.round((utc(b) - utc(a)) / 86_400_000)
+}
+
+/** How many days the range covers, both ends included. */
+export function daysIn(range: DateRange): number {
+  return daysBetween(range.start, range.end) + 1
+}
+
+/** ISO weekday: 1 = Monday … 7 = Sunday. */
+export function isoWeekday(ymd: string): number {
+  return parseYmd(ymd).getDay() || 7
+}
+
+/** The Monday-to-Sunday week that contains `today`, or the one `offset` weeks away. */
+export function weekPeriod(today: string, offset = 0): DateRange {
+  const start = addDays(today, offset * 7 - (isoWeekday(today) - 1))
+  return { start, end: addDays(start, 6) }
+}
+
 /** The calendar month that contains `today`, or the one `offset` months away. */
 export function monthPeriod(today: string, offset = 0): DateRange {
   const date = parseYmd(today)
@@ -57,9 +82,9 @@ export function monthPeriod(today: string, offset = 0): DateRange {
   return { start: toYmd(start), end: toYmd(end) }
 }
 
-/** The calendar year that contains `today`. */
-export function yearPeriod(today: string): DateRange {
-  const year = today.slice(0, 4)
+/** The calendar year that contains `today`, or the one `offset` years away. */
+export function yearPeriod(today: string, offset = 0): DateRange {
+  const year = Number(today.slice(0, 4)) + offset
   return { start: `${year}-01-01`, end: `${year}-12-31` }
 }
 
@@ -85,6 +110,17 @@ export function presetRange(preset: PeriodPreset, today: string, custom: DateRan
 /** Whether the date falls in the range, both ends included. */
 export function inRange(date: string, range: DateRange): boolean {
   return date >= range.start && date <= range.end
+}
+
+/** The shortest range that covers all of them, or null for none. */
+export function spanOf(ranges: readonly DateRange[]): DateRange | null {
+  if (!ranges.length) return null
+  let { start, end } = ranges[0]
+  for (const range of ranges) {
+    if (range.start < start) start = range.start
+    if (range.end > end) end = range.end
+  }
+  return { start, end }
 }
 
 /** Whether the range is exactly one calendar month. */
