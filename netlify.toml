@@ -1,0 +1,31 @@
+# Netlify builds the web app from this repo and serves dist/ as a static site.
+# The API runs elsewhere (Netlify can't host Django): set VITE_API_BASE_URL in
+# the site's environment variables before the first deploy. Vite bakes it into
+# the build, and without it the app stops at startup (src/config/env.ts).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+# A single-page app: any path that isn't a file gets index.html, so a refresh or
+# a shared link on /transactions or /reports/cash-flow still loads the app.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Vite fingerprints every file under /assets, so they can be cached for good.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"

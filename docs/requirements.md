@@ -359,6 +359,7 @@ The work splits like this:
 | Deleting used accounts and categories | Soft delete | Old entries keep their references and foreign keys stay valid |
 | IDs | Integers (`bigint` identity) | The app expects numbers |
 | Web UI | React 19, lumen-ui, TanStack Router and Query | Section 11 |
+| Web hosting | Netlify, built from `main`, with a deploy preview per pull request | A static single-page app needs no server; Django runs on its own host (section 14) |
 
 ## 8. PostgreSQL data model
 
@@ -1024,6 +1025,7 @@ with db.atomic():
 2. Set `VITE_API_BASE_URL` to it (for example `http://localhost:8000/api`) and restart Vite.
 3. Walk through US-01 to US-10 (section 5), then run the same checks against the mock to compare.
 4. Keep the mock for front-end work until the Django API runs in every environment, and keep both in step while they coexist.
+5. For Netlify, add the site's address to `CORS_ALLOWED_ORIGINS`, and the deploy preview addresses (`https://deploy-preview-<n>--<site>.netlify.app`) to `CORS_ALLOWED_ORIGIN_REGEXES`. Then set `VITE_API_BASE_URL` for each deploy context in Netlify and redeploy.
 
 The mock's `db.json` holds development data only, so there is nothing to migrate.
 
@@ -1159,21 +1161,20 @@ The web app has no automated tests yet: `npm run lint` and `npm run build` (whic
 
 ### Environments
 
-| Environment | API | Database | Deployed |
-| --- | --- | --- | --- |
-| Local | Mock (`npm run dev:all`) or Django (`manage.py runserver`) | `db.json`, or PostgreSQL in Docker | Never |
-| Dev | Django | Managed PostgreSQL | Every merge to `main` |
-| Prod | Django | Managed PostgreSQL with daily backups | Tagged releases |
+| Environment | Web app | API | Database | Deployed |
+| --- | --- | --- | --- | --- |
+| Local | Vite dev server | Mock (`npm run dev:all`) or Django (`manage.py runserver`) | `db.json`, or PostgreSQL in Docker | Never |
+| Preview | Netlify deploy preview | Dev Django API | Managed PostgreSQL (dev) | Every pull request |
+| Prod | Netlify production site | Prod Django API | Managed PostgreSQL with daily backups | Every merge to `main` |
 
-The web app is static files after `npm run build` and can be served from any static host or CDN, with `VITE_API_BASE_URL` set at build time for each environment.
+The web app is static files after `npm run build`. Netlify builds and serves it with the settings in `netlify.toml`: `dist/` as the publish folder, Node 24, a fallback that serves `index.html` for every app path, and cache and security headers. `VITE_API_BASE_URL` is set in Netlify's environment variables, with one value for production and another for deploy previews, and is baked in at build time. The Django API and PostgreSQL run on a separate host over HTTPS, since Netlify can't run Django; the API allows the Netlify addresses in CORS (section 10). The mock API is never deployed: anyone could forge its tokens.
 
 ### Pipeline
 
 | Trigger | Runs | Deploys |
 | --- | --- | --- |
-| Pull request | Web: lint, type-check, build. API: Ruff, migrations check, tests against PostgreSQL | Nothing |
-| Merge to `main` | Same checks | Dev |
-| Tag `vX.Y.Z` | Same checks plus end-to-end tests on dev | Prod |
+| Pull request | Web: lint, type-check, build. API: Ruff, migrations check, tests against PostgreSQL. End-to-end tests against the deploy preview | Web: Netlify deploy preview. API: dev |
+| Merge to `main` | Same checks | Web: Netlify production. API: prod |
 
 ## 15. Roadmap
 
@@ -1184,7 +1185,7 @@ The web app is feature-complete for this scope. The work ahead is the Django bac
 | B0 Setup | 1 | Django project, PostgreSQL, settings from the environment, Bearer token auth, error handler, CI | `/auth/*` and `/me` work from the app |
 | B1 Ledger | 2 | Accounts, categories, transactions with balances, reconcile, soft deletes, delete all, recalculate command | US-01, US-02, US-03 and US-07 pass |
 | B2 Planning | 1–2 | Budgets, recurring rules, occurrences and skip with row locks | US-04, US-05 and US-06 pass |
-| B3 Cut-over | 1 | Deploy dev and prod, point the app at Django, contract check, backups | US-01 to US-10 pass against Django |
+| B3 Cut-over | 1 | Deploy the API to dev and prod, connect the Netlify site with `VITE_API_BASE_URL` per context, CORS for the Netlify addresses, contract check, backups | US-01 to US-10 pass on the Netlify site against Django |
 | Later | — | Backlog (section 16), starting with a server-side recurring job and password reset by email | |
 
 ## 16. Risks, open decisions and backlog
@@ -1201,6 +1202,7 @@ The web app is feature-complete for this scope. The work ahead is the Django bac
 | Recurring entries only while the app is open | Reminders missed; entries late until the next visit | Catch-up on open; the server job in section 12 |
 | One user sees another's data | A privacy breach | Every queryset filtered by `request.user`; isolation tests (US-10) |
 | Lost data | Lost history | Managed PostgreSQL with daily backups and a tested restore |
+| The mock API put on the internet | Anyone can forge `mock-token-admin` and read or change everything | The mock is for local development only; the Netlify site goes live with the Django API |
 
 ### Open decisions
 

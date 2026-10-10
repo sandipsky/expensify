@@ -79,9 +79,38 @@ the app refuses to boot with a bad value.
 
 To run the app against the Django API instead of the mock, point `VITE_API_BASE_URL` at it.
 
+## Deploying the web app (Netlify)
+
+Netlify hosts the web app as a static site; `netlify.toml` holds the build command, the
+publish folder, the Node version, the single-page-app fallback (so a refresh on
+`/transactions` still loads the app) and a few security and cache headers. The API can't run
+on Netlify: the Django API needs its own host, served over HTTPS.
+
+1. In Netlify, **Add new project → Import an existing project**, pick GitHub and this
+   repository, and keep the build settings it reads from `netlify.toml`.
+2. Before the first deploy, add these under **Project configuration → Environment
+   variables**. Vite bakes them in at build time, so changing one needs a new deploy.
+
+   | Variable            | Value                                                  |
+   | ------------------- | ------------------------------------------------------ |
+   | `VITE_API_BASE_URL` | The API's public HTTPS URL, e.g. `https://api.example.com/api` |
+   | `VITE_APP_ENV`      | `prod` (or `qa` for a test site)                       |
+
+   Without `VITE_API_BASE_URL` the site loads as a blank page with an error in the console.
+3. Allow the site's address (e.g. `https://<name>.netlify.app`) in the API's
+   `CORS_ALLOWED_ORIGINS`. Deploy previews get other addresses
+   (`https://deploy-preview-12--<name>.netlify.app`); allow them with
+   `CORS_ALLOWED_ORIGIN_REGEXES` if previews should reach the API.
+
+Every push to `main` then deploys, and pull requests get deploy previews.
+
+Don't put the mock API on the internet: its tokens are `mock-token-<username>`, so anyone can
+make one, and all users share its data. Deploy the web app once the Django API is live.
+
 ## Project structure
 
 ```
+netlify.toml             Netlify build, single-page-app fallback and headers
 docs/
   requirements.md        Functional requirements, API contract, data model, Django plan
 mock-server/
