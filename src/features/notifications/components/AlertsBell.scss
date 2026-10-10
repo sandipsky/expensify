@@ -1,0 +1,32 @@
+// A square the height of the account button, with the same hover fill.
+.app-header__bell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--separator);
+    color: var(--text-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+}
+
+// Lumen centers the count on the host's corner, which would put half of it
+// above the 40px header. Drawn on the bell's own corner instead, and
+// click-through, so pressing the count opens the list too.
+.app-header__bell-badge .l-badge {
+  top: 9px;
+  right: 9px;
+  pointer-events: none;
+}

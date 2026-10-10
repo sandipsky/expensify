@@ -1,4 +1,5 @@
 import { useRef, type ReactNode } from 'react'
+import { AlertsBell } from '@/features/notifications'
 import { AccountMenu } from './account-menu/account-menu'
 import { Header } from './header/header'
 import { Sidebar, type SidebarHandle } from './sidebar/sidebar'
@@ -21,6 +22,7 @@ export function AppLayout({ children, badges }: AppLayoutProps) {
       <div className="app-layout__main">
         <Header onMenuToggle={() => sidebarRef.current?.toggle()}>
           <span className="app-header__spacer" />
+          <AlertsBell />
           <AccountMenu />
         </Header>
 

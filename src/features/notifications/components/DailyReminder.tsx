@@ -59,6 +59,7 @@ export function DailyReminder() {
     writeState(NOTIFICATION_KEYS.dailyReminder, today)
     deliver({
       id: `reminder|${today}`,
+      kind: 'reminder',
       tone: 'info',
       title: "Time to log today's spending",
       message: 'Nothing is logged for today yet. Adding it takes a few seconds.',

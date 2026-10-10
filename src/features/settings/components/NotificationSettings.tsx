@@ -44,7 +44,11 @@ export const NotificationSettings = ({ prefs }: NotificationSettingsProps) => {
   }
 
   return (
-    <section className="settings-section" aria-labelledby="notifications-heading">
+    <section
+      id="notifications"
+      className="settings-section"
+      aria-labelledby="notifications-heading"
+    >
       <h2 className="settings-section__title" id="notifications-heading">
         Notifications
       </h2>

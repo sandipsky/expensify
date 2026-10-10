@@ -207,6 +207,22 @@ export function formatDateTime(iso: string): string {
   }).format(new Date(iso))
 }
 
+const TIME_AGO_UNITS: readonly [Intl.RelativeTimeFormatUnit, number][] = [
+  ['day', 24 * 60 * 60 * 1000],
+  ['hour', 60 * 60 * 1000],
+  ['minute', 60 * 1000],
+]
+
+/** "now", "5 minutes ago", "yesterday", "3 days ago": how long before `now` a moment in ms was. */
+export function formatTimeAgo(at: number, now: number): string {
+  const elapsed = Math.max(0, now - at)
+  const format = new Intl.RelativeTimeFormat(locale(), { numeric: 'auto' })
+  for (const [unit, ms] of TIME_AGO_UNITS) {
+    if (elapsed >= ms) return format.format(-Math.floor(elapsed / ms), unit)
+  }
+  return format.format(0, 'second')
+}
+
 /** A day header: "Today", "Yesterday" or "Tomorrow" before the date when it's one of those. */
 export function dayLabel(ymd: string, today: string): string {
   const near =

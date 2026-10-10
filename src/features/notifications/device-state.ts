@@ -1,12 +1,14 @@
 /**
- * What this browser remembers about notifications: which reminders it already
- * showed. It isn't synced: each device shows its own, as each phone keeps its
- * own notification history. Reads and writes never throw, so blocked storage
- * only costs the memory.
+ * What this browser remembers about notifications: the recent alerts behind
+ * the header's bell, and which reminders it already showed. It isn't synced:
+ * each device shows its own, as each phone keeps its own notification
+ * history. Reads and writes never throw, so blocked storage only costs the
+ * memory.
  */
 
-/** Keys under which the reminders keep their state. */
+/** Keys under which the notification features keep their state. */
 export const NOTIFICATION_KEYS = {
+  alerts: 'expensify.alerts.v1',
   dailyReminder: 'expensify.daily-reminder.v1',
   billReminders: 'expensify.bill-reminders.v1',
 } as const
@@ -28,7 +30,7 @@ export function writeState(key: string, value: unknown): void {
   }
 }
 
-/** Forgets every reminder this browser showed, as deleting the account does. */
+/** Forgets every alert and reminder this browser showed, as deleting the account does. */
 export function clearNotificationState(): void {
   for (const key of Object.values(NOTIFICATION_KEYS)) {
     try {

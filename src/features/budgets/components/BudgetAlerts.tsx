@@ -47,7 +47,7 @@ export function BudgetAlerts() {
 
       recordAlert({ id: budget.id, alert: { periodStart: progress.range.start, threshold } })
       const left = daysLeftLabel(progress.daysLeft)
-      const alert = { id: `budget|${key}`, link: `/budgets/${budget.id}` }
+      const alert = { id: `budget|${key}`, kind: 'budget' as const, link: `/budgets/${budget.id}` }
       if (progress.state === 'over') {
         deliver({
           ...alert,

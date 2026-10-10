@@ -1,5 +1,19 @@
+import type { LUIIconName } from '@lumen-ui/react'
 import { formatDate } from '@/utils'
 import type { BillReminder } from './notification.domain'
+import type { AlertKind } from './notification.types'
+
+/** The icon each kind of alert shows in the list. */
+export const ALERT_ICONS: Readonly<Record<AlertKind, LUIIconName>> = {
+  budget: 'donut_large',
+  bill: 'event_repeat',
+  reminder: 'clock',
+}
+
+/** The bell's name for screen readers: "Alerts" or "Alerts, 3 new". */
+export function alertsLabel(unread: number): string {
+  return unread ? `Alerts, ${unread} new` : 'Alerts'
+}
 
 /** "Rent is due tomorrow" · "−Rs 20,000.00 · Bank. You'll be asked to confirm it." */
 export function reminderText(

@@ -57,7 +57,7 @@ export function RecurringReminders() {
         view.kind === 'transfer' ? 'auto' : 'exceptZero',
       )
       const { title, message } = reminderText(view.name, amount, view.accountLabel, reminder, today)
-      deliver({ id: `bill|${key}`, tone: 'info', title, message, link: '/recurring' })
+      deliver({ id: `bill|${key}`, kind: 'bill', tone: 'info', title, message, link: '/recurring' })
     }
 
     if (!changed) return

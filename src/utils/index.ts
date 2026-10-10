@@ -17,6 +17,7 @@ export {
   formatDate,
   formatDateTime,
   formatPeriod,
+  formatTimeAgo,
   formatTimeOfDay,
   inRange,
   isCalendarMonth,
