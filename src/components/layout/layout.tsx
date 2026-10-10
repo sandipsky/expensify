@@ -40,7 +40,8 @@ export function AppLayout({ children, badges }: AppLayoutProps) {
 
         {/* The pane scrolls, not the window, so the router restores its position by this id. */}
         <main className="app-layout__content" data-scroll-restoration-id="app-content">
-          {children}
+          {/* Every page sits in one centered column, so switching pages never moves its edges. */}
+          <div className="app-layout__page">{children}</div>
         </main>
       </div>
     </div>

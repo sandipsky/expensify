@@ -48,7 +48,7 @@ src/
   providers/           AppProviders = QueryClientProvider + RouterProvider
   features/
     auth/              Login page, zustand auth store, login mutation
-    home/              Home page
+    dashboard/         Dashboard: period switcher, summary, balances, spending, budgets, trend, recent, upcoming
     products/          Product list + add/edit/view form, queries + mutations
   routes/              File-based routes (thin: they just point at feature components)
     __root.tsx

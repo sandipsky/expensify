@@ -55,3 +55,22 @@ export function formatMoney(
     maximumFractionDigits: digits,
   }).format(amount)
 }
+
+/**
+ * Short amounts for chart axes and captions: "Rs 1.2L", "Rs 45K", so a tick
+ * never runs wide. Lakh and crore, like the full format.
+ */
+export function formatCompactMoney(
+  amount: number,
+  currency: string,
+  signDisplay: 'auto' | 'exceptZero' = 'auto',
+): string {
+  return formatter({
+    style: 'currency',
+    currency,
+    currencyDisplay: 'narrowSymbol',
+    notation: 'compact',
+    maximumFractionDigits: 1,
+    signDisplay,
+  }).format(amount)
+}

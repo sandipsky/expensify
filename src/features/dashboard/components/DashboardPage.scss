@@ -1,0 +1,144 @@
+.dash {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dash__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dash__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// Privacy mode: a round toggle that stays filled while amounts are hidden.
+.dash__privacy[aria-pressed='true'] {
+  background: var(--accent-bg);
+  color: var(--accent-dark);
+}
+
+// The period switcher, pinned to the top of the scrolling content pane.
+.dash__period {
+  position: sticky;
+  top: calc(-1 * var(--app-content-padding, 16px));
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin: 0 calc(-1 * var(--app-content-padding, 16px));
+  padding: 8px var(--app-content-padding, 16px);
+  background: var(--bg-light);
+}
+
+.dash__period-label {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.dash__custom {
+  display: grid;
+  flex-basis: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 240px));
+  gap: 12px;
+}
+
+// One column on phones, two on tablets, and the desktop arrangement: the
+// four summary cards in one row, balances, spending and budgets in the next,
+// then the trend beside recent transactions, and upcoming across the bottom.
+.dash__grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+}
+
+// A column, so the card inside stretches to the row's height.
+.dash__card {
+  display: flex;
+  flex-direction: column;
+  grid-column: span 12;
+  min-width: 0;
+}
+
+@media (min-width: 600px) {
+  .dash__card {
+    grid-column: span 6;
+  }
+
+  .dash__card--summary,
+  .dash__card--empty {
+    grid-column: span 12;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dash__card--balances,
+  .dash__card--spending,
+  .dash__card--budgets {
+    grid-column: span 4;
+  }
+
+  .dash__card--trend {
+    grid-column: span 7;
+  }
+
+  .dash__card--recent {
+    grid-column: span 5;
+  }
+
+  .dash__card--upcoming {
+    grid-column: span 12;
+  }
+}
+
+// Shared by the cards.
+
+// Every card fills its slot. A flush card (padding none) keeps its header
+// padded, lined up with the 16px rows under it.
+.dash-card {
+  flex: 1;
+
+  &.lui-card-pad-none > .lui-card__header {
+    padding: 12px 16px;
+  }
+}
+
+// "See all" in a card's header: a link or a button that reads as one.
+.dash-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--accent-dark);
+  font: inherit;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    border-radius: 4px;
+    outline: 2px solid var(--accent);
+  }
+}
+
+// A flush card's list: rows run edge to edge with a hairline between them.
+.dash-list {
+  list-style: none;
+
+  li + li {
+    border-top: 1px solid var(--separator-light);
+  }
+}

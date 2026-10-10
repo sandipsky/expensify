@@ -1,0 +1,435 @@
+// Shared by the bar and donut charts: the top row (legend and table toggle),
+// the tooltip and the table view, then each chart's own marks.
+
+.chart {
+  position: relative;
+  display: block;
+  container-type: inline-size;
+  color: var(--text-primary);
+}
+
+.chart__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  margin-bottom: 8px;
+}
+
+.chart__toggle {
+  margin-left: auto;
+}
+
+.chart__swatch {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  list-style: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 16px;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+// The "Table" toggle: quieter than a ghost button, filled while pressed. The
+// doubled class outranks lumen's own button rule whatever order the
+// stylesheets load in.
+.chart-toggle.chart-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-weight: 500;
+
+  &.is-on {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+  }
+}
+
+// Tooltip: positioned by the chart, never in the way of the pointer.
+.chart-tip {
+  position: absolute;
+  z-index: 1;
+  width: max-content;
+  padding: 8px 10px;
+  border: 1px solid var(--separator);
+  border-radius: 8px;
+  background: var(--bg-lightest);
+  box-shadow: 0 4px 12px rgba(13, 13, 18, 0.1);
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 16px;
+  pointer-events: none;
+
+  strong {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.chart-tip__title {
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+}
+
+.chart-tip__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  span:last-child {
+    color: var(--text-secondary);
+  }
+}
+
+.chart-tip__key {
+  flex-shrink: 0;
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.chart-tip__note {
+  padding-left: 18px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+// Table view: the same values as the plot, readable without hovering.
+.chart-table {
+  position: relative;
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th,
+  td {
+    padding: 8px;
+    border-bottom: 1px solid var(--separator-light);
+    font-weight: 400;
+    text-align: left;
+  }
+
+  thead th {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  tr[aria-current] > * {
+    background: var(--accent-bg);
+  }
+}
+
+.chart-table__num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-table__row-btn {
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-dark);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    border-radius: 2px;
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+// ---- Donut ----
+
+// Container queries give the host no width of its own, so in a shrink-to-fit
+// slot (a flex item sized by its content) it would collapse; keep at least
+// the ring's width.
+.donut-chart {
+  min-width: min(100%, var(--donut-size));
+}
+
+// Ring above the legend on narrow containers, beside it from 480px.
+.donut-chart__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+@container (min-width: 480px) {
+  .donut-chart__body {
+    flex-direction: row;
+  }
+}
+
+.donut-chart__ring {
+  position: relative;
+  flex-shrink: 0;
+  max-width: 100%;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}
+
+.donut-chart__arc {
+  outline: none;
+  transition: opacity 150ms ease-out;
+
+  &.is-dim {
+    opacity: 0.35;
+  }
+
+  &[role='button'] {
+    cursor: pointer;
+  }
+
+  &:focus-visible {
+    stroke: var(--text-primary);
+    stroke-width: 2px;
+  }
+}
+
+.donut-chart__track {
+  fill: none;
+  stroke: var(--separator-light);
+}
+
+.donut-chart__center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  text-align: center;
+}
+
+.donut-chart__legend {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  list-style: none;
+  font-size: 13px;
+  line-height: 16px;
+
+  li {
+    display: grid;
+    grid-template-columns: 10px minmax(0, 1fr) auto 40px;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+
+    &.is-on {
+      background: var(--bg-light);
+    }
+  }
+}
+
+.donut-chart__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.donut-chart__num {
+  color: var(--text-secondary);
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---- Bars ----
+
+// Plot height (the `height` prop) is --bar-chart-h; the x-axis band sits below it.
+.bar-chart__frame {
+  display: flex;
+  min-height: calc(var(--bar-chart-h) + 30px);
+  // Room for the top tick label, which is centered on the top gridline.
+  padding-top: 8px;
+}
+
+// Zero-height slots spaced like the gridlines, each label centered on its line.
+.bar-chart__axis {
+  display: flex;
+  flex-direction: column-reverse;
+  flex-shrink: 0;
+  justify-content: space-between;
+  height: var(--bar-chart-h);
+  padding-right: 8px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 14px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+
+  span {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 0;
+  }
+}
+
+.bar-chart__plot {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.bar-chart__grid {
+  position: absolute;
+  inset: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: var(--bar-chart-h);
+
+  span {
+    height: 1px;
+    background: var(--separator-light);
+  }
+
+  span:last-child {
+    background: var(--separator);
+  }
+}
+
+.bar-chart__groups {
+  position: relative;
+  display: flex;
+}
+
+.bar-chart__group {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  padding: 0 0 2px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+}
+
+button.bar-chart__group {
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+}
+
+// The column band: bars sit centered in it and the leftover width stays air.
+.bar-chart__bars {
+  display: flex;
+  align-self: stretch;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  height: var(--bar-chart-h);
+  padding: 0 12%;
+  border-radius: 4px 4px 0 0;
+}
+
+.is-active .bar-chart__bars {
+  background: var(--bg-dark);
+}
+
+.is-selected .bar-chart__bars {
+  background: var(--accent-bg);
+}
+
+.bar-chart__bar {
+  flex: 0 1 24px;
+  min-width: 1px;
+  border-radius: 4px 4px 0 0;
+  transition: height 200ms ease-out;
+}
+
+.bar-chart__label,
+.bar-chart__caption {
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-chart__label {
+  margin-top: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.is-selected .bar-chart__label {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.bar-chart__caption {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.bar-chart__tip {
+  top: 0;
+}
+
+@container (max-width: 479px) {
+  .bar-chart__caption {
+    display: none;
+  }
+
+  // Many columns on a phone: label every other one so the labels never
+  // collide. The selected column always keeps its label, and its neighbours
+  // give way instead.
+  .is-dense > :nth-child(even) .bar-chart__label,
+  .is-dense > :has(+ .is-selected) .bar-chart__label,
+  .is-dense > .is-selected + * .bar-chart__label {
+    visibility: hidden;
+  }
+
+  .is-dense > .is-selected .bar-chart__label {
+    visibility: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .donut-chart__arc,
+  .bar-chart__bar {
+    transition: none;
+  }
+}

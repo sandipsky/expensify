@@ -176,6 +176,19 @@ export function dueDates(
   return rule.active ? pendingDates(rule, limit, today) : []
 }
 
+/**
+ * The rule's entries due by today or in the next `days` days, soonest first:
+ * what the dashboard lists as upcoming. None while the rule is paused.
+ */
+export function upcomingDates(
+  rule: RuleState & Pick<IRecurringRule, 'active'>,
+  today: string,
+  days: number,
+  limit = CATCH_UP_LIMIT,
+): string[] {
+  return rule.active ? pendingDates(rule, limit, addDays(today, days)) : []
+}
+
 /** The entry a rule adds on `date`, as the transaction form takes it. */
 export function occurrenceOf(template: RecurringTemplate, date: string): ITransactionBody {
   const transfer = template.type === 'transfer'

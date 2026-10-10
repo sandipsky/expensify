@@ -6,6 +6,8 @@ import './TransactionRow.scss'
 
 interface TransactionRowProps {
   row: TxRow
+  /** Privacy mode: the amount reads as ••••. */
+  masked?: boolean
   onOpen?: () => void
   onEdit?: () => void
   onDelete?: () => void
@@ -16,7 +18,7 @@ interface TransactionRowProps {
  * category, a line of detail, the signed amount and a menu with its actions.
  * Tapping the row opens it.
  */
-export const TransactionRow = ({ row, onOpen, onEdit, onDelete }: TransactionRowProps) => {
+export const TransactionRow = ({ row, masked, onOpen, onEdit, onDelete }: TransactionRowProps) => {
   // With a note on top, the category goes in the detail line; otherwise it's already the title.
   const subtitle = row.note ? `${row.categoryLabel} · ${row.accountLabel}` : row.accountLabel
 
@@ -41,7 +43,7 @@ export const TransactionRow = ({ row, onOpen, onEdit, onDelete }: TransactionRow
           </span>
           <span className="tx-row__subtitle text-ellipsis">{subtitle}</span>
         </span>
-        <TransactionAmount kind={row.kind} amount={row.amount} currency={row.currency} />
+        <TransactionAmount kind={row.kind} amount={row.amount} currency={row.currency} masked={masked} />
       </button>
 
       <LUIMenu mode="right" closeOnItemClick appendBody dropdownDisplay={menuTrigger}>

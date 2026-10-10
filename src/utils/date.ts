@@ -107,6 +107,31 @@ export function presetRange(preset: PeriodPreset, today: string, custom: DateRan
   }
 }
 
+/** Whether both are the same dates. */
+export function sameRange(a: DateRange, b: DateRange): boolean {
+  return a.start === b.start && a.end === b.end
+}
+
+/** The preset a range falls under on `today`, or `custom` for any other range. */
+export function presetOf(range: DateRange, today: string): PeriodPreset {
+  if (sameRange(range, monthPeriod(today))) return 'this_month'
+  if (sameRange(range, monthPeriod(today, -1))) return 'last_month'
+  if (sameRange(range, yearPeriod(today))) return 'this_year'
+  return 'custom'
+}
+
+/**
+ * The `count` ranges of the same length that come right before `range`,
+ * oldest first: what "the previous period" means for a custom range.
+ */
+export function previousRanges(range: DateRange, count: number): DateRange[] {
+  const days = daysIn(range)
+  return Array.from({ length: count }, (_, i) => {
+    const back = (count - i) * days
+    return { start: addDays(range.start, -back), end: addDays(range.start, -back + days - 1) }
+  })
+}
+
 /** Whether the date falls in the range, both ends included. */
 export function inRange(date: string, range: DateRange): boolean {
   return date >= range.start && date <= range.end

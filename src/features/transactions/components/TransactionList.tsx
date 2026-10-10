@@ -13,7 +13,6 @@ import {
   LUISegmentedControl,
   LUISelect,
   LUISkeleton,
-  LUITable,
   LUITableCell,
   LUITextInput,
   LUITooltip,
@@ -21,6 +20,7 @@ import {
   type TableColumn,
 } from '@lumen-ui/react'
 import { EmptyState } from '@/components/empty-state'
+import { GroupedTable, type GroupHeader } from '@/components/grouped-table'
 import { useMediaQuery } from '@/components/sheet'
 import { useAccounts } from '@/features/accounts/account.query'
 import { useCategories } from '@/features/categories/category.query'
@@ -37,6 +37,7 @@ import {
   monthPeriod,
   orderedRange,
   parseYmd,
+  presetOf,
   presetRange,
   toYmd,
 } from '@/utils'
@@ -65,6 +66,7 @@ import {
   toRow,
 } from '../transaction.labels'
 import { useTransactions } from '../transaction.query'
+import type { ListStart } from '../transaction.search'
 import { TransactionAmount } from './TransactionAmount'
 import { TransactionIcon } from './TransactionIcon'
 import { TransactionRow } from './TransactionRow'
@@ -90,14 +92,20 @@ const COLUMNS: readonly TableColumn[] = [
   { key: 'actions', header: '', width: '92px' },
 ]
 
+interface TransactionListProps {
+  /** Where a link into the list starts it: the period and the filters already set. */
+  start?: ListStart
+}
+
 /**
  * `/transactions`: the period's entries newest first with income, expense and
  * net of what's shown; period, type, account, category and amount filters
  * that combine; search; export to Excel or PDF. Desktops get a sortable
- * table with an actions column, phones and tablets day-grouped rows. A row
- * opens the entry's page.
+ * table with an actions column and, while unsorted, a header row per day
+ * with its net; phones and tablets get day-grouped rows. A row opens the
+ * entry's page.
  */
-export const TransactionList = () => {
+export const TransactionList = ({ start }: TransactionListProps = {}) => {
   const navigate = useNavigate()
   const notify = useLUINotification()
   const actions = useTransactionActions()
@@ -105,10 +113,12 @@ export const TransactionList = () => {
   const desktop = useMediaQuery(DESKTOP)
 
   const today = localDate()
-  const [preset, setPreset] = useState<PeriodPreset>('this_month')
-  /** The range "Custom" shows; it starts as this month. */
-  const [custom, setCustom] = useState<DateRange>(() => monthPeriod(today))
-  const [filter, setFilter] = useState<TransactionFilter>(NO_FILTER)
+  const [preset, setPreset] = useState<PeriodPreset>(() =>
+    start?.range ? presetOf(start.range, today) : 'this_month',
+  )
+  /** The range "Custom" shows; it starts as this month, or as the period a link opened. */
+  const [custom, setCustom] = useState<DateRange>(() => start?.range ?? monthPeriod(today))
+  const [filter, setFilter] = useState<TransactionFilter>(start?.filter ?? NO_FILTER)
   const range = presetRange(preset, today, custom)
   const periodLabel = formatPeriod(range)
 
@@ -436,9 +446,36 @@ export const TransactionList = () => {
       </EmptyState>
     )
   } else if (desktop) {
+    const daysByDate = new Map(days.map((day) => [day.date, day]))
+    /** A day's header row: its date, and its net under the Amount column. */
+    const dayHeader = (date: unknown): GroupHeader => {
+      const day = daysByDate.get(date as string)
+      if (!day) return { label: null }
+      return {
+        label: day.label,
+        cells: {
+          amount: (
+            <span
+              className={`tx-day__net${day.net > 0 ? ' is-income' : day.net < 0 ? ' is-expense' : ''}`}
+            >
+              <span className="visually-hidden">Net </span>
+              {formatMoney(day.net, currency, 'exceptZero')}
+            </span>
+          ),
+        },
+      }
+    }
+
     body = (
       <div className="tx-table">
-        <LUITable columns={COLUMNS} data={rows} rowKey="id" onRowClick={(row) => open(row as TxRow)}>
+        <GroupedTable<TxRow>
+          columns={COLUMNS}
+          data={rows}
+          rowKey="id"
+          groupBy="date"
+          renderGroup={dayHeader}
+          onRowClick={open}
+        >
           <LUITableCell<TxRow> column="date">
             {({ row }) => (
               <span className="tx-cell">
@@ -510,7 +547,7 @@ export const TransactionList = () => {
               </span>
             )}
           </LUITableCell>
-        </LUITable>
+        </GroupedTable>
       </div>
     )
   } else {

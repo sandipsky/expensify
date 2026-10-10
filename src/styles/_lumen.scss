@@ -27,6 +27,18 @@
   background: var(--accent-hover);
 }
 
+// A table column's `align`. lumen sets `.table th { text-align: left }`, which
+// outranks its own `.text-end` and `.text-center`, so a right-aligned column
+// kept its header on the left. Scoped under .table to win, as expensify-web
+// does.
+.table .text-end {
+  text-align: right;
+}
+
+.table .text-center {
+  text-align: center;
+}
+
 // The segmented control ships with Ant Design's fixed colors and system font
 // stack. expensify-web draws it from the theme tokens and the page font, so it
 // matches the labels around it. The doubled class outranks lumen's own rule

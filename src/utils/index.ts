@@ -1,4 +1,10 @@
-export { DEFAULT_CURRENCY, currencySymbol, formatMoney, fractionDigits } from './amount'
+export {
+  DEFAULT_CURRENCY,
+  currencySymbol,
+  formatCompactMoney,
+  formatMoney,
+  fractionDigits,
+} from './amount'
 export { dataColor } from './color'
 export {
   PERIOD_PRESETS,
@@ -13,13 +19,18 @@ export {
   formatPeriod,
   formatTimeOfDay,
   inRange,
+  isCalendarMonth,
+  isCalendarYear,
   isYmd,
   isoWeekday,
   localDate,
   monthPeriod,
   orderedRange,
   parseYmd,
+  presetOf,
   presetRange,
+  previousRanges,
+  sameRange,
   spanOf,
   toYmd,
   weekPeriod,

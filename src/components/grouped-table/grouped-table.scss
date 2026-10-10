@@ -1,0 +1,13 @@
+// A group's header row: a quiet band above its rows, in small bold text, as
+// expensify-web's table draws it. The cells under given columns (a day's
+// total, say) share the band.
+.table .l-table__group > th,
+.table .l-table__group > td {
+  border-top: 0;
+  background: var(--bg-light);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  padding: 8px;
+}

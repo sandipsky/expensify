@@ -1,0 +1,34 @@
+.spending {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// The chart takes the card's width so its toggle sits at the right edge; the
+// ring itself centers inside it.
+.spending__donut {
+  .donut-chart__body {
+    align-items: center;
+  }
+}
+
+.spending__total {
+  display: block;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.spending__caption {
+  display: block;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+// Rows run edge to edge, past the card's padding.
+.spending__list {
+  margin: 0 -12px -12px;
+}

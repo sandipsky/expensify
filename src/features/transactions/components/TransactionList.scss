@@ -150,17 +150,18 @@
     padding-right: 8px;
   }
 
-  .table tbody tr {
+  // Entry rows open the entry; the day header rows between them are labels.
+  .table tbody tr:not(.l-table__group) {
     cursor: pointer;
 
     &:hover td {
       background: var(--bg-light);
     }
-  }
 
-  .table td {
-    height: 52px;
-    vertical-align: middle;
+    td {
+      height: 52px;
+      vertical-align: middle;
+    }
   }
 }
 

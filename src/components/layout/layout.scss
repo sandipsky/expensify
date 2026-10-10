@@ -3,8 +3,10 @@
 // The body never scrolls, so a modal's or drawer's body scroll lock has no
 // window scrollbar to remove and the page doesn't shift when one opens.
 .app-layout {
-  // Every page gets this much room around its content; features never add their own.
+  // Every page gets this much room around its content, and is never wider
+  // than the page width; features never add their own.
   --app-content-padding: 16px;
+  --app-page-width: 1200px;
 
   display: flex;
   height: 100vh;
@@ -33,12 +35,24 @@
   flex-shrink: 0;
 }
 
+// Positioned, so it contains every absolutely positioned descendant that has
+// no positioned ancestor of its own, such as the 1px `.visually-hidden` text.
+// Without it those escape the pane's clip, stretch the document and give the
+// window a second scrollbar beside the pane's.
 .app-layout__content {
+  position: relative;
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
   overflow: auto;
   padding: var(--app-content-padding);
+}
+
+// The column every page shares: full width up to --app-page-width, then
+// centered with equal room either side. Pages never set their own width.
+.app-layout__page {
+  max-width: var(--app-page-width);
+  margin: 0 auto;
 }
 
 .app-header__spacer {
