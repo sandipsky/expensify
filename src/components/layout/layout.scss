@@ -58,12 +58,3 @@
 .app-header__spacer {
   flex: 1;
 }
-
-.app-header__user {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-secondary);
-  font-size: 13px;
-  white-space: nowrap;
-}

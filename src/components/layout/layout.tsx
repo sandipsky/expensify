@@ -1,6 +1,5 @@
 import { useRef, type ReactNode } from 'react'
-import { LUIAvatar } from '@lumen-ui/react'
-import { useAuthStore, useProfile } from '@/features/auth'
+import { AccountMenu } from './account-menu/account-menu'
 import { Header } from './header/header'
 import { Sidebar, type SidebarHandle } from './sidebar/sidebar'
 import { SIDEBAR_ITEMS } from './sidebar/sidebar.data'
@@ -14,11 +13,6 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, badges }: AppLayoutProps) {
   const sidebarRef = useRef<SidebarHandle>(null)
-  // The profile once it loads, so a new name or photo shows at once; the login's user until then.
-  const profile = useProfile().data
-  const loginUser = useAuthStore((s) => s.user)
-  const user = profile ?? loginUser
-  const logout = useAuthStore((s) => s.logout)
 
   return (
     <div className="app-layout">
@@ -27,15 +21,7 @@ export function AppLayout({ children, badges }: AppLayoutProps) {
       <div className="app-layout__main">
         <Header onMenuToggle={() => sidebarRef.current?.toggle()}>
           <span className="app-header__spacer" />
-          {user && (
-            <span className="app-header__user">
-              <LUIAvatar imageUrl={profile?.photoUrl} name={user.name} size="24px" />
-              {user.name}
-            </span>
-          )}
-          <button className="btn btn-secondary btn-sm" type="button" onClick={() => logout()}>
-            Logout
-          </button>
+          <AccountMenu />
         </Header>
 
         {/* The pane scrolls, not the window, so the router restores its position by this id. */}
