@@ -1,4 +1,5 @@
 import { saveFile } from '@/lib/files/download'
+import { PDF_HEAD_FILL, loadPdf, pdfText } from '@/lib/files/pdf'
 import { type XlsxCell, xlsx } from '@/lib/files/xlsx'
 import { type DateRange, formatMoney, formatPeriod, fractionDigits } from '@/utils'
 import { type Totals } from './transaction.domain'
@@ -92,22 +93,9 @@ function xlsxFile(rows: readonly TxRow[]): Blob {
   return xlsx([{ name: 'Transactions', widths: XLSX_WIDTHS, rows: [[...XLSX_HEADERS], ...data] }])
 }
 
-const NBSP = String.fromCharCode(0xa0)
-
-/**
- * The built-in PDF fonts cover Latin text only, so the arrow, the minus sign
- * and the non-breaking space some locales format with get ASCII stand-ins.
- */
-function pdfText(text: string): string {
-  return text.replace(/→/g, '->').replace(/−/g, '-').replaceAll(NBSP, ' ')
-}
-
 /** A landscape statement: the period and its totals, then one row per entry. jsPDF loads on first use. */
 async function pdfFile(rows: readonly TxRow[], input: ExportInput): Promise<Blob> {
-  const [{ jsPDF }, { default: autoTable }] = await Promise.all([
-    import('jspdf'),
-    import('jspdf-autotable'),
-  ])
+  const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
   const money = (amount: number, signDisplay: 'auto' | 'exceptZero' = 'auto') =>
     pdfText(formatMoney(amount, input.currency, signDisplay))
@@ -143,7 +131,7 @@ async function pdfFile(rows: readonly TxRow[], input: ExportInput): Promise<Blob
       money(row.amount, row.kind === 'transfer' ? 'auto' : 'exceptZero'),
     ]),
     styles: { font: 'helvetica', fontSize: 9, cellPadding: 5, overflow: 'linebreak' },
-    headStyles: { fillColor: [36, 86, 230], textColor: 255, fontStyle: 'bold' },
+    headStyles: { fillColor: PDF_HEAD_FILL, textColor: 255, fontStyle: 'bold' },
     alternateRowStyles: { fillColor: [247, 247, 247] },
     columnStyles: {
       0: { cellWidth: 100 },

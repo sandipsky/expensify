@@ -1,0 +1,156 @@
+.report-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+
+  // The report's icon on a tint of its color, as on the Reports page.
+  &__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--report-color) 12%, transparent);
+  }
+
+  &__title {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 200px;
+
+    h1 {
+      color: var(--text-primary);
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 28px;
+    }
+
+    p {
+      color: var(--text-tertiary);
+      font-size: 13px;
+      line-height: 18px;
+    }
+  }
+
+  // A menu row is a button, so it needs the native chrome removed.
+  &__item {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+  }
+
+  &__skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  // Footnotes under a report, such as how balances were worked out.
+  &__note {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    line-height: 16px;
+  }
+}
+
+// The filters: one wrapping row of labelled fields, the reset button last.
+.report-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+
+  &__reset {
+    margin-left: auto;
+  }
+
+  &__summary {
+    flex-basis: 100%;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 18px;
+  }
+}
+
+// A flush card (padding none) keeps its header padded, lined up with the 16px rows under it.
+.report-page .lui-card-pad-none > .lui-card__header {
+  padding: 12px 16px;
+}
+
+.report-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+
+  // Selects size to their slot, so each gets a sensible width.
+  &--period {
+    flex: 0 1 200px;
+  }
+
+  &--wide {
+    flex: 1 1 240px;
+    max-width: 420px;
+  }
+
+  // A switch, centered on the inputs' line beside it.
+  &--toggle {
+    justify-content: center;
+    min-height: 34px;
+  }
+
+  // Matches the label lumen puts over a select.
+  &__label {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+  }
+}
+
+// The custom range's two dates, on their own line under the period.
+.report-dates {
+  display: grid;
+  flex-basis: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 220px));
+  gap: 12px;
+}
+
+// Phones: every field takes the full width.
+@media (max-width: 599.98px) {
+  .report-field,
+  .report-field--period,
+  .report-field--wide {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+
+  .report-filters__reset {
+    margin-left: 0;
+  }
+}
+
+// Income green, expense red, always beside a sign, so color is never the only cue.
+.report-page {
+  .is-income {
+    color: var(--success);
+  }
+
+  .is-expense {
+    color: var(--error);
+  }
+}

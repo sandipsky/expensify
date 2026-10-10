@@ -1,0 +1,115 @@
+.reports-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__intro {
+    color: var(--text-tertiary);
+    font-size: 13px;
+    line-height: 18px;
+  }
+}
+
+// One column on phones, two on tablets, three on desktops.
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  list-style: none;
+
+  > li {
+    display: flex;
+  }
+}
+
+// A whole card is the link to its report.
+.report-card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--separator-light);
+  border-radius: 12px;
+  background: var(--bg-lightest);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out,
+    translate 150ms ease-out;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--report-color) 45%, var(--separator-light));
+    box-shadow: 0 6px 18px rgba(13, 13, 18, 0.08);
+    translate: 0 -2px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &:hover {
+      translate: none;
+    }
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 4px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--report-color) 12%, transparent);
+  }
+
+  &__title {
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+  }
+
+  &__description {
+    flex: 1;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 19px;
+  }
+
+  &__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--separator-light);
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  &__formats {
+    color: var(--text-tertiary);
+  }
+
+  &__open {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--accent-dark);
+    font-weight: 500;
+  }
+}

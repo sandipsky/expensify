@@ -1,0 +1,32 @@
+// A month's amount, shaded by how it compares with the row's busiest month.
+// The tint is the category's own color; the number always says the amount.
+.trend-cell {
+  display: inline-block;
+  min-width: 100%;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--trend-color) var(--trend-heat), transparent);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+
+  &.is-empty {
+    background: none;
+    color: var(--text-quaternary);
+  }
+}
+
+button.trend-cell {
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}

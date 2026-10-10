@@ -1,0 +1,49 @@
+// The donut beside the biggest changes on desktops; stacked below that.
+.category-report__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .category-report__grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+}
+
+// Each card fills its cell.
+.category-report__card {
+  height: 100%;
+}
+
+.category-report__total {
+  display: block;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.category-report__caption {
+  display: block;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.category-report__movers {
+  list-style: none;
+
+  li + li {
+    border-top: 1px solid var(--separator-light);
+  }
+}
+
+.category-report__legend {
+  padding: 8px 16px 12px;
+  border-top: 1px solid var(--separator-light);
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 16px;
+}

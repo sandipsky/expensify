@@ -16,11 +16,17 @@ import { Route as AuthenticatedAccountsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedBudgetsIndexRouteImport } from './routes/_authenticated/budgets/index'
 import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_authenticated/categories/index'
 import { Route as AuthenticatedRecurringIndexRouteImport } from './routes/_authenticated/recurring/index'
+import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated/reports/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedTransactionsIndexRouteImport } from './routes/_authenticated/transactions/index'
 import { Route as AuthenticatedAccountsAccountIdIndexRouteImport } from './routes/_authenticated/accounts/$accountId/index'
 import { Route as AuthenticatedBudgetsBudgetIdIndexRouteImport } from './routes/_authenticated/budgets/$budgetId/index'
 import { Route as AuthenticatedRecurringRuleIdIndexRouteImport } from './routes/_authenticated/recurring/$ruleId/index'
+import { Route as AuthenticatedReportsAccountsIndexRouteImport } from './routes/_authenticated/reports/accounts/index'
+import { Route as AuthenticatedReportsBudgetsIndexRouteImport } from './routes/_authenticated/reports/budgets/index'
+import { Route as AuthenticatedReportsCashFlowIndexRouteImport } from './routes/_authenticated/reports/cash-flow/index'
+import { Route as AuthenticatedReportsCategoriesIndexRouteImport } from './routes/_authenticated/reports/categories/index'
+import { Route as AuthenticatedReportsCategoryTrendsIndexRouteImport } from './routes/_authenticated/reports/category-trends/index'
 import { Route as AuthenticatedTransactionsTransactionIdIndexRouteImport } from './routes/_authenticated/transactions/$transactionId/index'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -61,6 +67,12 @@ const AuthenticatedRecurringIndexRoute =
     path: '/recurring/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedReportsIndexRoute =
+  AuthenticatedReportsIndexRouteImport.update({
+    id: '/reports/',
+    path: '/reports/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSettingsIndexRoute =
   AuthenticatedSettingsIndexRouteImport.update({
     id: '/settings/',
@@ -91,6 +103,36 @@ const AuthenticatedRecurringRuleIdIndexRoute =
     path: '/recurring/$ruleId/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedReportsAccountsIndexRoute =
+  AuthenticatedReportsAccountsIndexRouteImport.update({
+    id: '/reports/accounts/',
+    path: '/reports/accounts/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedReportsBudgetsIndexRoute =
+  AuthenticatedReportsBudgetsIndexRouteImport.update({
+    id: '/reports/budgets/',
+    path: '/reports/budgets/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedReportsCashFlowIndexRoute =
+  AuthenticatedReportsCashFlowIndexRouteImport.update({
+    id: '/reports/cash-flow/',
+    path: '/reports/cash-flow/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedReportsCategoriesIndexRoute =
+  AuthenticatedReportsCategoriesIndexRouteImport.update({
+    id: '/reports/categories/',
+    path: '/reports/categories/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedReportsCategoryTrendsIndexRoute =
+  AuthenticatedReportsCategoryTrendsIndexRouteImport.update({
+    id: '/reports/category-trends/',
+    path: '/reports/category-trends/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedTransactionsTransactionIdIndexRoute =
   AuthenticatedTransactionsTransactionIdIndexRouteImport.update({
     id: '/transactions/$transactionId/',
@@ -105,11 +147,17 @@ export interface FileRoutesByFullPath {
   '/budgets/': typeof AuthenticatedBudgetsIndexRoute
   '/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/recurring/': typeof AuthenticatedRecurringIndexRoute
+  '/reports/': typeof AuthenticatedReportsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/transactions/': typeof AuthenticatedTransactionsIndexRoute
   '/accounts/$accountId/': typeof AuthenticatedAccountsAccountIdIndexRoute
   '/budgets/$budgetId/': typeof AuthenticatedBudgetsBudgetIdIndexRoute
   '/recurring/$ruleId/': typeof AuthenticatedRecurringRuleIdIndexRoute
+  '/reports/accounts/': typeof AuthenticatedReportsAccountsIndexRoute
+  '/reports/budgets/': typeof AuthenticatedReportsBudgetsIndexRoute
+  '/reports/cash-flow/': typeof AuthenticatedReportsCashFlowIndexRoute
+  '/reports/categories/': typeof AuthenticatedReportsCategoriesIndexRoute
+  '/reports/category-trends/': typeof AuthenticatedReportsCategoryTrendsIndexRoute
   '/transactions/$transactionId/': typeof AuthenticatedTransactionsTransactionIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -119,11 +167,17 @@ export interface FileRoutesByTo {
   '/budgets': typeof AuthenticatedBudgetsIndexRoute
   '/categories': typeof AuthenticatedCategoriesIndexRoute
   '/recurring': typeof AuthenticatedRecurringIndexRoute
+  '/reports': typeof AuthenticatedReportsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/transactions': typeof AuthenticatedTransactionsIndexRoute
   '/accounts/$accountId': typeof AuthenticatedAccountsAccountIdIndexRoute
   '/budgets/$budgetId': typeof AuthenticatedBudgetsBudgetIdIndexRoute
   '/recurring/$ruleId': typeof AuthenticatedRecurringRuleIdIndexRoute
+  '/reports/accounts': typeof AuthenticatedReportsAccountsIndexRoute
+  '/reports/budgets': typeof AuthenticatedReportsBudgetsIndexRoute
+  '/reports/cash-flow': typeof AuthenticatedReportsCashFlowIndexRoute
+  '/reports/categories': typeof AuthenticatedReportsCategoriesIndexRoute
+  '/reports/category-trends': typeof AuthenticatedReportsCategoryTrendsIndexRoute
   '/transactions/$transactionId': typeof AuthenticatedTransactionsTransactionIdIndexRoute
 }
 export interface FileRoutesById {
@@ -135,11 +189,17 @@ export interface FileRoutesById {
   '/_authenticated/budgets/': typeof AuthenticatedBudgetsIndexRoute
   '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/_authenticated/recurring/': typeof AuthenticatedRecurringIndexRoute
+  '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/transactions/': typeof AuthenticatedTransactionsIndexRoute
   '/_authenticated/accounts/$accountId/': typeof AuthenticatedAccountsAccountIdIndexRoute
   '/_authenticated/budgets/$budgetId/': typeof AuthenticatedBudgetsBudgetIdIndexRoute
   '/_authenticated/recurring/$ruleId/': typeof AuthenticatedRecurringRuleIdIndexRoute
+  '/_authenticated/reports/accounts/': typeof AuthenticatedReportsAccountsIndexRoute
+  '/_authenticated/reports/budgets/': typeof AuthenticatedReportsBudgetsIndexRoute
+  '/_authenticated/reports/cash-flow/': typeof AuthenticatedReportsCashFlowIndexRoute
+  '/_authenticated/reports/categories/': typeof AuthenticatedReportsCategoriesIndexRoute
+  '/_authenticated/reports/category-trends/': typeof AuthenticatedReportsCategoryTrendsIndexRoute
   '/_authenticated/transactions/$transactionId/': typeof AuthenticatedTransactionsTransactionIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -151,11 +211,17 @@ export interface FileRouteTypes {
     | '/budgets/'
     | '/categories/'
     | '/recurring/'
+    | '/reports/'
     | '/settings/'
     | '/transactions/'
     | '/accounts/$accountId/'
     | '/budgets/$budgetId/'
     | '/recurring/$ruleId/'
+    | '/reports/accounts/'
+    | '/reports/budgets/'
+    | '/reports/cash-flow/'
+    | '/reports/categories/'
+    | '/reports/category-trends/'
     | '/transactions/$transactionId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -165,11 +231,17 @@ export interface FileRouteTypes {
     | '/budgets'
     | '/categories'
     | '/recurring'
+    | '/reports'
     | '/settings'
     | '/transactions'
     | '/accounts/$accountId'
     | '/budgets/$budgetId'
     | '/recurring/$ruleId'
+    | '/reports/accounts'
+    | '/reports/budgets'
+    | '/reports/cash-flow'
+    | '/reports/categories'
+    | '/reports/category-trends'
     | '/transactions/$transactionId'
   id:
     | '__root__'
@@ -180,11 +252,17 @@ export interface FileRouteTypes {
     | '/_authenticated/budgets/'
     | '/_authenticated/categories/'
     | '/_authenticated/recurring/'
+    | '/_authenticated/reports/'
     | '/_authenticated/settings/'
     | '/_authenticated/transactions/'
     | '/_authenticated/accounts/$accountId/'
     | '/_authenticated/budgets/$budgetId/'
     | '/_authenticated/recurring/$ruleId/'
+    | '/_authenticated/reports/accounts/'
+    | '/_authenticated/reports/budgets/'
+    | '/_authenticated/reports/cash-flow/'
+    | '/_authenticated/reports/categories/'
+    | '/_authenticated/reports/category-trends/'
     | '/_authenticated/transactions/$transactionId/'
   fileRoutesById: FileRoutesById
 }
@@ -244,6 +322,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRecurringIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/reports/': {
+      id: '/_authenticated/reports/'
+      path: '/reports'
+      fullPath: '/reports/'
+      preLoaderRoute: typeof AuthenticatedReportsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/settings/': {
       id: '/_authenticated/settings/'
       path: '/settings'
@@ -279,6 +364,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRecurringRuleIdIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/reports/accounts/': {
+      id: '/_authenticated/reports/accounts/'
+      path: '/reports/accounts'
+      fullPath: '/reports/accounts/'
+      preLoaderRoute: typeof AuthenticatedReportsAccountsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/reports/budgets/': {
+      id: '/_authenticated/reports/budgets/'
+      path: '/reports/budgets'
+      fullPath: '/reports/budgets/'
+      preLoaderRoute: typeof AuthenticatedReportsBudgetsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/reports/cash-flow/': {
+      id: '/_authenticated/reports/cash-flow/'
+      path: '/reports/cash-flow'
+      fullPath: '/reports/cash-flow/'
+      preLoaderRoute: typeof AuthenticatedReportsCashFlowIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/reports/categories/': {
+      id: '/_authenticated/reports/categories/'
+      path: '/reports/categories'
+      fullPath: '/reports/categories/'
+      preLoaderRoute: typeof AuthenticatedReportsCategoriesIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/reports/category-trends/': {
+      id: '/_authenticated/reports/category-trends/'
+      path: '/reports/category-trends'
+      fullPath: '/reports/category-trends/'
+      preLoaderRoute: typeof AuthenticatedReportsCategoryTrendsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/transactions/$transactionId/': {
       id: '/_authenticated/transactions/$transactionId/'
       path: '/transactions/$transactionId'
@@ -295,11 +415,17 @@ interface AuthenticatedRouteChildren {
   AuthenticatedBudgetsIndexRoute: typeof AuthenticatedBudgetsIndexRoute
   AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
   AuthenticatedRecurringIndexRoute: typeof AuthenticatedRecurringIndexRoute
+  AuthenticatedReportsIndexRoute: typeof AuthenticatedReportsIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
   AuthenticatedTransactionsIndexRoute: typeof AuthenticatedTransactionsIndexRoute
   AuthenticatedAccountsAccountIdIndexRoute: typeof AuthenticatedAccountsAccountIdIndexRoute
   AuthenticatedBudgetsBudgetIdIndexRoute: typeof AuthenticatedBudgetsBudgetIdIndexRoute
   AuthenticatedRecurringRuleIdIndexRoute: typeof AuthenticatedRecurringRuleIdIndexRoute
+  AuthenticatedReportsAccountsIndexRoute: typeof AuthenticatedReportsAccountsIndexRoute
+  AuthenticatedReportsBudgetsIndexRoute: typeof AuthenticatedReportsBudgetsIndexRoute
+  AuthenticatedReportsCashFlowIndexRoute: typeof AuthenticatedReportsCashFlowIndexRoute
+  AuthenticatedReportsCategoriesIndexRoute: typeof AuthenticatedReportsCategoriesIndexRoute
+  AuthenticatedReportsCategoryTrendsIndexRoute: typeof AuthenticatedReportsCategoryTrendsIndexRoute
   AuthenticatedTransactionsTransactionIdIndexRoute: typeof AuthenticatedTransactionsTransactionIdIndexRoute
 }
 
@@ -309,6 +435,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedBudgetsIndexRoute: AuthenticatedBudgetsIndexRoute,
   AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
   AuthenticatedRecurringIndexRoute: AuthenticatedRecurringIndexRoute,
+  AuthenticatedReportsIndexRoute: AuthenticatedReportsIndexRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   AuthenticatedTransactionsIndexRoute: AuthenticatedTransactionsIndexRoute,
   AuthenticatedAccountsAccountIdIndexRoute:
@@ -317,6 +444,15 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedBudgetsBudgetIdIndexRoute,
   AuthenticatedRecurringRuleIdIndexRoute:
     AuthenticatedRecurringRuleIdIndexRoute,
+  AuthenticatedReportsAccountsIndexRoute:
+    AuthenticatedReportsAccountsIndexRoute,
+  AuthenticatedReportsBudgetsIndexRoute: AuthenticatedReportsBudgetsIndexRoute,
+  AuthenticatedReportsCashFlowIndexRoute:
+    AuthenticatedReportsCashFlowIndexRoute,
+  AuthenticatedReportsCategoriesIndexRoute:
+    AuthenticatedReportsCategoriesIndexRoute,
+  AuthenticatedReportsCategoryTrendsIndexRoute:
+    AuthenticatedReportsCategoryTrendsIndexRoute,
   AuthenticatedTransactionsTransactionIdIndexRoute:
     AuthenticatedTransactionsTransactionIdIndexRoute,
 }

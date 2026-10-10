@@ -1,0 +1,20 @@
+// The picked budget: its badge, name and rules, and a link to its page.
+.budget-report__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+
+  .report-name__text {
+    flex: 1;
+    max-width: none;
+    min-width: 160px;
+  }
+
+  strong {
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+  }
+}
