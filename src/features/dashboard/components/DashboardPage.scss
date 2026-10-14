@@ -4,18 +4,16 @@
   gap: 16px;
 }
 
+// The title with the privacy toggle right beside it. The breadcrumb grows to
+// fill its row by default, which would push the toggle to the far edge.
 .dash__header {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
+  gap: 4px;
 
-.dash__actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  .breadcrumb-group {
+    flex: 0 1 auto;
+  }
 }
 
 // Privacy mode: a round toggle that stays filled while amounts are hidden.

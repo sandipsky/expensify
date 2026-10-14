@@ -59,21 +59,19 @@ export const DashboardPage = ({ search }: DashboardPageProps) => {
   const header = (
     <div className="dash__header">
       <LUIBreadcrumb title="Dashboard" />
-      <div className="dash__actions">
-        <LUITooltip content={dash.masked ? 'Show amounts' : 'Hide amounts'}>
-          <LUIButton
-            variant="ghost"
-            size="lg"
-            rounded
-            className="dash__privacy"
-            aria-pressed={dash.masked}
-            aria-label="Hide amounts"
-            onClick={dash.togglePrivacy}
-          >
-            <LUIIcon name={dash.masked ? 'eye_slash' : 'eye'} color="inherit" />
-          </LUIButton>
-        </LUITooltip>
-      </div>
+      <LUITooltip content={dash.masked ? 'Show amounts' : 'Hide amounts'}>
+        <LUIButton
+          variant="ghost"
+          size="lg"
+          rounded
+          className="dash__privacy"
+          aria-pressed={dash.masked}
+          aria-label="Hide amounts"
+          onClick={dash.togglePrivacy}
+        >
+          <LUIIcon name={dash.masked ? 'eye_slash' : 'eye'} color="inherit" />
+        </LUIButton>
+      </LUITooltip>
     </div>
   )
 

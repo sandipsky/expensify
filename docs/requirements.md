@@ -113,7 +113,7 @@ The dashboard is the first screen after logging in. Every figure follows the tot
 | DSH-08 | Chart income vs expense for the selected period and the 5 before it, with each period's net and a "Table" toggle. The presets use calendar months; a custom range uses earlier ranges of the same length. Clicking a bar selects that period. |
 | DSH-09 | List the 5 newest entries of the period. A row opens the entry; its menu offers Edit and Delete; "See all" opens the list for the period. |
 | DSH-10 | List recurring occurrences due by today or within the next 7 days, with Confirm and Skip on due ask-first rules. The card is hidden when there are none. |
-| DSH-11 | Privacy mode: an eye button masks every amount as "••••", including chart tooltips and axes. Percentages and chart shapes stay. It is remembered per browser, synced across open tabs, and applies to the dashboard only. |
+| DSH-11 | Privacy mode: an eye button beside the "Dashboard" title masks every amount as "••••", including chart tooltips and axes. Percentages and chart shapes stay. It is on each time the dashboard opens, lasts until the user leaves the page, and applies to the dashboard only. |
 | DSH-12 | Give each card an empty state with its next action. A period with no entries replaces the summary, spending, trend and recent cards with one "Nothing logged in {period}" card. |
 | DSH-13 | Layout: one column on phones; two on tablets; on desktop the summary across the top, then balances, spending and budgets, then the trend beside recent entries, then upcoming. The period switcher sticks to the top while scrolling. |
 
@@ -777,7 +777,6 @@ Firebase Authentication keeps the session in the browser's IndexedDB (AUTH-06). 
 | --- | --- |
 | `expensify.theme` | The last theme, applied before the app starts |
 | `expensify.last-account` | The account the last entry used (TXN-02) |
-| `expensify.dashboard.privacy.v1` | Privacy mode on or off (DSH-11) |
 | `expensify.alerts.v1` | The alert list (NTF-06) |
 | `expensify.daily-reminder.v1` | The last day the daily reminder showed |
 | `expensify.bill-reminders.v1` | Recurring reminders already shown, for 60 days |
